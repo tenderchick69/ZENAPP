@@ -5,6 +5,7 @@
 
   let decks: any[] = [];
   let loading = true;
+  let totalMastered = 0;
 
   async function loadDecks() {
     const { data } = await supabase.from('decks').select('*').order('created_at', { ascending: false });
@@ -12,7 +13,18 @@
     loading = false;
   }
 
-  onMount(loadDecks);
+  async function loadMasteryCount() {
+    const { count } = await supabase
+      .from('cards')
+      .select('*', { count: 'exact', head: true })
+      .eq('state', 5);
+    totalMastered = count || 0;
+  }
+
+  onMount(() => {
+    loadDecks();
+    loadMasteryCount();
+  });
 </script>
 
 <section class="space-y-8">
@@ -51,5 +63,13 @@
        <span class="text-dim">|</span>
        <span class="text-dim cursor-not-allowed">[ {$t.btn_ai} ]</span>
     </div>
+
+    {#if totalMastered > 0}
+      <div class="text-center mt-8">
+        <a href="/graveyard" class="inline-block text-xs font-body text-accent hover:text-success transition-colors border border-accent/30 hover:border-success px-4 py-2">
+          {$t.grave_link} · {totalMastered}
+        </a>
+      </div>
+    {/if}
   {/if}
 </section>

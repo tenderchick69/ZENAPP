@@ -56,7 +56,14 @@ const DICTIONARY = {
     // Summary
     sum_title: 'SESSION HALTED',
     sum_good: 'INTEGRATED',
-    sum_bad: 'REJECTED'
+    sum_bad: 'REJECTED',
+
+    // Graveyard
+    grave_title: 'NEURAL ARCHIVE',
+    grave_empty: 'ARCHIVE EMPTY. ENGAGE TRAINING.',
+    grave_back: 'JACK OUT',
+    grave_resurrect: 'RESURRECT',
+    grave_link: 'ARCHIVED'
   },
   zen: {
     // Global
@@ -102,7 +109,14 @@ const DICTIONARY = {
     // Summary
     sum_title: 'Session Complete',
     sum_good: 'Correct',
-    sum_bad: 'Reviewing'
+    sum_bad: 'Reviewing',
+
+    // Graveyard
+    grave_title: 'Mastered Cards',
+    grave_empty: 'No mastered cards yet. Keep studying.',
+    grave_back: 'Back Home',
+    grave_resurrect: 'Review Again',
+    grave_link: 'Mastered'
   }
 };
 
