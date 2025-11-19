@@ -16,6 +16,7 @@
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.47.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
+		"@tailwindcss/postcss": "^4.1.17",
 		"autoprefixer": "^10.4.22",
 		"postcss": "^8.5.6",
 		"svelte": "^5.41.0",
@@ -28,6 +29,8 @@
 		"@tauri-apps/api": "^2.9.0",
 		"@tauri-apps/cli": "^2.9.4",
 		"papaparse": "^5.5.3",
+		"sqlite": "^5.1.1",
+		"sqlite3": "^5.1.7",
 		"uuid": "^13.0.0"
 	}
 }

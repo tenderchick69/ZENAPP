@@ -15,22 +15,26 @@
   $: card = cards[idx];
 
   onMount(async () => {
-    const db = await getDb();
-    const words = await db.select(`
-      SELECT w.*, s.times_correct, s.is_mastered
-      FROM words w
-      LEFT JOIN scheduling s ON s.word_id = w.id
-      WHERE w.deck_id = ?
-      ORDER BY s.due_ts ASC, RANDOM()
-    `, [$currentDeckId]);
+    try {
+      const db = await getDb();
+      const words = await db.select(`
+        SELECT w.*, s.times_correct, s.is_mastered
+        FROM words w
+        LEFT JOIN scheduling s ON s.word_id = w.id
+        WHERE w.deck_id = ?
+        ORDER BY s.due_ts ASC, RANDOM()
+      `, [$currentDeckId]);
 
-    cards = words.map((w: any) => ({
-      ...w,
-      times_correct: w.times_correct ?? 0,
-      is_mastered: w.is_mastered ?? 0
-    }));
+      cards = words.map((w: any) => ({
+        ...w,
+        times_correct: w.times_correct ?? 0,
+        is_mastered: w.is_mastered ?? 0
+      }));
 
-    if (cards.length === 0) goto('/');
+      if (cards.length === 0) goto('/');
+    } catch (e) {
+      console.error('ZEN FATAL ERROR', e);
+    }
   });
 
   async function grade(gotIt: boolean) {

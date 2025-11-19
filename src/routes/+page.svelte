@@ -1,48 +1,44 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { currentDeckId, decks, createDeck } from '$lib/stores/deck';
-  import { loadDecks } from '$lib/stores/deck';
   import { goto } from '$app/navigation';
-
-  let due = 0;
-  let newCards = 0;
-  let mastered = 0;
-
-  onMount(loadDecks);
+  import { createDeck } from '$lib/stores/deck';
 </script>
 
-<main class="min-h-screen grid place-items-center bg-bg text-fg">
-  {#if $decks.length === 0}
-    <div class="text-center space-y-12">
-      <h1 class="text-6xl font-display">VOCAPP ZEN</h1>
-      <p class="text-xl opacity-70">Start Your Vocabulary Journey</p>
-      <div class="flex flex-col gap-6 max-w-md mx-auto">
-        <button class="btn gold" on:click={() => goto('/import')}>
-          <svg class="w-6 h-6"><use href="/icons.svg#upload"/></svg>
+<main class="min-h-screen bg-gradient-to-b from-black via-[#0a0a0a] to-black text-[#e8e4d8] flex items-center justify-center">
+  <div class="text-center space-y-16 max-w-4xl px-8">
+    <h1 class="text-9xl font-display tracking-tighter text-[#bfa76a] drop-shadow-2xl">
+      VOCAPP ZEN
+    </h1>
+    <p class="text-3xl opacity-80 leading-relaxed">
+      Start Your Vocabulary Journey
+    </p>
+    <p class="text-xl opacity-60 max-w-2xl mx-auto leading-relaxed">
+      Import words from a CSV file or create an empty deck
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-12 justify-center items-center mt-20">
+      <button
+        class="group px-20 py-10 bg-[#bfa76a] text-black text-4xl rounded-full font-bold shadow-2xl hover:scale-105 hover:shadow-[#bfa76a]/50 transition-all duration-300"
+        on:click={() => goto('/import')}
+      >
+        <span class="flex items-center gap-6">
+          <svg class="w-12 h-12"><use href="/icons.svg#upload"/></svg>
           Import CSV
-        </button>
-        <button class="btn green" on:click={() => createDeck('My First Deck')}>
-          + Create Empty Deck
-        </button>
-      </div>
-    </div>
-  {:else}
-    <div class="text-center space-y-8">
-      <h1 class="text-5xl font-display">{$decks.find(d => d.id === $currentDeckId)?.name || 'Select Deck'}</h1>
+        </span>
+      </button>
 
-      <div class="text-3xl opacity-80 space-x-8">
-        <span>{due} due</span> · <span>{newCards} new</span> · <span>{mastered} mastered</span>
-      </div>
-
-      <button class="btn accent text-3xl px-16 py-8" on:click={() => goto('/study')}>
-        Study
+      <button
+        class="group px-20 py-10 bg-[#5a9a6f]/80 text-white text-4xl rounded-full font-bold shadow-2xl hover:scale-105 hover:bg-[#5a9a6f] transition-all duration-300 border border-[#5a9a6f]/50"
+        on:click={() => createDeck('My First Deck')}
+      >
+        <span class="flex items-center gap-6">
+          <svg class="w-12 h-12"><use href="/icons.svg#plus"/></svg>
+          Create Empty Deck
+        </span>
       </button>
     </div>
-  {/if}
-</main>
 
-<style>
-  .btn { @apply rounded-3xl font-bold transition hover:scale-105; }
-  .gold { @apply bg-accent text-bg; }
-  .green { @apply bg-good text-bg; }
-</style>
+    <div class="mt-32 opacity-30">
+      <p class="text-lg">One path. Two buttons. No noise.</p>
+    </div>
+  </div>
+</main>
