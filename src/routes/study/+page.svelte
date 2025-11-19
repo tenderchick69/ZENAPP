@@ -16,6 +16,42 @@
   let sessionStats = { correct: 0, wrong: 0 };
   let stats = { due: 0, learning: 0, mastered: 0, total: 0 };
   let levelDist = [0, 0, 0, 0, 0, 0];
+  let isEditing = false;
+  let editForm = { headword: '', definition: '' };
+
+  function speak(text: string) {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(u);
+  }
+
+  function toggleEdit() {
+    if (!currentCard) return;
+    isEditing = !isEditing;
+    if (isEditing) {
+      editForm = {
+        headword: currentCard.headword,
+        definition: currentCard.definition
+      };
+    }
+  }
+
+  async function saveEdit() {
+    if (!currentCard) return;
+    const { error } = await supabase
+      .from('cards')
+      .update({
+        headword: editForm.headword,
+        definition: editForm.definition
+      })
+      .eq('id', currentCard.id);
+
+    if (!error) {
+      currentCard.headword = editForm.headword;
+      currentCard.definition = editForm.definition;
+      isEditing = false;
+    }
+  }
 
   onMount(async () => {
     if (!deckId) return goto('/');
@@ -175,18 +211,47 @@
         </div>
 
         <!-- Card -->
-        <div class="text-center">
-           <h2 class="text-5xl font-heading text-main mb-6 tracking-tight">{currentCard.headword}</h2>
-           {#if isRevealed}
-             <div class="space-y-6" class:animate-glitch={$theme === 'syndicate'}>
-                {#if currentCard.ipa}<p class="text-dim font-body text-sm">/{currentCard.ipa}/</p>{/if}
-                <p class="text-2xl text-accent font-body">{currentCard.definition}</p>
-                {#if currentCard.example}
-                  <div class="text-sm text-dim border-l-2 border-danger pl-4 text-left mx-auto max-w-md italic">
-                    "{currentCard.example}"
-                  </div>
-                {/if}
+        <div class="text-center relative group">
+           <!-- Audio Button (Top Right) -->
+           <button onclick={(e) => { e.stopPropagation(); speak(currentCard.headword); }}
+             class="absolute -top-2 -right-2 p-2 text-dim hover:text-accent transition-colors rounded-full border border-transparent hover:border-dim">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+           </button>
+
+           <!-- Edit Button (Top Left - Visible on Hover) -->
+           <button onclick={(e) => { e.stopPropagation(); toggleEdit(); }}
+             class="absolute -top-2 -left-2 p-2 text-dim opacity-0 group-hover:opacity-100 hover:text-accent transition-all rounded-full">
+             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+           </button>
+
+           {#if isEditing}
+             <!-- EDIT MODE -->
+             <div class="space-y-4 p-4 bg-bg/50 border border-dim rounded">
+               <input bind:value={editForm.headword} class="w-full bg-bg border border-dim p-2 text-main font-heading text-center" />
+               <textarea bind:value={editForm.definition} class="w-full bg-bg border border-dim p-2 text-accent font-body text-center min-h-[100px]"></textarea>
+               <div class="flex gap-2 justify-center">
+                 <button onclick={saveEdit} class="px-4 py-1 bg-accent text-bg font-bold text-xs hover:bg-white">{$t.btn_save}</button>
+                 <button onclick={() => isEditing = false} class="px-4 py-1 border border-dim text-dim text-xs hover:text-main">X</button>
+               </div>
              </div>
+           {:else}
+             <!-- VIEW MODE -->
+             <h2 class="text-5xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors"
+                 onclick={() => speak(currentCard.headword)}>
+                 {currentCard.headword}
+             </h2>
+
+             {#if isRevealed}
+               <div class="space-y-6" class:animate-glitch={$theme === 'syndicate'}>
+                  {#if currentCard.ipa}<p class="text-dim font-body text-sm">/{currentCard.ipa}/</p>{/if}
+                  <p class="text-2xl text-accent font-body leading-relaxed">{currentCard.definition}</p>
+                  {#if currentCard.example}
+                    <div class="text-sm text-dim border-l-2 border-danger pl-4 text-left mx-auto max-w-md italic">
+                      "{currentCard.example}"
+                    </div>
+                  {/if}
+               </div>
+             {/if}
            {/if}
         </div>
 

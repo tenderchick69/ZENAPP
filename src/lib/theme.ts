@@ -63,7 +63,12 @@ const DICTIONARY = {
     grave_empty: 'ARCHIVE EMPTY. ENGAGE TRAINING.',
     grave_back: 'JACK OUT',
     grave_resurrect: 'RESURRECT',
-    grave_link: 'ARCHIVED'
+    grave_link: 'ARCHIVED',
+
+    // Edit & Audio
+    btn_edit: 'REWRITE SHARD',
+    btn_save: 'OVERWRITE',
+    btn_audio: 'AUDIO_OUT'
   },
   zen: {
     // Global
@@ -116,7 +121,12 @@ const DICTIONARY = {
     grave_empty: 'No mastered cards yet. Keep studying.',
     grave_back: 'Back Home',
     grave_resurrect: 'Review Again',
-    grave_link: 'Mastered'
+    grave_link: 'Mastered',
+
+    // Edit & Audio
+    btn_edit: 'Edit',
+    btn_save: 'Save',
+    btn_audio: 'Listen'
   }
 };
 
