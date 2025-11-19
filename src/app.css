@@ -1,16 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0f0f0f;
-  --color-fg: #e8e4d8;
-  --color-accent: #bfa76a;
-  --color-good: #2F5C3E;
-  --color-bad: #6B2B2B;
-  --color-tatami: #E6E1C5;
-
-  --font-family-display: 'Playfair Display', serif;
-  --font-family-sans: 'Inter', sans-serif;
+  --color-zen-bg: #0a0a0a;       /* Deepest Void */
+  --color-zen-text: #e5e5e5;     /* Soft Moonlight */
+  --color-zen-dim: #525252;      /* Stone */
+  --color-zen-tatami: #E6E1C5;   /* The organic accent */
+  --color-zen-bad: #8B4040;      /* Dried Blood / Red Clay */
+  --color-zen-good: #3E6B48;     /* Deep Forest */
+  --font-sans: "Inter", sans-serif;
 }
 
-.font-display { font-family: var(--font-family-display); }
+:root {
+  background-color: var(--color-zen-bg);
+  color: var(--color-zen-text);
+  font-family: var(--font-sans);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+::selection {
+  background-color: var(--color-zen-tatami);
+  color: var(--color-zen-bg);
+}

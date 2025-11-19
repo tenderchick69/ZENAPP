@@ -1,101 +1,74 @@
-// src/lib/db.ts — sql.js WASM for browser
-import { browser } from '$app/environment';
-import initSqlJs, { type Database } from 'sql.js';
+import initSqlJs from 'sql.js';
 
-interface DbResult {
-  exec: (sql: string) => void;
-  execute: (sql: string, params?: any[]) => Promise<void>;
-  select: (sql: string, params?: any[]) => Promise<any[]>;
-}
+let db: any = null;
 
-let db: DbResult | null = null;
-let sqlDb: Database | null = null;
-
-export async function getDb(): Promise<DbResult> {
+export async function getDB() {
   if (db) return db;
 
-  if (!browser) {
-    throw new Error('Database can only be initialized in browser');
-  }
-
-  // Initialize sql.js with WASM
   const SQL = await initSqlJs({
-    locateFile: (file: string) => `/${file}`
+    locateFile: file => `/${file}` // Loads from static/
   });
 
-  // Load existing database from localStorage or create new
-  const savedDb = localStorage.getItem('vocapp_db_data');
-  if (savedDb) {
-    const data = new Uint8Array(JSON.parse(savedDb));
-    sqlDb = new SQL.Database(data);
+  // Try loading existing DB from localStorage
+  const saved = localStorage.getItem('vocapp_zen_db');
+  if (saved) {
+    const uInt8Array = new Uint8Array(JSON.parse(saved));
+    db = new SQL.Database(uInt8Array);
   } else {
-    sqlDb = new SQL.Database();
+    db = new SQL.Database();
+    initSchema();
   }
-
-  // Create tables if not exist
-  sqlDb.run(`
-    CREATE TABLE IF NOT EXISTS decks (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000)
-    );
-    CREATE TABLE IF NOT EXISTS words (
-      id TEXT PRIMARY KEY,
-      deck_id TEXT,
-      headword TEXT NOT NULL,
-      pos TEXT,
-      ipa TEXT,
-      definition TEXT,
-      example TEXT,
-      gloss_de TEXT,
-      etymology TEXT,
-      mnemonic TEXT,
-      tags TEXT,
-      freq REAL
-    );
-    CREATE TABLE IF NOT EXISTS scheduling (
-      word_id TEXT PRIMARY KEY,
-      deck_id TEXT,
-      times_correct INTEGER DEFAULT 0,
-      is_mastered INTEGER DEFAULT 0,
-      due_ts INTEGER DEFAULT 0,
-      FOREIGN KEY(word_id) REFERENCES words(id)
-    );
-  `);
-
-  // Save to localStorage after each change
-  function saveToStorage() {
-    if (sqlDb) {
-      const data = sqlDb.export();
-      localStorage.setItem('vocapp_db_data', JSON.stringify(Array.from(data)));
-    }
-  }
-
-  db = {
-    exec: (sql: string) => {
-      sqlDb!.run(sql);
-      saveToStorage();
-    },
-
-    execute: async (sql: string, params: any[] = []) => {
-      sqlDb!.run(sql, params);
-      saveToStorage();
-    },
-
-    select: async (sql: string, params: any[] = []) => {
-      const stmt = sqlDb!.prepare(sql);
-      stmt.bind(params);
-
-      const results: any[] = [];
-      while (stmt.step()) {
-        const row = stmt.getAsObject();
-        results.push(row);
-      }
-      stmt.free();
-
-      return results;
-    }
-  };
 
   return db;
+}
+
+function initSchema() {
+  if (!db) return;
+
+  // 1. Decks
+  db.run(`CREATE TABLE IF NOT EXISTS decks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at INTEGER DEFAULT (strftime('%s', 'now'))
+  );`);
+
+  // 2. Cards (Rich 10-col spec + Scheduling)
+  db.run(`CREATE TABLE IF NOT EXISTS cards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    deck_id INTEGER,
+    headword TEXT NOT NULL,
+    definition TEXT,
+    pos TEXT,
+    ipa TEXT,
+    example TEXT,
+    tags TEXT,
+    state INTEGER DEFAULT 0, -- 0:New, 1:Learning, 2:Review, 3:Mastered
+    due INTEGER DEFAULT 0,
+    interval INTEGER DEFAULT 0,
+    ease_factor REAL DEFAULT 2.5,
+    FOREIGN KEY(deck_id) REFERENCES decks(id)
+  );`);
+
+  saveDB();
+}
+
+export function saveDB() {
+  if (!db) return;
+  const data = db.export();
+  // Convert to regular array for JSON storage
+  const arr = Array.from(data);
+  localStorage.setItem('vocapp_zen_db', JSON.stringify(arr));
+}
+
+// Helper to create a dummy deck for testing
+export async function seedTestDeck() {
+  const d = await getDB();
+  d.run("INSERT INTO decks (name) VALUES ('Japanese Basics')");
+  const deckId = d.exec("SELECT last_insert_rowid()")[0].values[0][0];
+
+  d.run(`INSERT INTO cards (deck_id, headword, definition) VALUES
+    (?, 'Neko', 'Cat'),
+    (?, 'Inu', 'Dog'),
+    (?, 'Sakura', 'Cherry Blossom')`, [deckId, deckId, deckId]);
+  saveDB();
 }
