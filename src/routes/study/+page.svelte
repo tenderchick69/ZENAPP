@@ -25,12 +25,20 @@
   let stats = { due: 0, learning: 0, mastered: 0, total: 0 };
   let levelDist = [0, 0, 0, 0, 0, 0];
 
+  // Deck renaming
+  let isRenaming = false;
+  let deckName = '';
+
   onMount(async () => {
     if (!deckId) return goto('/');
     await loadStats();
   });
 
   async function loadStats() {
+    // Fetch deck name
+    const { data: deck } = await supabase.from('decks').select('name').eq('id', deckId).single();
+    if (deck) deckName = deck.name;
+
     const { data } = await supabase.from('cards').select('*').eq('deck_id', deckId);
     if (data) {
       allCards = data;
@@ -44,6 +52,14 @@
         const lvl = Math.min(Math.max(c.state, 0), 5);
         levelDist[lvl]++;
       });
+    }
+  }
+
+  async function renameDeck() {
+    if (!deckName.trim()) return;
+    const { error } = await supabase.from('decks').update({ name: deckName }).eq('id', deckId);
+    if (!error) {
+      isRenaming = false;
     }
   }
 
@@ -149,75 +165,74 @@
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
-    <div class="w-full border border-dim bg-panel p-8 shadow-lg relative overflow-hidden transition-colors">
+    <div class="w-full border border-dim bg-panel p-12 shadow-lg relative overflow-hidden transition-colors min-h-[600px] flex flex-col justify-center">
       {#if $theme === 'syndicate'}
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
 
-      <h1 class="font-heading text-4xl text-main mb-1">{$t.lobby_title}</h1>
-      <div class="flex gap-4 text-xs font-body text-dim mb-6">
-         <span>{$t.lobby_id}: {deckId}</span>
-         <span class="text-accent">{$t.lobby_status}</span>
+      <!-- Header / Renamer -->
+      <div class="mb-12 text-center relative group">
+        {#if isRenaming}
+          <input
+            bind:value={deckName}
+            onkeydown={(e) => e.key === 'Enter' && renameDeck()}
+            class="text-5xl md:text-7xl font-heading text-main bg-transparent border-b-2 border-accent text-center outline-none w-full"
+            autofocus
+          />
+          <div class="text-xs text-dim mt-2">Press Enter to Save</div>
+        {:else}
+          <h1 class="text-5xl md:text-7xl font-heading text-main tracking-tight cursor-pointer hover:text-accent transition-colors flex items-center justify-center gap-4"
+              onclick={() => isRenaming = true}>
+            {deckName || 'Loading...'}
+            <span class="opacity-0 group-hover:opacity-50 text-2xl">✎</span>
+          </h1>
+        {/if}
       </div>
 
-      <!-- Level Chart -->
-      <div class="flex items-end h-16 gap-1 mb-8 px-4 border-b border-dim pb-4">
-        {#each levelDist as count, i}
-          <div class="flex-1 flex flex-col justify-end group cursor-default">
-             <div class="w-full bg-dim group-hover:bg-accent transition-colors relative"
-                  style="height: {count > 0 ? Math.max(10, (count / (stats.total || 1)) * 100) : 2}%">
-                  <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-accent opacity-0 group-hover:opacity-100 transition-opacity">{count}</div>
-             </div>
-             <div class="text-[8px] text-center text-dim mt-1">L{i}</div>
-          </div>
-        {/each}
-      </div>
-
-      <!-- Stats -->
-      <div class="grid grid-cols-3 gap-4 mb-8">
-        <div class="bg-bg border border-dim p-4 text-center">
-          <div class="text-3xl font-heading text-danger">{stats.due}</div>
-          <div class="text-[10px] uppercase text-dim">{$t.stat_due}</div>
+      <!-- Stats (Bigger) -->
+      <div class="grid grid-cols-3 gap-6 mb-16">
+        <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors">
+          <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
+          <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
         </div>
-        <div class="bg-bg border border-dim p-4 text-center">
-          <div class="text-3xl font-heading text-success">{stats.learning}</div>
-          <div class="text-[10px] uppercase text-dim">{$t.stat_learn}</div>
+        <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors">
+          <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.learning}</div>
+          <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
         </div>
-        <div class="bg-bg border border-dim p-4 text-center">
-          <div class="text-3xl font-heading text-accent">{stats.mastered}</div>
-          <div class="text-[10px] uppercase text-dim">{$t.stat_master}</div>
+        <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors">
+          <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
+          <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
         </div>
       </div>
 
       <!-- Menu -->
-      <div class="space-y-3">
+      <div class="space-y-4 max-w-xl mx-auto w-full">
         <button onclick={() => startSession('standard')} disabled={stats.due === 0}
-          class="w-full py-4 bg-accent disabled:opacity-50 disabled:bg-dim disabled:text-dim disabled:cursor-not-allowed text-bg font-heading font-bold hover:bg-main transition-all text-left px-6 relative group">
-          [1] {$t.mode_std}
-          {#if stats.due > 0}<span class="absolute right-6 opacity-0 group-hover:opacity-100 transition-opacity"> >>></span>{/if}
+          class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20]">
+          {$t.mode_std}
         </button>
 
         <button onclick={() => startSession('weakness')} disabled={stats.learning === 0}
-          class="w-full py-3 border border-dim text-dim font-body text-sm hover:border-danger hover:text-danger transition-all text-left px-6 disabled:opacity-30 disabled:cursor-not-allowed">
-          [2] {$t.mode_weak}
+          class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30">
+          {$t.mode_weak}
         </button>
 
-        <div class="flex gap-2">
+        <div class="flex gap-4">
           <div class="relative flex-1 group">
             <input type="number" bind:value={cramAmount}
-              class="w-full bg-bg border border-dim text-accent font-body p-3 pr-16 focus:border-accent outline-none transition-colors" />
-            <span class="absolute right-3 top-3 text-dim text-xs group-focus-within:text-accent">{$t.unit_cram}</span>
+              class="w-full bg-bg border border-dim text-accent font-body p-4 text-center text-lg focus:border-accent outline-none transition-colors" />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-dim text-xs uppercase tracking-widest pointer-events-none">{$t.unit_cram}</span>
           </div>
-          <button onclick={() => startSession('overclock')} class="px-6 border border-dim text-accent hover:bg-accent hover:text-bg font-heading transition-all">
+          <button onclick={() => startSession('overclock')} class="px-8 border border-dim text-accent hover:bg-accent hover:text-bg font-heading text-lg transition-all">
             {$t.mode_cram}
           </button>
         </div>
       </div>
 
-      <!-- Footer Actions -->
-      <div class="mt-8 flex justify-between items-center text-xs font-body">
-         <button onclick={() => view = 'inspect'} class="text-dim hover:text-accent">[ {$t.btn_inspect} ]</button>
-         <a href="/" class="text-dim hover:text-main">[ {$t.btn_exit} ]</a>
+      <!-- Footer -->
+      <div class="mt-12 flex justify-center gap-8 text-xs font-body uppercase tracking-widest text-dim">
+         <button onclick={() => view = 'inspect'} class="hover:text-accent transition-colors">[ {$t.btn_inspect} ]</button>
+         <a href="/" class="hover:text-main transition-colors">[ {$t.btn_exit} ]</a>
       </div>
     </div>
 

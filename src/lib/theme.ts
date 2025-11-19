@@ -152,43 +152,43 @@ const DICTIONARY = {
 
     // Home
     btn_import: 'Sow Seeds',
-    btn_ai: 'Spark Life (Locked)',
+    btn_ai: 'Spark Life',
     no_decks: 'The hearth is cold.',
     btn_seed: 'Kindle First Flame',
-    deck_sub: 'Memory Shard',
-    deck_ready: 'Enter Garden',
+    deck_sub: '',
+    deck_ready: 'Enter',
     action_open: 'Ignite →',
 
     // Import
-    import_title: 'Sow Seeds',
-    import_drop: 'Drop CSV Seeds Here',
-    import_uploading: 'Planting...',
-    import_abort: 'Abandon',
+    import_title: 'Kindle New Knowledge',
+    import_drop: 'Drop Fuel Here',
+    import_uploading: 'Igniting...',
+    import_abort: 'Extinguish',
 
     // Lobby
     lobby_title: 'Hearthstone',
-    lobby_id: 'Shard',
-    lobby_status: 'Flame: Burning',
-    stat_due: 'Cooling',
-    stat_learn: 'Warming',
-    stat_master: 'Blazing',
+    lobby_id: '',
+    lobby_status: '',
+    stat_due: 'FADING',
+    stat_learn: 'RISING',
+    stat_master: 'ETERNAL',
     mode_std: 'Tend the Garden',
     mode_weak: 'Stoke Embers',
     mode_cram: 'Wildfire',
     unit_cram: 'Sparks',
-    btn_exit: 'Extinguish / Leave',
+    btn_exit: 'Leave Garden',
 
     // Study
-    lbl_mode: 'Flame',
+    lbl_mode: 'Current Flame',
     btn_reveal: 'Illuminate',
-    btn_fail: 'Show Again',
-    btn_pass: 'I Knew It',
-    msg_locked: 'Practice: Progress Not Saved',
+    btn_fail: 'Dim',
+    btn_pass: 'Brighten',
+    msg_locked: 'Warmth Locked',
 
     // Summary
-    sum_title: 'Flames Dimmed',
-    sum_good: 'Solidified',
-    sum_bad: 'Rekindled',
+    sum_title: 'Fire Fades',
+    sum_good: 'Brightened',
+    sum_bad: 'Dimmed',
 
     // Graveyard
     grave_title: 'Golden Archive',

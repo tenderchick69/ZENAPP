@@ -206,7 +206,9 @@
       playSound('burn');
       words = words.map(w => w.id === targetId ? { ...w, burning: true } : w);
       setTimeout(() => {
-        const newPos = findSafeSpot(words);
+        // FIX: Pass all words EXCEPT the current one to avoid self-collision
+        const others = words.filter(w => w.id !== targetId);
+        const newPos = findSafeSpot(others);
         words = words.map(w => w.id === targetId ? { ...w, burning: false, x: newPos.x, y: newPos.y } : w);
       }, 1000);
     }
