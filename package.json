@@ -23,14 +23,14 @@
 		"svelte-check": "^4.3.3",
 		"tailwindcss": "^4.1.17",
 		"typescript": "^5.9.3",
-		"vite": "^7.1.10"
+		"vite": "^7.1.10",
+		"vite-plugin-static-copy": "^3.1.4"
 	},
 	"dependencies": {
 		"@tauri-apps/api": "^2.9.0",
 		"@tauri-apps/cli": "^2.9.4",
 		"papaparse": "^5.5.3",
-		"sqlite": "^5.1.1",
-		"sqlite3": "^5.1.7",
+		"sql.js": "^1.13.0",
 		"uuid": "^13.0.0"
 	}
 }
