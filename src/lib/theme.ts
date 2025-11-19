@@ -1,19 +1,109 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export type ThemeSkin = 'syndicate' | 'zen';
+const storedTheme = browser ? localStorage.getItem('vocapp_theme') : 'syndicate';
+export const theme = writable(storedTheme || 'syndicate');
 
-// Load from localStorage or default to syndicate
-const stored = browser ? localStorage.getItem('vocapp_skin') as ThemeSkin : null;
-export const currentSkin = writable<ThemeSkin>(stored || 'syndicate');
-
-// Persist to localStorage
 if (browser) {
-  currentSkin.subscribe(value => {
-    localStorage.setItem('vocapp_skin', value);
+  theme.subscribe(val => {
+    localStorage.setItem('vocapp_theme', val);
+    document.body.setAttribute('data-theme', val);
   });
 }
 
-export function toggleSkin() {
-  currentSkin.update(current => current === 'syndicate' ? 'zen' : 'syndicate');
-}
+const DICTIONARY = {
+  syndicate: {
+    // Global
+    title_1: 'VOCAPP',
+    title_2: 'SYNDICATE',
+    subtitle: 'Upgrade Your Wetware',
+
+    // Home
+    btn_import: 'DATA INGESTION',
+    btn_ai: 'AI GENERATION OFFLINE',
+    no_decks: 'NO IMPLANTS DETECTED',
+    btn_seed: 'INSTALL DEMO SHARD',
+    deck_sub: 'COGNITIVE SHARD',
+    deck_ready: 'SYNC: READY',
+    action_open: 'INITIALIZE →',
+
+    // Import
+    import_title: 'DATA INGESTION',
+    import_drop: 'DROP CSV ARTIFACT HERE',
+    import_uploading: 'UPLOADING WETWARE...',
+    import_abort: 'ABORT SEQUENCE',
+
+    // Lobby
+    lobby_title: 'NEURAL LOBBY',
+    lobby_id: 'ID',
+    lobby_status: 'NET_STATUS: ONLINE',
+    stat_due: 'CRITICAL (DUE)',
+    stat_learn: 'IN TRANSIT',
+    stat_master: 'MASTERED',
+    mode_std: 'STANDARD EXECUTION',
+    mode_weak: 'REINFORCE WEAKNESS',
+    mode_cram: 'OVERCLOCK',
+    unit_cram: 'SHARDS',
+    btn_exit: 'ABORT / JACK OUT',
+
+    // Study
+    lbl_mode: 'MODE',
+    btn_reveal: 'DECRYPT',
+    btn_fail: 'REJECT',
+    btn_pass: 'INTEGRATE',
+    msg_locked: 'TRAINING MODE: PROGRESS LOCKED',
+
+    // Summary
+    sum_title: 'SESSION HALTED',
+    sum_good: 'INTEGRATED',
+    sum_bad: 'REJECTED'
+  },
+  zen: {
+    // Global
+    title_1: 'VOCAPP',
+    title_2: 'ZEN',
+    subtitle: 'One Path. No Noise.',
+
+    // Home
+    btn_import: 'Import CSV',
+    btn_ai: 'AI Generator (Locked)',
+    no_decks: 'The garden is empty.',
+    btn_seed: 'Plant First Seed',
+    deck_sub: 'Vocabulary Deck',
+    deck_ready: 'Study Now',
+    action_open: 'Enter →',
+
+    // Import
+    import_title: 'Import Data',
+    import_drop: 'Drop CSV File Here',
+    import_uploading: 'Importing...',
+    import_abort: 'Cancel',
+
+    // Lobby
+    lobby_title: 'Study Session',
+    lobby_id: 'Deck',
+    lobby_status: 'Status: Connected',
+    stat_due: 'Review Due',
+    stat_learn: 'Learning',
+    stat_master: 'Mastered',
+    mode_std: 'Regular Study',
+    mode_weak: 'Practice Weakness',
+    mode_cram: 'Cram Mode',
+    unit_cram: 'Cards',
+    btn_exit: 'Exit Session',
+
+    // Study
+    lbl_mode: 'Current Mode',
+    btn_reveal: 'Reveal',
+    btn_fail: 'Again',
+    btn_pass: 'Good',
+    msg_locked: 'Practice Mode: No Progress Saved',
+
+    // Summary
+    sum_title: 'Session Complete',
+    sum_good: 'Correct',
+    sum_bad: 'Reviewing'
+  }
+};
+
+export const t = derived(theme, $theme => DICTIONARY[$theme as keyof typeof DICTIONARY]);

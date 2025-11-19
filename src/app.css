@@ -1,152 +1,63 @@
 @import "tailwindcss";
 
 @theme {
-  /* ═══════════════════════════════════════════════════════════════
-     SYNDICATE PALETTE (Cyberpunk)
-     ═══════════════════════════════════════════════════════════════ */
-  --color-neon-cyan: #00fff2;
-  --color-neon-red: #ff0040;
-  --color-bio-green: #39ff14;
-  --color-wet-dark: #050505;
-  --color-wet-panel: #0a0a0a;
+  /* We define generic utility names that map to the variables below */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
 
-  /* ═══════════════════════════════════════════════════════════════
-     ZEN PALETTE (Brutalist Monochrome)
-     ═══════════════════════════════════════════════════════════════ */
-  --color-void: #000000;
-  --color-ink: #111111;
-  --color-paper: #fafafa;
-  --color-stone: #888888;
-  --color-blood: #8b0000;  /* Single sacred accent - used sparingly */
+  --color-main: var(--color-main);
+  --color-accent: var(--color-accent);
+  --color-danger: var(--color-danger);
+  --color-success: var(--color-success);
+  --color-bg: var(--color-bg);
+  --color-panel: var(--color-panel);
+  --color-dim: var(--color-dim);
 
-  /* ═══════════════════════════════════════════════════════════════
-     FONTS
-     ═══════════════════════════════════════════════════════════════ */
-  --font-cyber: "Orbitron", sans-serif;
-  --font-mono: "Share Tech Mono", monospace;
-  --font-zen: "Noto Serif JP", serif;
-  --font-zen-display: "Shippori Mincho", serif;
-
-  /* ═══════════════════════════════════════════════════════════════
-     ANIMATIONS
-     ═══════════════════════════════════════════════════════════════ */
-  --animate-glitch: glitch 0.3s infinite;
-  --animate-flicker: flicker 3s infinite;
-  --animate-drip: drip 2s ease-in-out infinite;
-  --animate-breathe: breathe 4s ease-in-out infinite;
-  --animate-ink-spread: ink-spread 0.6s ease-out forwards;
+  --animate-glow: glow 2s ease-in-out infinite;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   KEYFRAMES
-   ═══════════════════════════════════════════════════════════════ */
-@keyframes glitch {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(-2px, -2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
+/* SYNDICATE (Default) */
+:root {
+  --font-heading: "Orbitron", sans-serif;
+  --font-body: "Share Tech Mono", monospace;
+
+  --color-main: #e5e5e5;
+  --color-accent: #00fff2;  /* Neon Cyan */
+  --color-danger: #ff0040;  /* Neon Red */
+  --color-success: #39ff14; /* Bio Green */
+  --color-bg: #050505;      /* Deep Black */
+  --color-panel: #0a0a0a;
+  --color-dim: #525252;
 }
 
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-  52% { opacity: 1; }
-  54% { opacity: 0.9; }
+/* ZEN MODE (Overrides) */
+[data-theme='zen'] {
+  --font-heading: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --color-main: #e5e5e5;
+  --color-accent: #E6E1C5;  /* Tatami/Gold */
+  --color-danger: #8B4040;  /* Red Clay */
+  --color-success: #3E6B48; /* Forest Green */
+  --color-bg: #1a1a1a;      /* Soft Charcoal */
+  --color-panel: #262626;
+  --color-dim: #737373;
 }
 
-@keyframes drip {
-  0%, 100% { transform: translateY(0); opacity: 0.6; }
-  50% { transform: translateY(10px); opacity: 1; }
+body {
+  background-color: var(--color-bg);
+  color: var(--color-main);
+  font-family: var(--font-body);
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-@keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.02); opacity: 0.95; }
-}
-
-@keyframes ink-spread {
-  0% { clip-path: circle(0% at center); opacity: 0; }
-  100% { clip-path: circle(100% at center); opacity: 1; }
-}
-
-@keyframes grain {
-  0%, 100% { transform: translate(0, 0); }
-  10% { transform: translate(-5%, -10%); }
-  30% { transform: translate(3%, -15%); }
-  50% { transform: translate(12%, 9%); }
-  70% { transform: translate(9%, 4%); }
-  90% { transform: translate(-1%, 7%); }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SYNDICATE UTILITIES
-   ═══════════════════════════════════════════════════════════════ */
-.neural-grid {
+/* Only show grid/scanlines in Syndicate mode */
+body:not([data-theme='zen']) .neural-grid {
   background-image:
       linear-gradient(rgba(0,255,242,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,255,242,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
-
-.scanline::after {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.1) 2px,
-      rgba(0,0,0,0.1) 4px
-  );
-  pointer-events: none;
-  z-index: 50;
-}
-
-.text-glow {
-  text-shadow: 0 0 10px currentColor;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   ZEN UTILITIES
-   ═══════════════════════════════════════════════════════════════ */
-.zen-grain::before {
-  content: '';
-  position: fixed;
-  top: -50%; left: -50%;
-  right: -50%; bottom: -50%;
-  width: 200%; height: 200%;
-  background: transparent url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.015;
-  pointer-events: none;
-  animation: grain 8s steps(10) infinite;
-}
-
-.ink-bleed {
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.ink-bleed:hover {
-  letter-spacing: 0.05em;
-}
-
-.paper-tear {
-  clip-path: polygon(
-    0% 0%, 2% 3%, 5% 1%, 8% 4%, 12% 2%, 16% 5%, 20% 3%,
-    100% 0%, 100% 100%, 0% 100%
-  );
-}
-
-.breath-hover {
-  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.breath-hover:hover {
-  transform: scale(1.01);
-}
-
-/* Sharp corners only in Zen */
-.zen-sharp {
-  border-radius: 0 !important;
-}
+body[data-theme='zen'] .scanline::after { display: none; }
+body[data-theme='zen'] .animate-flicker { animation: none; opacity: 1; }
+body[data-theme='zen'] .glitch-text { text-shadow: none; }
