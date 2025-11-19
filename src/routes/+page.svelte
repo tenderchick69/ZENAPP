@@ -1,20 +1,42 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getDB, seedTestDeck } from '$lib/db';
+  import { supabase } from '$lib/supabase';
   import { currentSkin } from '$lib/theme';
 
   let decks: any[] = [];
   let loading = true;
 
   async function loadDecks() {
-    const db = await getDB();
-    const res = db.exec("SELECT * FROM decks");
-    decks = res.length > 0 ? res[0].values : [];
+    const { data, error } = await supabase
+      .from('decks')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) console.error('Error loading decks:', error);
+    decks = data || [];
     loading = false;
   }
 
   async function handleSeed() {
-    await seedTestDeck();
+    const { data, error } = await supabase
+      .from('decks')
+      .insert([{ name: 'Japanese Basics' }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating deck:', error);
+      return;
+    }
+
+    if (data) {
+      await supabase.from('cards').insert([
+        { deck_id: data.id, headword: 'Neko', definition: 'Cat' },
+        { deck_id: data.id, headword: 'Inu', definition: 'Dog' },
+        { deck_id: data.id, headword: 'Sakura', definition: 'Cherry Blossom' }
+      ]);
+    }
+
     await loadDecks();
   }
 
@@ -57,7 +79,7 @@
                 <span class="font-mono text-xs text-neon-cyan">COGNITIVE SHARD</span>
                 <span class="font-mono text-xs text-neon-red">SYNC: READY</span>
               </div>
-              <h3 class="font-cyber text-2xl text-white group-hover:text-neon-cyan transition-colors mb-2">{deck[1]}</h3>
+              <h3 class="font-cyber text-2xl text-white group-hover:text-neon-cyan transition-colors mb-2">{deck.name}</h3>
               <p class="font-mono text-sm text-gray-500 mb-6">Contains vocabulary patterns for instant assimilation.</p>
               <div class="flex justify-between items-center pt-4 border-t border-gray-800 group-hover:border-neon-cyan/30 transition-colors">
                 <span class="font-mono text-xs text-gray-400">SIZE: UNKNOWN</span>
@@ -117,7 +139,7 @@
             >
               <div class="flex justify-between items-center">
                 <div>
-                  <h3 class="font-zen-display text-2xl text-paper group-hover:tracking-wider transition-all duration-500">{deck[1]}</h3>
+                  <h3 class="font-zen-display text-2xl text-paper group-hover:tracking-wider transition-all duration-500">{deck.name}</h3>
                   <p class="text-stone/40 text-xs mt-2 font-zen tracking-widest">VOCABULARY COLLECTION</p>
                 </div>
                 <div class="text-stone/20 group-hover:text-blood transition-colors duration-500">
