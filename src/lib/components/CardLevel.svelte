@@ -14,6 +14,8 @@
 </div>
 
 <style>
+  @reference "../../app.css";
+
   .card {
     @apply rounded-3xl p-12 shadow-2xl transition-all duration-1000 relative overflow-hidden;
   }

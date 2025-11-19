@@ -101,6 +101,8 @@
 {/if}
 
 <style>
+  @reference "../../app.css";
+
   .btn { @apply py-8 px-16 text-3xl rounded-full font-bold; }
   .reveal { @apply bg-[#a0c4ff] text-black; }
   .bad { @apply bg-bad text-white; }
