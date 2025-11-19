@@ -274,7 +274,8 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-1000 cursor-pointer
+      class="absolute transform -translate-x-1/2 -translate-y-1/2 select-none cursor-pointer
+             transition-[opacity,transform,filter,color,text-shadow] duration-1000
              {w.mastered ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)] scale-110' : 'text-white/20 hover:text-orange-200 hover:scale-110'}
              {w.burning ? 'opacity-0 scale-150 blur-md' : 'opacity-100'}"
       style="left: {w.x}%; top: {w.y}%; font-size: {w.mastered ? '2rem' : '1.5rem'};"
