@@ -1,6 +1,7 @@
 <script>
   import '../app.css';
   import { theme, t } from '$lib/theme';
+  import { helpMode } from '$lib/tooltip';
 
   function toggleTheme() {
     theme.update(current => {
@@ -24,12 +25,22 @@
       <span class="text-danger ml-2">{$t.title_2}</span>
     </div>
 
-    <!-- THEME TOGGLE (Now cycles 3 modes) -->
-    <button
-      onclick={toggleTheme}
-      class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none">
-      MODE: {$theme}
-    </button>
+    <div class="flex items-center gap-3">
+      <!-- HELP MODE TOGGLE -->
+      <button
+        onclick={() => helpMode.update(v => !v)}
+        class="w-6 h-6 flex items-center justify-center border text-xs font-mono rounded-full transition-all cursor-pointer
+        {$helpMode ? 'bg-accent text-bg border-accent' : 'border-dim text-dim hover:border-accent hover:text-accent'}">
+        ?
+      </button>
+
+      <!-- THEME TOGGLE (Now cycles 3 modes) -->
+      <button
+        onclick={toggleTheme}
+        class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none">
+        MODE: {$theme}
+      </button>
+    </div>
   </header>
 
   <main class="relative z-10 w-full max-w-4xl mx-auto px-6 py-12 flex flex-col gap-8">

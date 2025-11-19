@@ -427,3 +427,18 @@ body[data-theme='zen'] .min-h-screen > * {
 .animate-glitch {
   animation: glitch 0.3s ease-in-out;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   UTILITIES
+   ══════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* Hide number input arrows */
+  .no-spinner::-webkit-inner-spin-button,
+  .no-spinner::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .no-spinner {
+    -moz-appearance: textfield;
+  }
+}

@@ -5,7 +5,9 @@
   import { calculateNextReview, type Card } from '$lib/srs';
   import { goto } from '$app/navigation';
   import { t, theme } from '$lib/theme';
+  import { helpMode } from '$lib/tooltip';
   import EmberGarden from '../../components/EmberGarden.svelte';
+  import Tooltip from '../../components/Tooltip.svelte';
 
   let deckId = page.url.searchParams.get('id');
   let view: 'lobby' | 'study' | 'summary' | 'inspect' = 'lobby';
@@ -191,41 +193,55 @@
 
       <!-- Stats (Bigger) -->
       <div class="grid grid-cols-3 gap-6 mb-16">
-        <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors">
-          <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
-          <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
-        </div>
-        <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors">
-          <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.learning}</div>
-          <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
-        </div>
-        <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors">
-          <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
-          <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
-        </div>
+        <Tooltip text="Cards scheduled for review right now.">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors">
+            <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
+            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
+          </div>
+        </Tooltip>
+        <Tooltip text="Cards currently being learned.">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors">
+            <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.learning}</div>
+            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
+          </div>
+        </Tooltip>
+        <Tooltip text="Cards fully memorized (Level 5).">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors">
+            <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
+            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
+          </div>
+        </Tooltip>
       </div>
 
       <!-- Menu -->
       <div class="space-y-4 max-w-xl mx-auto w-full">
-        <button onclick={() => startSession('standard')} disabled={stats.due === 0}
-          class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20]">
-          {$t.mode_std}
-        </button>
+        <Tooltip text="Study only the cards that are due.">
+          <button onclick={() => startSession('standard')} disabled={stats.due === 0}
+            class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20]">
+            {$t.mode_std}
+          </button>
+        </Tooltip>
 
-        <button onclick={() => startSession('weakness')} disabled={stats.learning === 0}
-          class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30">
-          {$t.mode_weak}
-        </button>
+        <Tooltip text="Review all cards currently in learning.">
+          <button onclick={() => startSession('weakness')} disabled={stats.learning === 0}
+            class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30">
+            {$t.mode_weak}
+          </button>
+        </Tooltip>
 
         <div class="flex gap-4">
-          <div class="relative flex-1 group">
-            <input type="number" bind:value={cramAmount}
-              class="w-full bg-bg border border-dim text-accent font-body p-4 text-center text-lg focus:border-accent outline-none transition-colors" />
-            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-dim text-xs uppercase tracking-widest pointer-events-none">{$t.unit_cram}</span>
-          </div>
-          <button onclick={() => startSession('overclock')} class="px-8 border border-dim text-accent hover:bg-accent hover:text-bg font-heading text-lg transition-all">
-            {$t.mode_cram}
-          </button>
+          <Tooltip text="Number of cards for the Wildfire session.">
+            <div class="relative flex-1 group">
+              <input type="number" bind:value={cramAmount}
+                class="w-full bg-bg border border-dim text-accent font-body p-4 text-center text-lg focus:border-accent outline-none transition-colors no-spinner" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-dim text-xs uppercase tracking-widest pointer-events-none">{$t.unit_cram}</span>
+            </div>
+          </Tooltip>
+          <Tooltip text="Study a random set of cards, even if not due.">
+            <button onclick={() => startSession('overclock')} class="px-8 border border-dim text-accent hover:bg-accent hover:text-bg font-heading text-lg transition-all">
+              {$t.mode_cram}
+            </button>
+          </Tooltip>
         </div>
       </div>
 
