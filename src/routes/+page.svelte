@@ -71,7 +71,7 @@
           </div>
         {:else}
           {#each decks as deck}
-            <a href="/study" class="group block relative border border-gray-800 bg-black/60 p-6 hover:border-neon-cyan transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,242,0.1)]">
+            <a href="/study?id={deck.id}" class="group block relative border border-gray-800 bg-black/60 p-6 hover:border-neon-cyan transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,242,0.1)]">
               <div class="absolute top-0 right-0 p-2">
                 <div class="w-2 h-2 bg-bio-green rounded-full animate-pulse shadow-[0_0_10px_#39ff14]"></div>
               </div>
