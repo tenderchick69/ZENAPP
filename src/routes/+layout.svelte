@@ -1,13 +1,19 @@
 <script>
   import '../app.css';
   import { theme, t } from '$lib/theme';
+
+  function toggleTheme() {
+    theme.update(current => {
+      if (current === 'syndicate') return 'zen';
+      if (current === 'zen') return 'ember';
+      return 'syndicate';
+    });
+  }
 </script>
 
 <svelte:head>
-  <!-- Syndicate fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <!-- Zen fonts - Sanctuary aesthetic -->
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
+  <!-- Added Cormorant Garamond for Ember Mode -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;600&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 </svelte:head>
 
 <div class="min-h-screen neural-grid scanline relative overflow-x-hidden transition-colors duration-500">
@@ -18,10 +24,10 @@
       <span class="text-danger ml-2">{$t.title_2}</span>
     </div>
 
-    <!-- THEME TOGGLE -->
+    <!-- THEME TOGGLE (Now cycles 3 modes) -->
     <button
-      onclick={() => theme.update(c => c === 'syndicate' ? 'zen' : 'syndicate')}
-      class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase">
+      onclick={toggleTheme}
+      class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none">
       MODE: {$theme}
     </button>
   </header>
