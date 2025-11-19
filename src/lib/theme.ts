@@ -143,6 +143,72 @@ const DICTIONARY = {
     col_lvl: 'Level',
     col_due: 'Due',
     btn_back: 'Back'
+  },
+  ember: {
+    // Global
+    title_1: 'EMBER',
+    title_2: 'GARDEN',
+    subtitle: 'Keep the fire burning.',
+
+    // Home
+    btn_import: 'Sow Seeds',
+    btn_ai: 'Spark Life (Locked)',
+    no_decks: 'The hearth is cold.',
+    btn_seed: 'Kindle First Flame',
+    deck_sub: 'Memory Shard',
+    deck_ready: 'Enter Garden',
+    action_open: 'Ignite →',
+
+    // Import
+    import_title: 'Sow Seeds',
+    import_drop: 'Drop CSV Seeds Here',
+    import_uploading: 'Planting...',
+    import_abort: 'Abandon',
+
+    // Lobby
+    lobby_title: 'Hearthstone',
+    lobby_id: 'Shard',
+    lobby_status: 'Flame: Burning',
+    stat_due: 'Cooling',
+    stat_learn: 'Warming',
+    stat_master: 'Blazing',
+    mode_std: 'Tend the Garden',
+    mode_weak: 'Stoke Embers',
+    mode_cram: 'Wildfire',
+    unit_cram: 'Sparks',
+    btn_exit: 'Extinguish / Leave',
+
+    // Study
+    lbl_mode: 'Flame',
+    btn_reveal: 'Illuminate',
+    btn_fail: 'Show Again',
+    btn_pass: 'I Knew It',
+    msg_locked: 'Practice: Progress Not Saved',
+
+    // Summary
+    sum_title: 'Flames Dimmed',
+    sum_good: 'Solidified',
+    sum_bad: 'Rekindled',
+
+    // Graveyard
+    grave_title: 'Golden Archive',
+    grave_empty: 'No golden memories yet.',
+    grave_back: 'Return to Hearth',
+    grave_resurrect: 'Rekindle',
+    grave_link: 'Golden',
+
+    // Edit & Audio
+    btn_edit: 'Reshape',
+    btn_save: 'Forge',
+    btn_audio: 'Whisper',
+
+    // Inspector
+    btn_inspect: 'View Garden',
+    inspect_title: 'Memory Garden',
+    col_word: 'Ember',
+    col_lvl: 'Heat',
+    col_due: 'Next Glow',
+    btn_back: 'Return'
   }
 };
 

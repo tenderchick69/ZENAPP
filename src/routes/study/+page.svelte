@@ -5,6 +5,7 @@
   import { calculateNextReview, type Card } from '$lib/srs';
   import { goto } from '$app/navigation';
   import { t, theme } from '$lib/theme';
+  import EmberGarden from '../../components/EmberGarden.svelte';
 
   let deckId = page.url.searchParams.get('id');
   let view: 'lobby' | 'study' | 'summary' | 'inspect' = 'lobby';
@@ -123,6 +124,25 @@
     if (d <= now) return 'NOW';
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
+
+  // Handler for EmberGarden grade events
+  async function handleEmberGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
+    const { id, rating } = event.detail;
+    const card = queue.find(c => c.id === id);
+    if (!card) return;
+
+    if (rating === 'fail') {
+      sessionStats.wrong++;
+      const updates = calculateNextReview(card, 'fail');
+      await supabase.from('cards').update({ state: updates.state }).eq('id', card.id);
+    } else {
+      sessionStats.correct++;
+      if (sessionMode === 'standard') {
+        const updates = calculateNextReview(card, 'pass');
+        await supabase.from('cards').update(updates).eq('id', card.id);
+      }
+    }
+  }
 </script>
 
 <div class="min-h-[80vh] flex flex-col items-center justify-center max-w-2xl mx-auto px-6">
@@ -228,24 +248,29 @@
       </div>
     </div>
 
-  <!-- STUDY CARD (Fixed Height) -->
-  {:else if view === 'study' && currentCard}
-    <div class="w-full relative perspective-1000">
-      <div class="border border-dim bg-panel p-10 h-[600px] flex flex-col justify-between shadow-2xl relative overflow-hidden transition-colors">
+  <!-- STUDY VIEW -->
+  {:else if view === 'study'}
+    {#if $theme === 'ember'}
+      <!-- EMBER GARDEN VIEW -->
+      <EmberGarden {queue} on:grade={handleEmberGrade} on:exit={() => view = 'summary'} />
+    {:else if currentCard}
+      <!-- STANDARD CARD VIEW -->
+      <div class="w-full relative perspective-1000">
+        <div class="border border-dim bg-panel p-10 h-[600px] flex flex-col justify-between shadow-2xl relative overflow-hidden transition-colors">
 
-        <!-- Pips -->
-        <div class="flex justify-between items-center mb-2">
-           <div class="flex gap-1">
-             {#each [1, 2, 3, 4, 5] as level}
-               <div class="w-2 h-2 rounded-full transition-all duration-500
-                 {currentCard.state >= level ? 'bg-accent shadow-[0_0_5px_currentColor]' : 'bg-dim'}">
-               </div>
-             {/each}
-           </div>
-           <div class="text-[10px] font-body text-danger animate-pulse">
-              {$t.lbl_mode}: {sessionMode.toUpperCase()}
-           </div>
-        </div>
+          <!-- Pips -->
+          <div class="flex justify-between items-center mb-2">
+             <div class="flex gap-1">
+               {#each [1, 2, 3, 4, 5] as level}
+                 <div class="w-2 h-2 rounded-full transition-all duration-500
+                   {currentCard.state >= level ? 'bg-accent shadow-[0_0_5px_currentColor]' : 'bg-dim'}">
+                 </div>
+               {/each}
+             </div>
+             <div class="text-[10px] font-body text-danger animate-pulse">
+                {$t.lbl_mode}: {sessionMode.toUpperCase()}
+             </div>
+          </div>
 
         <!-- Card Content Container (Scrollable) -->
         <div class="flex-1 flex flex-col justify-center items-center overflow-y-auto text-center relative group py-4">
@@ -338,6 +363,7 @@
         </div>
       </div>
     </div>
+    {/if}
 
   {:else if view === 'summary'}
     <div class="text-center bg-panel border border-accent p-12 w-full max-w-lg relative shadow-2xl">

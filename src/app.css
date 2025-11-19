@@ -63,6 +63,36 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
+   EMBER THEME - Garden of Fire
+   Inspired by: Hearth, embers, golden light, warmth
+   ══════════════════════════════════════════════════════════════ */
+[data-theme='ember'] {
+  --font-heading: "Cormorant Garamond", "Georgia", serif;
+  --font-body: "Cormorant Garamond", "Georgia", serif;
+
+  /* Golden warmth */
+  --color-main: #ffd700;
+
+  /* Ember orange */
+  --color-accent: #ff6b35;
+
+  /* Deep warmth/red */
+  --color-danger: #ff4500;
+
+  /* Golden success */
+  --color-success: #ff9f1c;
+
+  /* Void black */
+  --color-bg: #000000;
+
+  /* Coal dark */
+  --color-panel: #1a1a1a;
+
+  /* Ash gray */
+  --color-dim: #4a4a4a;
+}
+
+/* ══════════════════════════════════════════════════════════════
    BASE STYLES
    ══════════════════════════════════════════════════════════════ */
 body {
@@ -74,11 +104,33 @@ body {
 }
 
 /* Syndicate grid */
-body:not([data-theme='zen']) .neural-grid {
+body:not([data-theme='zen']):not([data-theme='ember']) .neural-grid {
   background-image:
       linear-gradient(rgba(0,255,242,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,255,242,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
+}
+
+/* Ember background - pure void with subtle warmth */
+body[data-theme='ember'] {
+  background: radial-gradient(ellipse at center, #1a0a00 0%, #000000 100%);
+}
+
+body[data-theme='ember'] .neural-grid {
+  background: none;
+}
+
+body[data-theme='ember'] .scanline::after {
+  display: none;
+}
+
+body[data-theme='ember'] .animate-flicker {
+  animation: ember-pulse 3s ease-in-out infinite;
+}
+
+@keyframes ember-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* ══════════════════════════════════════════════════════════════
