@@ -130,6 +130,8 @@
 
   function handleSelect(word: any) {
     if (word.mastered || word.burning) return;
+    // Resume audio context on first interaction (browser autoplay policy)
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     playSound('reveal');
     revealedWord = word;
   }
