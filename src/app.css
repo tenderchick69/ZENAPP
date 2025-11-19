@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* We define generic utility names that map to the variables below */
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
 
@@ -16,48 +15,225 @@
   --animate-glow: glow 2s ease-in-out infinite;
 }
 
-/* SYNDICATE (Default) */
+/* ══════════════════════════════════════════════════════════════
+   SYNDICATE THEME (Cyberpunk)
+   ══════════════════════════════════════════════════════════════ */
 :root {
   --font-heading: "Orbitron", sans-serif;
   --font-body: "Share Tech Mono", monospace;
 
   --color-main: #e5e5e5;
-  --color-accent: #00fff2;  /* Neon Cyan */
-  --color-danger: #ff0040;  /* Neon Red */
-  --color-success: #39ff14; /* Bio Green */
-  --color-bg: #050505;      /* Deep Black */
+  --color-accent: #00fff2;
+  --color-danger: #ff0040;
+  --color-success: #39ff14;
+  --color-bg: #050505;
   --color-panel: #0a0a0a;
   --color-dim: #525252;
 }
 
-/* ZEN MODE (Overrides) */
+/* ══════════════════════════════════════════════════════════════
+   ZEN THEME (和 - Harmony)
+   Inspired by: Washi paper, Sumi ink, Bamboo, Stone gardens
+   ══════════════════════════════════════════════════════════════ */
 [data-theme='zen'] {
-  --font-heading: "Inter", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --font-heading: "Noto Serif JP", "Georgia", serif;
+  --font-body: "Noto Sans JP", "Inter", sans-serif;
 
-  --color-main: #e5e5e5;
-  --color-accent: #E6E1C5;  /* Tatami/Gold */
-  --color-danger: #8B4040;  /* Red Clay */
-  --color-success: #3E6B48; /* Forest Green */
-  --color-bg: #1a1a1a;      /* Soft Charcoal */
-  --color-panel: #262626;
-  --color-dim: #737373;
+  /* Washi (和紙) - Rice paper white */
+  --color-bg: #FAF8F5;
+
+  /* Sumi (墨) - Ink black */
+  --color-main: #2C2C2C;
+
+  /* Kincha (金茶) - Golden brown, like aged tatami */
+  --color-accent: #B68D4C;
+
+  /* Enji (臙脂) - Deep crimson, like temple stamps */
+  --color-danger: #9B3B3B;
+
+  /* Matcha (抹茶) - Ceremonial green */
+  --color-success: #5B7355;
+
+  /* Shikkoku (漆黒) - Lacquer panels */
+  --color-panel: #FFFFFF;
+
+  /* Nezumi (鼠) - Mouse gray, stone */
+  --color-dim: #8C8C8C;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   BASE STYLES
+   ══════════════════════════════════════════════════════════════ */
 body {
   background-color: var(--color-bg);
   color: var(--color-main);
   font-family: var(--font-body);
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition: background-color 0.6s ease, color 0.6s ease;
 }
 
-/* Only show grid/scanlines in Syndicate mode */
+/* Syndicate grid effect */
 body:not([data-theme='zen']) .neural-grid {
   background-image:
       linear-gradient(rgba(0,255,242,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,255,242,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ZEN-SPECIFIC OVERRIDES
+   ══════════════════════════════════════════════════════════════ */
+
+/* Remove all cyberpunk effects */
 body[data-theme='zen'] .scanline::after { display: none; }
 body[data-theme='zen'] .animate-flicker { animation: none; opacity: 1; }
 body[data-theme='zen'] .glitch-text { text-shadow: none; }
+body[data-theme='zen'] .animate-pulse { animation: none; }
+
+/* Zen: Gentle hover transitions */
+body[data-theme='zen'] * {
+  transition-duration: 0.4s !important;
+}
+
+/* Zen: Softer shadows - like morning mist */
+body[data-theme='zen'] .shadow-lg,
+body[data-theme='zen'] .shadow-2xl {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Zen: Border styling - subtle ink strokes */
+body[data-theme='zen'] .border,
+body[data-theme='zen'] .border-dim {
+  border-color: rgba(44, 44, 44, 0.12) !important;
+}
+
+/* Zen: Panel styling - like shoji screens */
+body[data-theme='zen'] .bg-panel {
+  background-color: #FFFFFF !important;
+  border: 1px solid rgba(44, 44, 44, 0.08) !important;
+}
+
+/* Zen: Input fields - minimal, refined */
+body[data-theme='zen'] input[type="number"] {
+  background-color: #FAF8F5 !important;
+  border-radius: 2px !important;
+}
+
+/* Zen: Buttons - understated elegance */
+body[data-theme='zen'] button {
+  border-radius: 2px !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 500 !important;
+}
+
+/* Zen: Primary button - like a temple seal */
+body[data-theme='zen'] .bg-accent {
+  background-color: var(--color-accent) !important;
+  color: #FFFFFF !important;
+}
+
+body[data-theme='zen'] .bg-accent:hover {
+  background-color: #A07D3C !important;
+}
+
+/* Zen: Links - like calligraphy strokes */
+body[data-theme='zen'] a {
+  text-decoration: none;
+  position: relative;
+}
+
+body[data-theme='zen'] a:hover {
+  color: var(--color-accent) !important;
+}
+
+/* Zen: Headings - brushstroke weight */
+body[data-theme='zen'] .font-heading {
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Zen: Remove harsh uppercase */
+body[data-theme='zen'] .uppercase {
+  text-transform: none !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Zen: Card hover - gentle lift like incense smoke */
+body[data-theme='zen'] .group:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Zen: Level pips - like stepping stones */
+body[data-theme='zen'] .rounded-full {
+  border-radius: 2px !important;
+}
+
+/* Zen: Success/Danger indicators */
+body[data-theme='zen'] .bg-success {
+  background-color: var(--color-success) !important;
+}
+
+body[data-theme='zen'] .bg-danger {
+  background-color: var(--color-danger) !important;
+}
+
+/* Zen: Remove neon glows */
+body[data-theme='zen'] [class*="shadow-[0_0"] {
+  box-shadow: none !important;
+}
+
+/* Zen: Chart bars - like bamboo */
+body[data-theme='zen'] .group-hover\:bg-accent:hover {
+  background-color: var(--color-accent) !important;
+}
+
+/* Zen: Tracking adjustments for Japanese-style spacing */
+body[data-theme='zen'] .tracking-widest,
+body[data-theme='zen'] .tracking-\[0\.5em\],
+body[data-theme='zen'] .tracking-\[0\.3em\] {
+  letter-spacing: 0.1em !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ZEN HEADER - Inspired by traditional architecture
+   ══════════════════════════════════════════════════════════════ */
+body[data-theme='zen'] header {
+  border-bottom: 1px solid rgba(44, 44, 44, 0.1) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ZEN ANIMATIONS - Gentle, like falling cherry blossoms
+   ══════════════════════════════════════════════════════════════ */
+@keyframes zen-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+body[data-theme='zen'] .animate-glitch {
+  animation: zen-fade 0.6s ease-out !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SYNDICATE ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes glitch {
+  0%, 100% { text-shadow: 2px 0 #ff0040, -2px 0 #00fff2; }
+  25% { text-shadow: -2px 0 #ff0040, 2px 0 #00fff2; }
+  50% { text-shadow: 2px 2px #ff0040, -2px -2px #00fff2; }
+  75% { text-shadow: -2px 2px #ff0040, 2px -2px #00fff2; }
+}
+
+.animate-flicker {
+  animation: flicker 3s ease-in-out infinite;
+}
+
+.animate-glitch {
+  animation: glitch 0.3s ease-in-out;
+}
