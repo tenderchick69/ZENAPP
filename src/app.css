@@ -33,32 +33,17 @@
 
 /* ══════════════════════════════════════════════════════════════
    ZEN THEME - Breathing Glass (息吹く硝子)
-   Inspired by: Rain on glass, morning mist, tranquility
    ══════════════════════════════════════════════════════════════ */
 [data-theme='zen'] {
-  /* Elegant display font + soft body font */
   --font-heading: "Italiana", "Georgia", serif;
   --font-body: "Quicksand", "Inter", sans-serif;
 
-  /* Frost - soft white like breath on glass */
   --color-main: #f8f8ff;
-
-  /* Rain - gentle blue accent */
   --color-accent: #a0c4e8;
-
-  /* Soft coral for gentle warnings */
   --color-danger: #e8a0a0;
-
-  /* Mist green - success */
   --color-success: #a0e8c4;
-
-  /* Deep slate - like a rainy evening */
   --color-bg: #2d3748;
-
-  /* Glass panel - translucent */
   --color-panel: rgba(248, 248, 255, 0.08);
-
-  /* Soft gray */
   --color-dim: #a0aec0;
 }
 
@@ -70,14 +55,54 @@ body {
   color: var(--color-main);
   font-family: var(--font-body);
   transition: background-color 0.8s ease, color 0.8s ease;
+  overflow-x: hidden;
 }
 
-/* Syndicate grid effect */
+/* Syndicate grid */
 body:not([data-theme='zen']) .neural-grid {
   background-image:
       linear-gradient(rgba(0,255,242,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,255,242,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ZEN - RAIN EFFECT
+   ══════════════════════════════════════════════════════════════ */
+body[data-theme='zen']::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cline x1='0' y1='0' x2='0' y2='10' stroke='rgba(200,220,255,0.3)' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 50px 120px;
+  animation: rain 0.8s linear infinite;
+}
+
+body[data-theme='zen']::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cline x1='0' y1='0' x2='0' y2='15' stroke='rgba(200,220,255,0.2)' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 80px 180px;
+  animation: rain 1.2s linear infinite;
+  animation-delay: -0.4s;
+}
+
+@keyframes rain {
+  0% { background-position: 0 -100vh; }
+  100% { background-position: 0 100vh; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -97,22 +122,34 @@ body[data-theme='zen'] .glitch-text { text-shadow: none; }
 body[data-theme='zen'] .animate-pulse { animation: zen-pulse 3s ease-in-out infinite; }
 
 /* ══════════════════════════════════════════════════════════════
-   ZEN - Glassmorphism Panels
+   ZEN - GLASSMORPHISM PANELS (ROUNDED!)
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] .bg-panel {
-  background: rgba(248, 248, 255, 0.08) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(248, 248, 255, 0.15) !important;
+  background: rgba(248, 248, 255, 0.1) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 24px !important;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 0 20px rgba(255, 255, 255, 0.05) !important;
 }
 
 body[data-theme='zen'] .bg-bg {
-  background: rgba(0, 0, 0, 0.2) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  background: rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 16px !important;
+}
+
+/* Force rounded on all bordered elements */
+body[data-theme='zen'] .border {
+  border-radius: 16px !important;
+}
+
+body[data-theme='zen'] .group.block {
+  border-radius: 20px !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -120,8 +157,8 @@ body[data-theme='zen'] .bg-bg {
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] .font-heading {
   font-weight: 400 !important;
-  letter-spacing: 0.05em !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.08em !important;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
 
 body[data-theme='zen'] .font-body {
@@ -129,10 +166,9 @@ body[data-theme='zen'] .font-body {
   letter-spacing: 0.02em !important;
 }
 
-/* Remove harsh uppercase, use elegant title case */
 body[data-theme='zen'] .uppercase {
   text-transform: none !important;
-  letter-spacing: 0.08em !important;
+  letter-spacing: 0.1em !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -140,96 +176,102 @@ body[data-theme='zen'] .uppercase {
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] .border,
 body[data-theme='zen'] .border-dim {
-  border-color: rgba(248, 248, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 body[data-theme='zen'] .border-accent {
-  border-color: rgba(160, 196, 232, 0.3) !important;
+  border-color: rgba(160, 196, 232, 0.4) !important;
 }
 
 body[data-theme='zen'] .shadow-lg,
 body[data-theme='zen'] .shadow-2xl {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Remove neon glows */
 body[data-theme='zen'] [class*="shadow-[0_0"] {
-  box-shadow: none !important;
+  box-shadow: 0 4px 20px rgba(160, 196, 232, 0.15) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ZEN - Buttons
+   ZEN - Buttons (Glass style)
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] button {
-  border-radius: 12px !important;
-  letter-spacing: 0.03em !important;
+  border-radius: 14px !important;
+  letter-spacing: 0.05em !important;
   font-weight: 500 !important;
-  transition: all 0.4s ease !important;
-}
-
-body[data-theme='zen'] .bg-accent {
-  background: rgba(160, 196, 232, 0.2) !important;
-  border: 1px solid rgba(160, 196, 232, 0.4) !important;
-  color: #f8f8ff !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   backdrop-filter: blur(10px) !important;
 }
 
+body[data-theme='zen'] .bg-accent {
+  background: rgba(160, 196, 232, 0.25) !important;
+  border: 1px solid rgba(160, 196, 232, 0.5) !important;
+  color: #f8f8ff !important;
+  border-radius: 14px !important;
+}
+
 body[data-theme='zen'] .bg-accent:hover {
-  background: rgba(160, 196, 232, 0.3) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(160, 196, 232, 0.2) !important;
+  background: rgba(160, 196, 232, 0.4) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(160, 196, 232, 0.25) !important;
 }
 
 body[data-theme='zen'] .border-danger {
-  border-color: rgba(232, 160, 160, 0.4) !important;
+  border-color: rgba(232, 160, 160, 0.5) !important;
+  border-radius: 14px !important;
 }
 
 body[data-theme='zen'] .border-success {
-  border-color: rgba(160, 232, 196, 0.4) !important;
+  border-color: rgba(160, 232, 196, 0.5) !important;
+  border-radius: 14px !important;
 }
 
 body[data-theme='zen'] button:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ZEN - Inputs
+   ZEN - Inputs (Glass style)
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] input[type="number"] {
   background: rgba(0, 0, 0, 0.3) !important;
-  border-radius: 12px !important;
-  border-color: rgba(248, 248, 255, 0.1) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 body[data-theme='zen'] input:focus {
-  border-color: rgba(160, 196, 232, 0.4) !important;
-  box-shadow: 0 0 20px rgba(160, 196, 232, 0.1) !important;
+  border-color: rgba(160, 196, 232, 0.5) !important;
+  box-shadow: 0 0 30px rgba(160, 196, 232, 0.15) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ZEN - Cards & Hover Effects
+   ZEN - Cards & Hover
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] .group:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-6px) !important;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(160, 196, 232, 0.1) !important;
 }
 
 body[data-theme='zen'] a:hover {
   color: var(--color-accent) !important;
 }
 
-/* Level pips - soft rounded */
+/* Level pips - water drops */
 body[data-theme='zen'] .rounded-full {
   border-radius: 50% !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ZEN - Header
+   ZEN - Header (Glass bar)
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] header {
-  border-bottom: 1px solid rgba(248, 248, 255, 0.08) !important;
-  background: rgba(0, 0, 0, 0.2) !important;
-  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(24px) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -237,6 +279,7 @@ body[data-theme='zen'] header {
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] .group-hover\:bg-accent:hover {
   background-color: var(--color-accent) !important;
+  box-shadow: 0 0 15px rgba(160, 196, 232, 0.4) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -245,40 +288,59 @@ body[data-theme='zen'] .group-hover\:bg-accent:hover {
 @keyframes zen-fade {
   from {
     opacity: 0;
-    transform: translateY(10px);
-    filter: blur(4px);
+    transform: translateY(15px) scale(0.98);
+    filter: blur(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     filter: blur(0);
   }
 }
 
 @keyframes zen-pulse {
-  0%, 100% { opacity: 0.7; }
+  0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
 
 @keyframes zen-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes zen-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(160, 196, 232, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(160, 196, 232, 0.4);
+  }
 }
 
 body[data-theme='zen'] .animate-glitch {
   animation: zen-fade 0.8s ease-out !important;
 }
 
-/* Gentle floating for emphasis elements */
 body[data-theme='zen'] .text-accent {
   animation: zen-float 6s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(160, 196, 232, 0.5);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ZEN - Transitions
+   ZEN - Smooth Transitions
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ZEN - Content z-index (above rain)
+   ══════════════════════════════════════════════════════════════ */
+body[data-theme='zen'] header,
+body[data-theme='zen'] main,
+body[data-theme='zen'] .min-h-screen > * {
+  position: relative;
+  z-index: 10;
 }
 
 /* ══════════════════════════════════════════════════════════════
