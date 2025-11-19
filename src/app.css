@@ -1,31 +1,74 @@
 @import "tailwindcss";
 
 @theme {
-  --color-zen-bg: #0a0a0a;       /* Deepest Void */
-  --color-zen-text: #e5e5e5;     /* Soft Moonlight */
-  --color-zen-dim: #525252;      /* Stone */
-  --color-zen-tatami: #E6E1C5;   /* The organic accent */
-  --color-zen-bad: #8B4040;      /* Dried Blood / Red Clay */
-  --color-zen-good: #3E6B48;     /* Deep Forest */
-  --font-sans: "Inter", sans-serif;
+  /* The Syndicate Palette */
+  --color-neon-cyan: #00fff2;
+  --color-neon-red: #ff0040;
+  --color-bio-green: #39ff14;
+  --color-wet-dark: #050505;
+  --color-wet-panel: #0a0a0a;
+
+  --font-cyber: "Orbitron", sans-serif;
+  --font-mono: "Share Tech Mono", monospace;
+
+  --animate-glitch: glitch 0.3s infinite;
+  --animate-flicker: flicker 3s infinite;
+  --animate-drip: drip 2s ease-in-out infinite;
+  --animate-scan: scan 4s linear infinite;
 }
 
+@keyframes glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+  52% { opacity: 1; }
+  54% { opacity: 0.9; }
+}
+
+@keyframes drip {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(10px); opacity: 1; }
+}
+
+/* Global Styles */
 :root {
-  background-color: var(--color-zen-bg);
-  color: var(--color-zen-text);
-  font-family: var(--font-sans);
+  background-color: var(--color-wet-dark);
+  color: #e5e5e5;
+  font-family: var(--font-mono);
 }
 
-body {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
+/* The Background Grid Effect */
+.neural-grid {
+  background-image:
+      linear-gradient(rgba(0,255,242,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,242,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-::selection {
-  background-color: var(--color-zen-tatami);
-  color: var(--color-zen-bg);
+/* Scanline Overlay */
+.scanline::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.1) 2px,
+      rgba(0,0,0,0.1) 4px
+  );
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Utility for glow text */
+.text-glow {
+  text-shadow: 0 0 10px currentColor;
 }
