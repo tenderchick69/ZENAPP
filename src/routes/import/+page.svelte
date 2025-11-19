@@ -74,10 +74,11 @@
     {dragging ? 'border-neon-red bg-neon-red/10 scale-[1.02]' : 'border-gray-700 hover:border-neon-cyan hover:bg-black/80'}"
     role="button"
     tabindex="0"
-    on:dragenter|preventDefault={() => dragging = true}
-    on:dragleave|preventDefault={() => dragging = false}
-    on:dragover|preventDefault
-    on:drop|preventDefault={(e) => {
+    ondragenter={(e) => { e.preventDefault(); dragging = true; }}
+    ondragleave={(e) => { e.preventDefault(); dragging = false; }}
+    ondragover={(e) => { e.preventDefault(); }}
+    ondrop={(e) => {
+      e.preventDefault();
       dragging = false;
       if (e.dataTransfer?.files?.[0]) handleFile(e.dataTransfer.files[0]);
     }}
@@ -93,9 +94,9 @@
         type="file"
         accept=".csv"
         class="absolute inset-0 opacity-0 cursor-pointer"
-        on:change={(e) => {
-          // @ts-ignore
-          if (e.target.files[0]) handleFile(e.target.files[0]);
+        onchange={(e) => {
+            // @ts-ignore
+            if (e.currentTarget.files?.[0]) handleFile(e.currentTarget.files[0]);
         }}
       />
     {/if}
@@ -108,5 +109,5 @@
     </div>
   {/if}
 
-  <button onclick={() => goto('/')} class="text-gray-500 hover:text-white font-mono text-xs">[ ABORT ]</button>
+  <a href="/" class="text-gray-500 hover:text-white font-mono text-xs">[ ABORT ]</a>
 </div>
