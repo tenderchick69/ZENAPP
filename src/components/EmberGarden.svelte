@@ -5,21 +5,30 @@
   export let queue: any[] = [];
   const dispatch = createEventDispatcher();
 
-  // State
   let words: any[] = [];
   let embers: any[] = [];
   let revealedWord: any = null;
   let audioCtx: AudioContext;
   let animationFrame: number;
+  let sessionComplete = false;
 
-  // Progression
   $: masteredCount = words.filter(w => w.mastered).length;
-  $: warmth = (masteredCount / (words.length || 1)) * 100;
+  // Visual warmth: Starts at 10%, caps at 35% height
+  $: warmthHeight = 10 + ((masteredCount / (words.length || 1)) * 25);
+
+  // Trigger completion check
+  $: if (words.length > 0 && masteredCount === words.length && !sessionComplete) {
+    finishSession();
+  }
+
+  function finishSession() {
+    sessionComplete = true;
+    setTimeout(() => playSound('complete'), 500);
+  }
 
   onMount(() => {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-    // Init Words with Collision Check
     words = queue.map((card) => {
       const pos = findSafeSpot([]);
       return {
@@ -32,9 +41,7 @@
       };
     });
 
-    // Init Embers (High Density)
     for (let i = 0; i < 150; i++) spawnEmber();
-
     loop();
 
     return () => {
@@ -63,7 +70,7 @@
       x: x !== undefined ? x : Math.random() * 100,
       y: y !== undefined ? y : Math.random() * 100 + 20,
       size: 1 + Math.random() * 3,
-      speed: permanent ? 0.002 : (0.01 + Math.random() * 0.04), // Near-static for permanent
+      speed: permanent ? 0.002 : (0.01 + Math.random() * 0.04),
       brightness: golden ? 1 : (0.1 + Math.random() * 0.4),
       phase: Math.random() * Math.PI * 2,
       golden,
@@ -73,16 +80,27 @@
 
   function handleBackgroundClick(e: MouseEvent) {
     const rect = (e.target as HTMLElement).getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const centerX = ((e.clientX - rect.left) / rect.width) * 100;
+    const centerY = ((e.clientY - rect.top) / rect.height) * 100;
 
-    playSound('spark'); // New crisp pop sound
-    // Spawn long-lasting embers
-    for(let i=0; i<8; i++) spawnEmber(true, x, y, true);
+    playSound('spark');
+
+    // Spawn scattered burst pattern - some permanent, some diffusing
+    for (let i = 0; i < 12; i++) {
+      // Random angle and distance for scatter effect
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * 8 + 2; // 2-10% spread
+      const offsetX = Math.cos(angle) * distance;
+      const offsetY = Math.sin(angle) * distance;
+
+      // 40% chance to be permanent (stay), 60% chance to diffuse
+      const isPermanent = Math.random() < 0.4;
+
+      spawnEmber(true, centerX + offsetX, centerY + offsetY, isPermanent);
+    }
   }
 
   function loop() {
-    // 1. Animate Words
     words = words.map(w => {
       if (w.mastered) return w;
       return {
@@ -93,37 +111,22 @@
       };
     });
 
-    // 2. Animate Embers (Infinite Scroll)
     embers = embers.map(e => {
       let newY = e.y - e.speed;
       let newX = e.x + Math.sin(e.phase) * 0.02;
-
-      // Wrap around logic (permanent embers wrap too, just very slowly)
-      if (newY < -10) {
-        newY = 110;
-        newX = Math.random() * 100;
-      }
-
-      return {
-        ...e,
-        y: newY,
-        x: newX,
-        phase: e.phase + 0.02,
-        brightness: e.brightness + Math.sin(e.phase * 2) * 0.05
-      };
+      if (newY < -10) { newY = 110; newX = Math.random() * 100; }
+      return { ...e, y: newY, x: newX, phase: e.phase + 0.02, brightness: e.brightness + Math.sin(e.phase * 2) * 0.05 };
     });
 
     animationFrame = requestAnimationFrame(loop);
   }
 
-  // Audio Engine
-  function playSound(type: 'hover' | 'reveal' | 'solidify' | 'burn' | 'spark') {
+  function playSound(type: 'hover' | 'reveal' | 'solidify' | 'burn' | 'spark' | 'complete') {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
 
     if (type === 'spark') {
-      // New "Click" Sound: Short, crisp pop
       const osc = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       osc.frequency.setValueAtTime(600, t);
@@ -149,13 +152,13 @@
       osc.connect(g).connect(audioCtx.destination);
       osc.start(); osc.stop(t + 0.5);
     } else if (type === 'solidify') {
-       [220, 277, 330, 440].forEach((f, i) => {
+      [220, 277, 330, 440].forEach((f, i) => {
         const o = audioCtx.createOscillator();
-        const g2 = audioCtx.createGain();
+        const g = audioCtx.createGain();
         o.frequency.value = f;
-        g2.gain.setValueAtTime(0.05, t);
-        g2.gain.exponentialRampToValueAtTime(0.001, t + 2);
-        o.connect(g2).connect(audioCtx.destination);
+        g.gain.setValueAtTime(0.05, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 2);
+        o.connect(g).connect(audioCtx.destination);
         o.start(t + i * 0.05); o.stop(t + 2);
       });
     } else if (type === 'burn') {
@@ -168,12 +171,25 @@
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
       osc.connect(g).connect(audioCtx.destination);
       osc.start(); osc.stop(t + 0.8);
+    } else if (type === 'complete') {
+      // Victory Chord - rising arpeggio
+      [220, 330, 440, 554, 660, 880].forEach((f, i) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.05, t + 0.1 + i * 0.1);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 4);
+        o.connect(g).connect(audioCtx.destination);
+        o.start(t); o.stop(t + 4);
+      });
     }
   }
 
   function handleSelect(word: any, e: MouseEvent) {
     e.stopPropagation();
-    if (word.mastered || word.burning) return;
+    if (word.mastered || word.burning || sessionComplete) return;
     playSound('reveal');
     revealedWord = word;
   }
@@ -185,19 +201,13 @@
     if (rating === 'pass') {
       playSound('solidify');
       words = words.map(w => w.id === targetId ? { ...w, mastered: true } : w);
-      for(let i=0; i<15; i++) spawnEmber(true, revealedWord.x, revealedWord.y);
+      for (let i = 0; i < 15; i++) spawnEmber(true, revealedWord.x, revealedWord.y);
     } else {
       playSound('burn');
       words = words.map(w => w.id === targetId ? { ...w, burning: true } : w);
-
       setTimeout(() => {
         const newPos = findSafeSpot(words);
-        words = words.map(w => w.id === targetId ? {
-          ...w,
-          burning: false,
-          x: newPos.x,
-          y: newPos.y
-        } : w);
+        words = words.map(w => w.id === targetId ? { ...w, burning: false, x: newPos.x, y: newPos.y } : w);
       }, 1000);
     }
 
@@ -214,12 +224,12 @@
   onclick={handleBackgroundClick}
 >
 
-  <!-- Dynamic Warmth Gradient -->
+  <!-- Capped Warmth Gradient (max 35%) -->
   <div
     class="absolute bottom-0 left-0 right-0 transition-all duration-1000 pointer-events-none"
     style="
-      height: {Math.max(15, warmth)}%;
-      opacity: {0.3 + (warmth/200)};
+      height: {warmthHeight}%;
+      opacity: {0.3 + (masteredCount / (words.length || 1) * 0.5)};
       background: linear-gradient(to top, rgba(255,69,0,0.6), transparent);
       filter: blur(30px);
     ">
@@ -254,14 +264,31 @@
     </div>
   {/each}
 
-  <!-- Exit Button -->
-  <div class="absolute top-6 right-6 z-40">
-     <button
-       onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
-       class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-4 py-2 rounded hover:border-orange-500 bg-black/50">
-       Exit Garden
-     </button>
-  </div>
+  <!-- Session Complete Overlay -->
+  {#if sessionComplete}
+    <div class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none" transition:fade>
+      <div class="text-center pointer-events-auto">
+        <h1 class="text-6xl text-yellow-500 font-ember tracking-widest mb-4 drop-shadow-[0_0_20px_gold] animate-pulse">GARDEN COMPLETE</h1>
+        <p class="text-orange-300/70 text-xl mb-8 font-light">All embers now burn eternal.</p>
+        <button
+          onclick={() => dispatch('exit')}
+          class="px-8 py-3 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-900/30 rounded transition-all uppercase tracking-widest text-sm">
+          Return to Hub
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Exit Button (Hidden if complete) -->
+  {#if !sessionComplete}
+    <div class="absolute top-6 right-6 z-40">
+      <button
+        onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
+        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-4 py-2 rounded hover:border-orange-500 bg-black/50">
+        Exit Garden
+      </button>
+    </div>
+  {/if}
 
   <!-- Modal -->
   {#if revealedWord}
@@ -291,7 +318,6 @@
            {#if revealedWord.mnemonic}
              <div class="bg-orange-900/10 p-4 rounded border border-orange-900/20">
                 <span class="text-[10px] uppercase text-orange-500 tracking-widest block mb-2">Mnemonic</span>
-                <!-- No blur - fully visible -->
                 <p class="text-base text-gray-300 font-ember leading-snug">{revealedWord.mnemonic}</p>
              </div>
            {/if}
@@ -299,7 +325,6 @@
            {#if revealedWord.etymology}
               <div>
                  <span class="text-[10px] uppercase text-gray-600 tracking-widest block mb-1">Etymology</span>
-                 <!-- Increased size -->
                  <p class="text-sm text-gray-400 italic">{revealedWord.etymology}</p>
               </div>
            {/if}
