@@ -286,6 +286,26 @@
                <div class="space-y-6 w-full max-w-md" class:animate-glitch={$theme === 'syndicate'}>
                   {#if currentCard.ipa}<p class="text-dim font-body text-sm">/{currentCard.ipa}/</p>{/if}
                   <p class="text-2xl text-accent font-body leading-relaxed">{currentCard.definition}</p>
+
+                  <!-- Rich Data Block -->
+                  {#if currentCard.mnemonic || currentCard.etymology}
+                    <div class="grid gap-4 text-left border-t border-dim/30 pt-4 mt-4">
+                      {#if currentCard.mnemonic}
+                        <div class="bg-dim/10 p-3 rounded border border-dim/20 relative group/hint">
+                          <span class="text-[10px] uppercase text-danger font-heading block mb-1">Mnemonic</span>
+                          <p class="text-sm font-body text-main blur-[2px] group-hover/hint:blur-0 transition-all cursor-help">{currentCard.mnemonic}</p>
+                        </div>
+                      {/if}
+
+                      {#if currentCard.etymology}
+                        <div>
+                          <span class="text-[10px] uppercase text-dim font-heading">Etymology</span>
+                          <p class="text-xs font-body text-dim italic">{currentCard.etymology}</p>
+                        </div>
+                      {/if}
+                    </div>
+                  {/if}
+
                   {#if currentCard.example}
                     <div class="text-sm text-dim border-l-2 border-danger pl-4 text-left italic">
                       "{currentCard.example}"

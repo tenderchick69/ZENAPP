@@ -21,6 +21,17 @@
     totalMastered = count || 0;
   }
 
+  async function deleteDeck(id: number, e: Event) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Delete this deck? All cards will be lost.')) return;
+
+    await supabase.from('cards').delete().eq('deck_id', id);
+    await supabase.from('decks').delete().eq('id', id);
+    await loadDecks();
+    await loadMasteryCount();
+  }
+
   onMount(() => {
     loadDecks();
     loadMasteryCount();
@@ -43,8 +54,13 @@
     <div class="grid md:grid-cols-2 gap-6">
       {#each decks as deck}
         <a href="/study?id={deck.id}" class="group block relative border border-dim bg-panel p-6 hover:border-accent transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,0,0,0.2)]">
-          <div class="absolute top-0 right-0 p-2">
-            <div class="w-2 h-2 bg-success rounded-full shadow-[0_0_10px_currentColor]"></div>
+          <div class="absolute top-0 right-0 p-2 flex gap-2 z-20">
+            <button onclick={(e) => deleteDeck(deck.id, e)}
+              title="Delete Deck"
+              class="text-dim hover:text-danger p-1 transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+            <div class="w-2 h-2 bg-success rounded-full shadow-[0_0_10px_currentColor] mt-1 pointer-events-none"></div>
           </div>
           <div class="flex justify-between items-start mb-4">
             <span class="font-body text-xs text-accent">{$t.deck_sub}</span>

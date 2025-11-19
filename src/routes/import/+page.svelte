@@ -43,7 +43,13 @@
         definition: row.definition || row.Back || '',
         pos: row.pos || '',
         ipa: row.ipa || '',
-        example: row.example || ''
+        example: row.example || '',
+        // Rich data
+        gloss_de: row.gloss_de || '',
+        etymology: row.etymology || '',
+        mnemonic: row.mnemonic || '',
+        tags: row.tags || '',
+        freq: parseInt(row.freq) || 0
       }));
 
       const { error: cardError } = await supabase.from('cards').insert(cards);
