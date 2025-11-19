@@ -6,8 +6,8 @@
 <svelte:head>
   <!-- Syndicate fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <!-- Zen fonts - Japanese typography -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Zen fonts - Breathing Glass aesthetic -->
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Quicksand:wght@300;400;500;600&display=swap" rel="stylesheet">
 </svelte:head>
 
 <div class="min-h-screen neural-grid scanline relative overflow-x-hidden transition-colors duration-500">
