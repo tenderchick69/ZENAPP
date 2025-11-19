@@ -95,9 +95,9 @@
         <p>RETENTION: {Math.round((sessionStats.correct / (sessionStats.correct + sessionStats.wrong || 1)) * 100)}%</p>
         <p>SHARDS PROCESSED: {sessionStats.correct + sessionStats.wrong}</p>
       </div>
-      <button onclick={() => goto('/')} class="bg-neon-cyan text-black font-bold px-8 py-3 font-cyber hover:shadow-[0_0_20px_#00fff2]">
+      <a href="/" class="inline-block bg-neon-cyan text-black font-bold px-8 py-3 font-cyber hover:shadow-[0_0_20px_#00fff2]">
         JACK OUT
-      </button>
+      </a>
     </div>
   {:else}
     <!-- Flashcard -->

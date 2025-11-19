@@ -93,7 +93,7 @@
       <div class="flex justify-center gap-6 mt-12 font-mono text-sm">
          <a href="/import" class="text-gray-500 hover:text-neon-red transition-colors">[ UPLOAD CSV ]</a>
          <span class="text-gray-700">|</span>
-         <span class="text-gray-700 cursor-not-allowed">[ AI GENERATION OFFLINE ]</span>
+         <a href="/ai" class="text-gray-500 hover:text-neon-cyan transition-colors">[ AI GENERATOR ]</a>
       </div>
     {/if}
   </section>
