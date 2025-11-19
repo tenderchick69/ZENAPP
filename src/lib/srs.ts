@@ -1,4 +1,3 @@
-// The Syndicate Learning Algorithm
 export type Card = {
   id: number;
   deck_id: number;
@@ -7,43 +6,46 @@ export type Card = {
   pos: string;
   ipa: string;
   example: string;
-  state: number; // 0:New, 1:Learning, 2:Review, 3:Mastered
+  state: number; // 0:New, 1-4:Steps, 5:Mastered
   interval: number;
   due: string;
 };
 
-export function calculateNextReview(card: Card, rating: 'fail' | 'pass'): Partial<Card> {
+// The User's Specific Intervals: 2, 5, 10, 20
+const LADDER = [0, 2, 5, 10, 20];
+
+export function calculateNextReview(card: Card, rating: 'pass' | 'fail') {
+  let newLevel = card.state;
+  let newInterval = 0;
   const now = new Date();
 
-  if (rating === 'fail') {
-    // PUNISHMENT: Reset progress, queue for 10 minutes later
-    return {
-      state: 1,
-      interval: 0,
-      due: new Date(now.getTime() + 10 * 60000).toISOString() // +10 mins
-    };
+  if (rating === 'pass') {
+    // PROMOTION
+    newLevel = Math.min(card.state + 1, 5);
+
+    // If Mastered (5), set far future date (e.g., year 2099)
+    if (newLevel >= 5) {
+      newInterval = 36500; // Forever
+    } else {
+      // Map Level to Days (Level 1 -> Index 1 -> 2 days)
+      // If currently 0, becomes 1 -> 2 days.
+      newInterval = LADDER[Math.max(1, newLevel)] || 2;
+    }
+
+  } else {
+    // DEMOTION (Soft Drop)
+    // If at Level 4, drop to 3. If at 1, stay at 1.
+    newLevel = Math.max(1, card.state - 1);
+    // Note: The card remains in the session queue, so we don't set the due date here.
+    // The due date is only set when the user finally Passes the card in the session.
+    newInterval = LADDER[newLevel];
   }
-
-  // REWARD: The Ladder (1 -> 3 -> 12 -> 30)
-  let newInterval = 1;
-  let newState = card.state;
-
-  if (card.state === 0) newInterval = 1;       // New -> 1 day
-  else if (card.interval === 0) newInterval = 1;
-  else if (card.interval === 1) newInterval = 3; // 1 -> 3 days
-  else if (card.interval === 3) newInterval = 12;
-  else if (card.interval === 12) newInterval = 30;
-  else newInterval = card.interval * 2.5; // After 30, just multiply
-
-  // If interval > 30, mark Mastered
-  if (newInterval >= 30) newState = 3;
-  else newState = 2;
 
   const nextDueDate = new Date();
   nextDueDate.setDate(nextDueDate.getDate() + newInterval);
 
   return {
-    state: newState,
+    state: newLevel,
     interval: newInterval,
     due: nextDueDate.toISOString()
   };
