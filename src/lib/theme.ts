@@ -68,7 +68,15 @@ const DICTIONARY = {
     // Edit & Audio
     btn_edit: 'REWRITE SHARD',
     btn_save: 'OVERWRITE',
-    btn_audio: 'AUDIO_OUT'
+    btn_audio: 'AUDIO_OUT',
+
+    // Inspector
+    btn_inspect: 'INSPECT NEURAL PATHWAYS',
+    inspect_title: 'NEURAL MATRIX',
+    col_word: 'SHARD',
+    col_lvl: 'LVL',
+    col_due: 'NEXT SYNC',
+    btn_back: 'RETURN'
   },
   zen: {
     // Global
@@ -126,7 +134,15 @@ const DICTIONARY = {
     // Edit & Audio
     btn_edit: 'Edit',
     btn_save: 'Save',
-    btn_audio: 'Listen'
+    btn_audio: 'Listen',
+
+    // Inspector
+    btn_inspect: 'View Card List',
+    inspect_title: 'Deck Inventory',
+    col_word: 'Word',
+    col_lvl: 'Level',
+    col_due: 'Due',
+    btn_back: 'Back'
   }
 };
 

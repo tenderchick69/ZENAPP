@@ -7,51 +7,22 @@
   import { t, theme } from '$lib/theme';
 
   let deckId = page.url.searchParams.get('id');
-  let view: 'lobby' | 'study' | 'summary' = 'lobby';
+  let view: 'lobby' | 'study' | 'summary' | 'inspect' = 'lobby';
   let cramAmount = 20;
   let sessionMode: 'standard' | 'weakness' | 'overclock' = 'standard';
+
+  // Data
   let queue: Card[] = [];
+  let allCards: any[] = [];
   let currentCard: Card | null = null;
+
+  // State
   let isRevealed = false;
+  let isEditing = false;
+  let editForm = { headword: '', definition: '' };
   let sessionStats = { correct: 0, wrong: 0 };
   let stats = { due: 0, learning: 0, mastered: 0, total: 0 };
   let levelDist = [0, 0, 0, 0, 0, 0];
-  let isEditing = false;
-  let editForm = { headword: '', definition: '' };
-
-  function speak(text: string) {
-    if (!window.speechSynthesis) return;
-    const u = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(u);
-  }
-
-  function toggleEdit() {
-    if (!currentCard) return;
-    isEditing = !isEditing;
-    if (isEditing) {
-      editForm = {
-        headword: currentCard.headword,
-        definition: currentCard.definition
-      };
-    }
-  }
-
-  async function saveEdit() {
-    if (!currentCard) return;
-    const { error } = await supabase
-      .from('cards')
-      .update({
-        headword: editForm.headword,
-        definition: editForm.definition
-      })
-      .eq('id', currentCard.id);
-
-    if (!error) {
-      currentCard.headword = editForm.headword;
-      currentCard.definition = editForm.definition;
-      isEditing = false;
-    }
-  }
 
   onMount(async () => {
     if (!deckId) return goto('/');
@@ -59,12 +30,14 @@
   });
 
   async function loadStats() {
-    const { data } = await supabase.from('cards').select('state, due').eq('deck_id', deckId);
+    const { data } = await supabase.from('cards').select('*').eq('deck_id', deckId);
     if (data) {
+      allCards = data;
       stats.total = data.length;
       stats.mastered = data.filter(c => c.state === 5).length;
       stats.learning = data.filter(c => c.state > 0 && c.state < 5).length;
       stats.due = data.filter(c => c.state < 5 && (c.state === 0 || new Date(c.due) <= new Date())).length;
+
       levelDist = [0, 0, 0, 0, 0, 0];
       data.forEach(c => {
         const lvl = Math.min(Math.max(c.state, 0), 5);
@@ -96,6 +69,31 @@
     if (queue.length === 0) { view = 'summary'; return; }
     currentCard = queue[0];
     isRevealed = false;
+    isEditing = false;
+  }
+
+  function speak(text: string) {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(u);
+  }
+
+  function toggleEdit() {
+    if (!currentCard) return;
+    isEditing = !isEditing;
+    if (isEditing) {
+      editForm = { headword: currentCard.headword, definition: currentCard.definition };
+    }
+  }
+
+  async function saveEdit() {
+    if (!currentCard) return;
+    const { error } = await supabase.from('cards').update({ headword: editForm.headword, definition: editForm.definition }).eq('id', currentCard.id);
+    if (!error) {
+      currentCard.headword = editForm.headword;
+      currentCard.definition = editForm.definition;
+      isEditing = false;
+    }
   }
 
   async function handleGrade(rating: 'pass' | 'fail') {
@@ -118,9 +116,18 @@
       nextCard();
     }
   }
+
+  function formatDate(iso: string) {
+    const d = new Date(iso);
+    const now = new Date();
+    if (d <= now) return 'NOW';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
 </script>
 
 <div class="min-h-[80vh] flex flex-col items-center justify-center max-w-2xl mx-auto px-6">
+
+  <!-- LOBBY -->
   {#if view === 'lobby'}
     <div class="w-full border border-dim bg-panel p-8 shadow-lg relative overflow-hidden transition-colors">
       {#if $theme === 'syndicate'}
@@ -187,17 +194,47 @@
         </div>
       </div>
 
-      <div class="mt-8 text-center">
-        <a href="/" class="text-xs font-body text-dim hover:text-main">[ {$t.btn_exit} ]</a>
+      <!-- Footer Actions -->
+      <div class="mt-8 flex justify-between items-center text-xs font-body">
+         <button onclick={() => view = 'inspect'} class="text-dim hover:text-accent">[ {$t.btn_inspect} ]</button>
+         <a href="/" class="text-dim hover:text-main">[ {$t.btn_exit} ]</a>
       </div>
     </div>
 
+  <!-- INSPECT VIEW -->
+  {:else if view === 'inspect'}
+    <div class="w-full h-[80vh] border border-dim bg-panel p-8 flex flex-col relative overflow-hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="font-heading text-2xl text-main">{$t.inspect_title}</h2>
+        <button onclick={() => view = 'lobby'} class="text-dim hover:text-accent font-body text-xs">[ {$t.btn_back} ]</button>
+      </div>
+
+      <!-- Scrollable List -->
+      <div class="flex-1 overflow-y-auto pr-2 space-y-1">
+        {#each allCards.sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
+          <div class="grid grid-cols-12 gap-4 p-3 border-b border-dim/30 hover:bg-dim/10 text-xs font-body items-center group">
+             <div class="col-span-1 flex gap-0.5">
+               {#each [1,2,3,4,5] as l}
+                 <div class="w-1 h-3 {card.state >= l ? 'bg-accent' : 'bg-dim/30'}"></div>
+               {/each}
+             </div>
+             <div class="col-span-5 font-bold text-main truncate">{card.headword}</div>
+             <div class="col-span-3 text-dim truncate">{card.definition}</div>
+             <div class="col-span-3 text-right {new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
+               {formatDate(card.due)}
+             </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+
+  <!-- STUDY CARD (Fixed Height) -->
   {:else if view === 'study' && currentCard}
     <div class="w-full relative perspective-1000">
-      <div class="border border-dim bg-panel p-10 min-h-[450px] flex flex-col justify-between shadow-2xl relative overflow-hidden transition-colors">
+      <div class="border border-dim bg-panel p-10 h-[600px] flex flex-col justify-between shadow-2xl relative overflow-hidden transition-colors">
 
         <!-- Pips -->
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-2">
            <div class="flex gap-1">
              {#each [1, 2, 3, 4, 5] as level}
                <div class="w-2 h-2 rounded-full transition-all duration-500
@@ -210,23 +247,27 @@
            </div>
         </div>
 
-        <!-- Card -->
-        <div class="text-center relative group">
-           <!-- Audio Button (Top Right) -->
-           <button onclick={(e) => { e.stopPropagation(); speak(currentCard.headword); }}
-             class="absolute -top-2 -right-2 p-2 text-dim hover:text-accent transition-colors rounded-full border border-transparent hover:border-dim">
-             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-           </button>
+        <!-- Card Content Container (Scrollable) -->
+        <div class="flex-1 flex flex-col justify-center items-center overflow-y-auto text-center relative group py-4">
 
-           <!-- Edit Button (Top Left - Visible on Hover) -->
-           <button onclick={(e) => { e.stopPropagation(); toggleEdit(); }}
-             class="absolute -top-2 -left-2 p-2 text-dim opacity-0 group-hover:opacity-100 hover:text-accent transition-all rounded-full">
-             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-           </button>
+           <!-- Audio/Edit Buttons -->
+           <div class="absolute top-0 right-0 z-10">
+             <button onclick={(e) => { e.stopPropagation(); if (currentCard) speak(currentCard.headword); }}
+               aria-label="Play audio"
+               class="p-2 text-dim hover:text-accent transition-colors">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+             </button>
+           </div>
+           <div class="absolute top-0 left-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+             <button onclick={(e) => { e.stopPropagation(); toggleEdit(); }}
+               aria-label="Edit card"
+               class="p-2 text-dim hover:text-accent">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+             </button>
+           </div>
 
            {#if isEditing}
-             <!-- EDIT MODE -->
-             <div class="space-y-4 p-4 bg-bg/50 border border-dim rounded">
+             <div class="w-full space-y-4 p-4 bg-bg/50 border border-dim rounded">
                <input bind:value={editForm.headword} class="w-full bg-bg border border-dim p-2 text-main font-heading text-center" />
                <textarea bind:value={editForm.definition} class="w-full bg-bg border border-dim p-2 text-accent font-body text-center min-h-[100px]"></textarea>
                <div class="flex gap-2 justify-center">
@@ -235,18 +276,18 @@
                </div>
              </div>
            {:else}
-             <!-- VIEW MODE -->
-             <h2 class="text-5xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors"
-                 onclick={() => speak(currentCard.headword)}>
+             <button type="button"
+                 class="text-5xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors bg-transparent border-none"
+                 onclick={() => { if (currentCard) speak(currentCard.headword); }}>
                  {currentCard.headword}
-             </h2>
+             </button>
 
              {#if isRevealed}
-               <div class="space-y-6" class:animate-glitch={$theme === 'syndicate'}>
+               <div class="space-y-6 w-full max-w-md" class:animate-glitch={$theme === 'syndicate'}>
                   {#if currentCard.ipa}<p class="text-dim font-body text-sm">/{currentCard.ipa}/</p>{/if}
                   <p class="text-2xl text-accent font-body leading-relaxed">{currentCard.definition}</p>
                   {#if currentCard.example}
-                    <div class="text-sm text-dim border-l-2 border-danger pl-4 text-left mx-auto max-w-md italic">
+                    <div class="text-sm text-dim border-l-2 border-danger pl-4 text-left italic">
                       "{currentCard.example}"
                     </div>
                   {/if}
@@ -255,8 +296,8 @@
            {/if}
         </div>
 
-        <!-- Controls -->
-        <div class="mt-8">
+        <!-- Controls (Bottom Fixed) -->
+        <div class="mt-4 pt-4 border-t border-dim/20">
           {#if !isRevealed}
              <button onclick={() => isRevealed = true} class="w-full py-6 border border-dim text-dim font-body hover:text-accent hover:border-accent transition-all tracking-[0.5em]">
                [ {$t.btn_reveal} ]
