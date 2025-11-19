@@ -50,15 +50,25 @@
     };
   });
 
-  function findSafeSpot(currentWords: any[]) {
+  function findSafeSpot(currentWords: any[], avoidX?: number, avoidY?: number) {
     let safe = false;
     let x = 0, y = 0;
     let attempts = 0;
     while (!safe && attempts < 100) {
       x = 10 + Math.random() * 80;
       y = 15 + Math.random() * 70;
-      const tooClose = currentWords.some(w => Math.abs(w.x - x) < 12 && Math.abs(w.y - y) < 8);
-      if (!tooClose) safe = true;
+
+      // 1. Check distance from other words
+      const crowdCheck = currentWords.some(w => Math.abs(w.x - x) < 12 && Math.abs(w.y - y) < 8);
+
+      // 2. Check distance from Old Spot (Teleport range > 30%)
+      let selfCheck = false;
+      if (avoidX !== undefined && avoidY !== undefined) {
+        const dist = Math.sqrt(Math.pow(x - avoidX, 2) + Math.pow(y - avoidY, 2));
+        if (dist < 30) selfCheck = true; // Too close to old spot
+      }
+
+      if (!crowdCheck && !selfCheck) safe = true;
       attempts++;
     }
     return { x, y };
@@ -204,13 +214,22 @@
       for (let i = 0; i < 15; i++) spawnEmber(true, revealedWord.x, revealedWord.y);
     } else {
       playSound('burn');
+      // Capture old position before burning
+      const oldX = words.find(w => w.id === targetId)?.x;
+      const oldY = words.find(w => w.id === targetId)?.y;
+
       words = words.map(w => w.id === targetId ? { ...w, burning: true } : w);
       setTimeout(() => {
-        // FIX: Pass all words EXCEPT the current one to avoid self-collision
         const others = words.filter(w => w.id !== targetId);
-        const newPos = findSafeSpot(others);
-        words = words.map(w => w.id === targetId ? { ...w, burning: false, x: newPos.x, y: newPos.y } : w);
-      }, 1000);
+        // Pass old coordinates to force significant teleport distance
+        const newPos = findSafeSpot(others, oldX, oldY);
+        words = words.map(w => w.id === targetId ? {
+          ...w,
+          burning: false,
+          x: newPos.x,
+          y: newPos.y
+        } : w);
+      }, 1200);
     }
 
     dispatch('grade', { id: targetId, rating });

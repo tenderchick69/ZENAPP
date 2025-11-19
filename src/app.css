@@ -90,6 +90,10 @@
 
   /* Ash gray */
   --color-dim: #4a4a4a;
+
+  /* Gradient warmth - deep red/orange for title gradients */
+  --color-warmth: #ff4500;
+  --color-golden: #ffd700;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -441,4 +445,10 @@ body[data-theme='zen'] .min-h-screen > * {
   .no-spinner {
     -moz-appearance: textfield;
   }
+
+  /* Ember theme gradient utilities */
+  .text-warmth { color: var(--color-warmth); }
+  .to-warmth { --tw-gradient-to: var(--color-warmth); }
+  .text-golden { color: var(--color-golden); }
+  .font-ember { font-family: "Cormorant Garamond", "Georgia", serif; }
 }

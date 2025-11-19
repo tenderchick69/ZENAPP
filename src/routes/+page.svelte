@@ -38,45 +38,69 @@
   });
 </script>
 
-<section class="space-y-8">
+<section class="space-y-12">
   <div class="text-center space-y-2 mb-12">
     {#if $theme === 'syndicate'}
       <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>
     {/if}
-    <h1 class="font-heading text-5xl md:text-7xl font-black uppercase italic">
-      <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-blue-500">{$t.subtitle}</span>
+
+    <!-- Dynamic Gradient Title -->
+    <h1 class="font-heading text-5xl md:text-8xl font-black uppercase italic tracking-tighter">
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent
+        {$theme === 'ember' ? 'to-warmth' : 'to-blue-600'}">
+        {$t.subtitle}
+      </span>
     </h1>
   </div>
 
   {#if loading}
     <div class="text-center text-accent animate-flicker font-body">LOADING...</div>
   {:else}
-    <div class="grid md:grid-cols-2 gap-6">
+    <div class="grid md:grid-cols-2 gap-8">
       {#each decks as deck}
-        <a href="/study?id={deck.id}" class="group block relative border border-dim bg-panel p-6 hover:border-accent transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,0,0,0.2)]">
-          <div class="absolute top-0 right-0 p-2 flex gap-2 z-20">
-            <button onclick={(e) => deleteDeck(deck.id, e)}
-              title="Delete Deck"
-              class="text-dim hover:text-danger p-1 transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </button>
-            <div class="w-2 h-2 bg-success rounded-full shadow-[0_0_10px_currentColor] mt-1 pointer-events-none"></div>
+        <a href="/study?id={deck.id}"
+           class="group block relative p-8 transition-all duration-500
+           {$theme === 'ember'
+             ? 'border border-orange-900/30 bg-black/40 hover:border-orange-500/50 hover:bg-black/80 hover:shadow-[0_0_30px_rgba(255,69,0,0.1)] rounded-xl'
+             : 'border border-dim bg-panel hover:border-accent hover:shadow-[0_0_30px_rgba(0,0,0,0.2)]'}">
+
+          <!-- Status Indicator -->
+          <div class="absolute top-4 right-4 flex gap-3">
+             <button onclick={(e) => deleteDeck(deck.id, e)} class="text-dim hover:text-danger p-1 transition-colors z-20" title="Delete">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+             </button>
+             {#if $theme === 'ember'}
+               <div class="w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_10px_orange] animate-pulse"></div>
+             {:else}
+               <div class="w-2 h-2 bg-success rounded-full shadow-[0_0_10px_currentColor]"></div>
+             {/if}
           </div>
-          <div class="flex justify-between items-start mb-4">
-            <span class="font-body text-xs text-accent">{$t.deck_sub}</span>
-            <span class="font-body text-xs text-danger">{$t.deck_ready}</span>
+
+          <!-- Card Content -->
+          <div class="flex justify-between items-start mb-6">
+            <span class="font-body text-xs text-dim uppercase tracking-widest">{$t.deck_sub}</span>
           </div>
-          <h3 class="font-heading text-2xl text-main group-hover:text-accent transition-colors mb-2">{deck.name}</h3>
-          <div class="flex justify-between items-center pt-4 border-t border-dim group-hover:border-accent/30 transition-colors">
-            <span class="font-body text-xs text-accent group-hover:translate-x-2 transition-transform">{$t.action_open}</span>
+
+          <h3 class="text-4xl transition-colors mb-4
+             {$theme === 'ember' ? 'font-ember text-orange-100 group-hover:text-golden drop-shadow-lg' : 'font-heading text-main group-hover:text-accent'}">
+             {deck.name}
+          </h3>
+
+          <div class="flex justify-between items-center pt-6 border-t
+             {$theme === 'ember' ? 'border-orange-900/30' : 'border-dim'}
+             group-hover:border-accent/30 transition-colors">
+            <span class="font-body text-xs text-dim group-hover:text-accent group-hover:translate-x-2 transition-transform uppercase tracking-widest">
+              {$t.action_open}
+            </span>
           </div>
         </a>
       {/each}
     </div>
 
-    <div class="flex justify-center gap-6 mt-12 font-body text-sm">
-       <a href="/import" class="text-dim hover:text-danger transition-colors">[ {$t.btn_import} ]</a>
-       <span class="text-dim">|</span>
+    <!-- Footer Links -->
+    <div class="flex justify-center gap-8 mt-16 font-body text-xs uppercase tracking-widest">
+       <a href="/import" class="text-dim hover:text-accent transition-colors">[ {$t.btn_import} ]</a>
+       <span class="text-dim opacity-20">|</span>
        <span class="text-dim cursor-not-allowed">[ {$t.btn_ai} ]</span>
     </div>
 
