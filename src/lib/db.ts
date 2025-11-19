@@ -1,21 +1,27 @@
-import initSqlJs from 'sql.js';
+// We use a wildcard import to handle the UMD module structure
+import * as SQL from 'sql.js';
 
 let db: any = null;
 
 export async function getDB() {
   if (db) return db;
 
-  const SQL = await initSqlJs({
-    locateFile: file => `/${file}` // Loads from static/
+  // Handle the import: if Vite mocks a default, use it; otherwise use the namespace
+  // @ts-ignore
+  const initSqlJs = SQL.default || SQL;
+
+  const SQL_INSTANCE = await initSqlJs({
+    // This points to the file we copied to /static/sql-wasm.wasm
+    locateFile: (file: string) => `/${file}`
   });
 
   // Try loading existing DB from localStorage
   const saved = localStorage.getItem('vocapp_zen_db');
   if (saved) {
     const uInt8Array = new Uint8Array(JSON.parse(saved));
-    db = new SQL.Database(uInt8Array);
+    db = new SQL_INSTANCE.Database(uInt8Array);
   } else {
-    db = new SQL.Database();
+    db = new SQL_INSTANCE.Database();
     initSchema();
   }
 
