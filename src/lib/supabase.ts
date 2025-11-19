@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+// Debug check - this will show in the browser console if the connection fails
+if (!PUBLIC_SUPABASE_URL || !PUBLIC_SUPABASE_ANON_KEY) {
+    console.error('🚨 CRITICAL ERROR: Supabase Variables missing.');
+    console.error('Ensure Vercel Environment Variables are named PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY');
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+    PUBLIC_SUPABASE_URL || '',
+    PUBLIC_SUPABASE_ANON_KEY || ''
+);
