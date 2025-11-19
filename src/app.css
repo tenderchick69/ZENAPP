@@ -1,22 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  /* The Syndicate Palette */
+  /* ═══════════════════════════════════════════════════════════════
+     SYNDICATE PALETTE (Cyberpunk)
+     ═══════════════════════════════════════════════════════════════ */
   --color-neon-cyan: #00fff2;
   --color-neon-red: #ff0040;
   --color-bio-green: #39ff14;
   --color-wet-dark: #050505;
   --color-wet-panel: #0a0a0a;
 
+  /* ═══════════════════════════════════════════════════════════════
+     ZEN PALETTE (Brutalist Monochrome)
+     ═══════════════════════════════════════════════════════════════ */
+  --color-void: #000000;
+  --color-ink: #111111;
+  --color-paper: #fafafa;
+  --color-stone: #888888;
+  --color-blood: #8b0000;  /* Single sacred accent - used sparingly */
+
+  /* ═══════════════════════════════════════════════════════════════
+     FONTS
+     ═══════════════════════════════════════════════════════════════ */
   --font-cyber: "Orbitron", sans-serif;
   --font-mono: "Share Tech Mono", monospace;
+  --font-zen: "Noto Serif JP", serif;
+  --font-zen-display: "Shippori Mincho", serif;
 
+  /* ═══════════════════════════════════════════════════════════════
+     ANIMATIONS
+     ═══════════════════════════════════════════════════════════════ */
   --animate-glitch: glitch 0.3s infinite;
   --animate-flicker: flicker 3s infinite;
   --animate-drip: drip 2s ease-in-out infinite;
-  --animate-scan: scan 4s linear infinite;
+  --animate-breathe: breathe 4s ease-in-out infinite;
+  --animate-ink-spread: ink-spread 0.6s ease-out forwards;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════ */
 @keyframes glitch {
   0%, 100% { transform: translate(0); }
   20% { transform: translate(-2px, 2px); }
@@ -37,14 +60,28 @@
   50% { transform: translateY(10px); opacity: 1; }
 }
 
-/* Global Styles */
-:root {
-  background-color: var(--color-wet-dark);
-  color: #e5e5e5;
-  font-family: var(--font-mono);
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.02); opacity: 0.95; }
 }
 
-/* The Background Grid Effect */
+@keyframes ink-spread {
+  0% { clip-path: circle(0% at center); opacity: 0; }
+  100% { clip-path: circle(100% at center); opacity: 1; }
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  30% { transform: translate(3%, -15%); }
+  50% { transform: translate(12%, 9%); }
+  70% { transform: translate(9%, 4%); }
+  90% { transform: translate(-1%, 7%); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SYNDICATE UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
 .neural-grid {
   background-image:
       linear-gradient(rgba(0,255,242,0.03) 1px, transparent 1px),
@@ -52,7 +89,6 @@
   background-size: 40px 40px;
 }
 
-/* Scanline Overlay */
 .scanline::after {
   content: '';
   position: fixed;
@@ -68,7 +104,49 @@
   z-index: 50;
 }
 
-/* Utility for glow text */
 .text-glow {
   text-shadow: 0 0 10px currentColor;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ZEN UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+.zen-grain::before {
+  content: '';
+  position: fixed;
+  top: -50%; left: -50%;
+  right: -50%; bottom: -50%;
+  width: 200%; height: 200%;
+  background: transparent url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  animation: grain 8s steps(10) infinite;
+}
+
+.ink-bleed {
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ink-bleed:hover {
+  letter-spacing: 0.05em;
+}
+
+.paper-tear {
+  clip-path: polygon(
+    0% 0%, 2% 3%, 5% 1%, 8% 4%, 12% 2%, 16% 5%, 20% 3%,
+    100% 0%, 100% 100%, 0% 100%
+  );
+}
+
+.breath-hover {
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.breath-hover:hover {
+  transform: scale(1.01);
+}
+
+/* Sharp corners only in Zen */
+.zen-sharp {
+  border-radius: 0 !important;
 }
