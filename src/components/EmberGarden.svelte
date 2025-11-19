@@ -50,7 +50,6 @@
     while (!safe && attempts < 100) {
       x = 10 + Math.random() * 80;
       y = 15 + Math.random() * 70;
-      // Check distance from other words
       const tooClose = currentWords.some(w => Math.abs(w.x - x) < 12 && Math.abs(w.y - y) < 8);
       if (!tooClose) safe = true;
       attempts++;
@@ -58,16 +57,17 @@
     return { x, y };
   }
 
-  function spawnEmber(golden = false, x?: number, y?: number) {
+  function spawnEmber(golden = false, x?: number, y?: number, permanent = false) {
     embers.push({
       id: Math.random(),
       x: x !== undefined ? x : Math.random() * 100,
       y: y !== undefined ? y : Math.random() * 100 + 20,
       size: 1 + Math.random() * 3,
-      speed: 0.01 + Math.random() * 0.04, // Slower, floatier
+      speed: permanent ? 0.002 : (0.01 + Math.random() * 0.04), // Near-static for permanent
       brightness: golden ? 1 : (0.1 + Math.random() * 0.4),
       phase: Math.random() * Math.PI * 2,
-      golden
+      golden,
+      permanent
     });
   }
 
@@ -76,8 +76,9 @@
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    playSound('solidify');
-    for(let i=0; i<8; i++) spawnEmber(true, x, y);
+    playSound('spark'); // New crisp pop sound
+    // Spawn long-lasting embers
+    for(let i=0; i<8; i++) spawnEmber(true, x, y, true);
   }
 
   function loop() {
@@ -97,7 +98,7 @@
       let newY = e.y - e.speed;
       let newX = e.x + Math.sin(e.phase) * 0.02;
 
-      // Wrap around logic
+      // Wrap around logic (permanent embers wrap too, just very slowly)
       if (newY < -10) {
         newY = 110;
         newX = Math.random() * 100;
@@ -115,28 +116,39 @@
     animationFrame = requestAnimationFrame(loop);
   }
 
-  // Audio
-  function playSound(type: 'hover' | 'reveal' | 'solidify' | 'burn') {
+  // Audio Engine
+  function playSound(type: 'hover' | 'reveal' | 'solidify' | 'burn' | 'spark') {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
-    const g = audioCtx.createGain();
-    const osc = audioCtx.createOscillator();
 
-    osc.connect(g).connect(audioCtx.destination);
-
-    if (type === 'hover') {
+    if (type === 'spark') {
+      // New "Click" Sound: Short, crisp pop
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.frequency.setValueAtTime(600, t);
+      osc.frequency.exponentialRampToValueAtTime(300, t + 0.1);
+      g.gain.setValueAtTime(0.05, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(); osc.stop(t + 0.1);
+    } else if (type === 'hover') {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
       osc.frequency.setValueAtTime(220, t);
-      g.gain.setValueAtTime(0.02, t); // Quieter hover
+      g.gain.setValueAtTime(0.02, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.connect(g).connect(audioCtx.destination);
       osc.start(); osc.stop(t + 0.3);
     } else if (type === 'reveal') {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
       osc.frequency.setValueAtTime(440, t);
       g.gain.setValueAtTime(0.1, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.connect(g).connect(audioCtx.destination);
       osc.start(); osc.stop(t + 0.5);
     } else if (type === 'solidify') {
-       osc.disconnect();
        [220, 277, 330, 440].forEach((f, i) => {
         const o = audioCtx.createOscillator();
         const g2 = audioCtx.createGain();
@@ -147,11 +159,14 @@
         o.start(t + i * 0.05); o.stop(t + 2);
       });
     } else if (type === 'burn') {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(150, t);
       osc.frequency.exponentialRampToValueAtTime(10, t + 0.8);
       g.gain.setValueAtTime(0.1, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+      osc.connect(g).connect(audioCtx.destination);
       osc.start(); osc.stop(t + 0.8);
     }
   }
@@ -173,10 +188,8 @@
       for(let i=0; i<15; i++) spawnEmber(true, revealedWord.x, revealedWord.y);
     } else {
       playSound('burn');
-      // 1. Burn Animation
       words = words.map(w => w.id === targetId ? { ...w, burning: true } : w);
 
-      // 2. Respawn Logic
       setTimeout(() => {
         const newPos = findSafeSpot(words);
         words = words.map(w => w.id === targetId ? {
@@ -252,44 +265,54 @@
 
   <!-- Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm" transition:fade>
-      <div class="bg-gradient-to-b from-[#121212] to-black border border-orange-900/40 p-12 rounded-xl max-w-lg w-full text-center shadow-[0_0_100px_rgba(255,69,0,0.1)] relative" transition:scale>
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-[2px]" transition:fade>
+      <div class="bg-gradient-to-b from-[#121212] to-black border border-orange-900/40 p-12 rounded-xl max-w-lg w-full text-center shadow-[0_0_100px_rgba(255,69,0,0.15)] relative" transition:scale>
 
         <!-- Close Button -->
         <button class="absolute top-4 right-4 text-gray-600 cursor-pointer hover:text-white bg-transparent border-none text-xl" onclick={() => revealedWord = null}>✕</button>
 
+        <!-- German Gloss -->
+        {#if revealedWord.gloss_de}
+          <div class="text-orange-500 text-lg font-serif mb-2">{revealedWord.gloss_de}</div>
+        {/if}
+
         <h2 class="text-6xl text-orange-100 mb-3 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)]">{revealedWord.headword}</h2>
 
         {#if revealedWord.ipa}
-          <p class="text-orange-500/50 text-sm mb-8 font-mono uppercase tracking-[0.2em]">/{revealedWord.ipa}/</p>
+          <!-- Use font-sans for IPA legibility -->
+          <p class="text-orange-500/50 text-sm mb-8 font-sans tracking-widest">/{revealedWord.ipa}/</p>
         {/if}
 
-        <p class="text-2xl text-gray-200 mb-8 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
+        <p class="text-2xl text-gray-200 mb-10 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
 
         <!-- RICH DATA BLOCK -->
-        {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
-           <div class="border-t border-orange-900/30 pt-6 mb-8 text-left space-y-4">
-              {#if revealedWord.mnemonic}
-                <div class="bg-orange-900/10 p-3 rounded border border-orange-900/20 group/hint">
-                   <span class="text-[10px] uppercase text-orange-500 tracking-widest block mb-1">Mnemonic</span>
-                   <p class="text-sm text-gray-400 blur-[3px] group-hover/hint:blur-0 transition-all duration-500">{revealedWord.mnemonic}</p>
-                </div>
-              {/if}
+        <div class="border-t border-orange-900/30 pt-6 mb-8 text-left space-y-6">
 
-              {#if revealedWord.etymology}
-                 <div>
-                    <span class="text-[10px] uppercase text-gray-600 tracking-widest">Etymology</span>
-                    <p class="text-xs text-gray-500 italic">{revealedWord.etymology}</p>
-                 </div>
-              {/if}
+           {#if revealedWord.mnemonic}
+             <div class="bg-orange-900/10 p-4 rounded border border-orange-900/20">
+                <span class="text-[10px] uppercase text-orange-500 tracking-widest block mb-2">Mnemonic</span>
+                <!-- No blur - fully visible -->
+                <p class="text-base text-gray-300 font-ember leading-snug">{revealedWord.mnemonic}</p>
+             </div>
+           {/if}
 
-              {#if revealedWord.example}
-                 <div class="text-lg text-orange-200/80 italic text-center pt-2">
+           {#if revealedWord.etymology}
+              <div>
+                 <span class="text-[10px] uppercase text-gray-600 tracking-widest block mb-1">Etymology</span>
+                 <!-- Increased size -->
+                 <p class="text-sm text-gray-400 italic">{revealedWord.etymology}</p>
+              </div>
+           {/if}
+
+           {#if revealedWord.example}
+              <div class="text-center pt-4">
+                 <span class="text-[10px] uppercase text-orange-900/60 tracking-[0.2em]">USAGE</span>
+                 <div class="text-lg text-orange-200/80 italic mt-2">
                     "{revealedWord.example}"
                  </div>
-              {/if}
-           </div>
-        {/if}
+              </div>
+           {/if}
+        </div>
 
         <!-- Controls -->
         <div class="flex gap-6 justify-center mt-4">
