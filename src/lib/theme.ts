@@ -209,6 +209,72 @@ const DICTIONARY = {
     col_lvl: 'Heat',
     col_due: 'Next Glow',
     btn_back: 'Return'
+  },
+  frost: {
+    // Global
+    title_1: 'FROST',
+    title_2: 'GLASS',
+    subtitle: 'Write your breath.',
+
+    // Home
+    btn_import: 'Condensation',
+    btn_ai: 'Breathe Words',
+    no_decks: 'The glass is clear.',
+    btn_seed: 'First Frost',
+    deck_sub: 'Memory Trace',
+    deck_ready: 'Touch',
+    action_open: 'Clear →',
+
+    // Import
+    import_title: 'New Frost',
+    import_drop: 'Drop Words Here',
+    import_uploading: 'Freezing...',
+    import_abort: 'Melt',
+
+    // Lobby
+    lobby_title: 'Frosted Window',
+    lobby_id: '',
+    lobby_status: '',
+    stat_due: 'FOGGY',
+    stat_learn: 'CLEARING',
+    stat_master: 'CRYSTAL',
+    mode_std: 'Clear the Glass',
+    mode_weak: 'Wipe Again',
+    mode_cram: 'Quick Breath',
+    unit_cram: 'Words',
+    btn_exit: 'Step Away',
+
+    // Study
+    lbl_mode: 'Current Breath',
+    btn_reveal: 'Breathe',
+    btn_fail: 'Fog Returns',
+    btn_pass: 'Keep Clear',
+    msg_locked: 'Glass Locked',
+
+    // Summary
+    sum_title: 'Session Melts',
+    sum_good: 'Cleared',
+    sum_bad: 'Fogged',
+
+    // Graveyard
+    grave_title: 'Crystal Archive',
+    grave_empty: 'No crystals yet.',
+    grave_back: 'Step Back',
+    grave_resurrect: 'Breathe Again',
+    grave_link: 'Crystals',
+
+    // Edit & Audio
+    btn_edit: 'Rewrite',
+    btn_save: 'Freeze',
+    btn_audio: 'Whisper',
+
+    // Inspector
+    btn_inspect: 'View Window',
+    inspect_title: 'Frost Traces',
+    col_word: 'Word',
+    col_lvl: 'Clarity',
+    col_due: 'Next Fog',
+    btn_back: 'Back'
   }
 };
 

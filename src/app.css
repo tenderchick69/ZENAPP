@@ -97,6 +97,57 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
+   FROST THEME - Frosted Glass Window
+   Inspired by: Winter breath, condensation, crystal ice
+   ══════════════════════════════════════════════════════════════ */
+[data-theme='frost'] {
+  --font-heading: "Caveat", cursive;
+  --font-body: "Patrick Hand", cursive;
+
+  /* Glass tint */
+  --color-main: #e8f4f8;
+
+  /* Frost blue */
+  --color-accent: #a8d8ea;
+
+  /* Clear (dark blue) */
+  --color-danger: #2a4a6a;
+
+  /* Frost glow */
+  --color-success: #a8d8ea;
+
+  /* Outside (dark winter) */
+  --color-bg: #1a2a3a;
+
+  /* Glass panel (translucent) */
+  --color-panel: rgba(232, 244, 248, 0.05);
+
+  /* Dim frost */
+  --color-dim: rgba(255, 255, 255, 0.2);
+
+  /* Breath spot color */
+  --color-breath: #f0f8ff;
+}
+
+/* Frost background - winter outside the window */
+body[data-theme='frost'] {
+  background: linear-gradient(180deg, #1a2a3a 0%, #0f1a25 100%);
+}
+
+body[data-theme='frost'] .neural-grid {
+  background: none;
+}
+
+body[data-theme='frost'] .scanline::after {
+  display: none;
+}
+
+body[data-theme='frost'] .animate-flicker {
+  animation: none;
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
    BASE STYLES
    ══════════════════════════════════════════════════════════════ */
 body {
@@ -451,4 +502,41 @@ body[data-theme='zen'] .min-h-screen > * {
   .to-warmth { --tw-gradient-to: var(--color-warmth); }
   .text-golden { color: var(--color-golden); }
   .font-ember { font-family: "Cormorant Garamond", "Georgia", serif; }
+
+  /* Frost theme utilities */
+  .font-finger { font-family: "Caveat", cursive; }
+  .font-hand { font-family: "Patrick Hand", cursive; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FROST ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+@keyframes fog-return {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; filter: blur(4px); }
+  100% { opacity: 0; }
+}
+
+.animate-fog-return {
+  animation: fog-return 1.5s ease-out forwards;
+}
+
+@keyframes breath-fade {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  30% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); }
+}
+
+.animate-breath-fade {
+  animation: breath-fade 2s ease-out forwards;
+}
+
+@keyframes frost-appear {
+  0% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-frost-appear {
+  animation: frost-appear 0.5s ease-out forwards;
 }
