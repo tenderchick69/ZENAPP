@@ -195,6 +195,7 @@
       <!-- Header / Renamer -->
       <div class="mb-12 text-center relative group">
         {#if isRenaming}
+          <!-- svelte-ignore a11y_autofocus -->
           <input
             bind:value={deckName}
             onkeydown={(e) => e.key === 'Enter' && renameDeck()}
@@ -203,6 +204,8 @@
           />
           <div class="text-xs text-dim mt-2">Press Enter to Save</div>
         {:else}
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <h1 class="text-5xl md:text-7xl font-heading text-main tracking-tight cursor-pointer hover:text-accent transition-colors flex items-center justify-center gap-4"
               onclick={() => isRenaming = true}>
             {deckName || 'Loading...'}

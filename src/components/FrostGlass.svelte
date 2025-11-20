@@ -3,7 +3,8 @@
   import { fade, scale } from 'svelte/transition';
   import type { Card } from '$lib/srs';
 
-  export let queue: Card[] = [];
+  // Svelte 5 props syntax
+  let { queue = [] }: { queue?: Card[] } = $props();
   const dispatch = createEventDispatcher();
 
   // Word state type (Card + positioning)
@@ -426,6 +427,8 @@
   {#if revealedWord}
     <div class="fixed inset-0 flex items-center justify-center z-50" transition:fade>
       <!-- Backdrop -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onclick={() => revealedWord = null}>

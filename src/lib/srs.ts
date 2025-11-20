@@ -6,6 +6,7 @@ export type Card = {
   pos: string;
   ipa: string;
   example: string;
+  gloss_de?: string;
   mnemonic?: string;
   etymology?: string;
   state: number; // 0:New, 1-4:Steps, 5:Mastered
