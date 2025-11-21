@@ -280,19 +280,19 @@
       <!-- Stats (Bigger) -->
       <div class="grid grid-cols-3 gap-6 mb-16">
         <Tooltip text="Cards scheduled for review right now.">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none">
             <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
           </div>
         </Tooltip>
         <Tooltip text="Total cards in this deck.">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none">
             <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
           </div>
         </Tooltip>
         <Tooltip text="Cards fully memorized (Level 5).">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none">
             <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
           </div>
@@ -303,14 +303,14 @@
       <div class="space-y-4 max-w-xl mx-auto w-full">
         <Tooltip text="Study only the cards that are due.">
           <button onclick={() => startSession('standard')} disabled={stats.due === 0}
-            class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20] rounded-full">
+            class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20] rounded-full cursor-pointer">
             {$t.mode_std}
           </button>
         </Tooltip>
 
         <Tooltip text="Review all active cards, regardless of due date.">
           <button onclick={() => startSession('weakness')} disabled={stats.learning === 0}
-            class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30 rounded-full">
+            class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30 rounded-full cursor-pointer">
             {$t.mode_weak}
           </button>
         </Tooltip>
@@ -324,7 +324,7 @@
             </div>
           </Tooltip>
           <Tooltip text="Study a random set of cards, even if not due.">
-            <button onclick={() => startSession('overclock')} class="px-8 border border-dim text-accent hover:bg-accent hover:text-bg font-heading text-lg transition-all rounded-full">
+            <button onclick={() => startSession('overclock')} class="px-8 border border-dim text-accent hover:bg-accent hover:text-bg font-heading text-lg transition-all rounded-full cursor-pointer">
               {$t.mode_cram}
             </button>
           </Tooltip>

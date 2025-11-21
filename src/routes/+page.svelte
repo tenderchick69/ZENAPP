@@ -101,11 +101,9 @@
             <!-- Due Count (Bottom Center) -->
             {#if deck.dueCount > 0}
               <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
-                <div class="bg-orange-500/20 border border-orange-500/50 px-4 py-1 rounded-full backdrop-blur-sm">
-                  <span class="text-orange-400 font-ember text-lg font-bold shadow-[0_0_10px_rgba(255,69,0,0.5)]">
-                    {deck.dueCount}
-                  </span>
-                </div>
+                <span class="text-orange-400 font-ember text-xl font-bold drop-shadow-[0_0_12px_rgba(255,69,0,0.8)]">
+                  {deck.dueCount}
+                </span>
               </div>
             {:else}
               <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-emerald-500/50 text-2xl">
@@ -140,7 +138,7 @@
                   {$t.action_open}
                 </span>
                 {#if deck.dueCount > 0}
-                  <span class="bg-accent/20 border border-accent/50 px-3 py-1 rounded-full text-accent font-heading text-sm font-bold">
+                  <span class="text-accent font-heading text-lg font-bold drop-shadow-[0_0_8px_currentColor]">
                     {deck.dueCount}
                   </span>
                 {:else}
