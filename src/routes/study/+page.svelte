@@ -32,6 +32,10 @@
   let isRenaming = false;
   let deckName = '';
 
+  // Gardener (Edit Card) Modal
+  let editingCard: Card | null = null;
+  let gardenerForm = { headword: '', definition: '', mnemonic: '', etymology: '', gloss_de: '' };
+
   onMount(async () => {
     if (!deckId) return goto('/');
     await loadStats();
@@ -63,6 +67,50 @@
     const { error } = await supabase.from('decks').update({ name: deckName }).eq('id', deckId);
     if (!error) {
       isRenaming = false;
+    }
+  }
+
+  // Gardener Modal Functions
+  function openGardenerModal(card: Card) {
+    editingCard = card;
+    gardenerForm = {
+      headword: card.headword,
+      definition: card.definition,
+      mnemonic: card.mnemonic || '',
+      etymology: card.etymology || '',
+      gloss_de: card.gloss_de || ''
+    };
+  }
+
+  function closeGardenerModal() {
+    editingCard = null;
+  }
+
+  async function saveCardEdits() {
+    if (!editingCard) return;
+
+    const { error } = await supabase.from('cards').update({
+      headword: gardenerForm.headword,
+      definition: gardenerForm.definition,
+      mnemonic: gardenerForm.mnemonic || null,
+      etymology: gardenerForm.etymology || null,
+      gloss_de: gardenerForm.gloss_de || null
+    }).eq('id', editingCard.id);
+
+    if (!error) {
+      await loadStats(); // Reload all cards
+      closeGardenerModal();
+    }
+  }
+
+  async function deleteCard(cardId: number) {
+    if (!confirm('Delete this card permanently?')) return;
+
+    const { error } = await supabase.from('cards').delete().eq('id', cardId);
+
+    if (!error) {
+      await loadStats(); // Reload all cards
+      closeGardenerModal();
     }
   }
 
@@ -187,7 +235,7 @@
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
-    <div class="w-full border border-dim bg-panel p-12 shadow-lg relative overflow-hidden transition-colors min-h-[600px] flex flex-col justify-center">
+    <div class="w-full border border-dim bg-panel p-12 shadow-lg relative overflow-hidden transition-colors min-h-[600px] flex flex-col justify-center rounded-3xl">
       {#if $theme === 'syndicate'}
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
@@ -217,19 +265,19 @@
       <!-- Stats (Bigger) -->
       <div class="grid grid-cols-3 gap-6 mb-16">
         <Tooltip text="Cards scheduled for review right now.">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl">
             <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
           </div>
         </Tooltip>
-        <Tooltip text="Cards currently being learned.">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors">
-            <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.learning}</div>
+        <Tooltip text="Total cards in this deck.">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl">
+            <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
           </div>
         </Tooltip>
         <Tooltip text="Cards fully memorized (Level 5).">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl">
             <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
           </div>
@@ -240,14 +288,14 @@
       <div class="space-y-4 max-w-xl mx-auto w-full">
         <Tooltip text="Study only the cards that are due.">
           <button onclick={() => startSession('standard')} disabled={stats.due === 0}
-            class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20]">
+            class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20] rounded-full">
             {$t.mode_std}
           </button>
         </Tooltip>
 
-        <Tooltip text="Review all cards currently in learning.">
+        <Tooltip text="Review all active cards, regardless of due date.">
           <button onclick={() => startSession('weakness')} disabled={stats.learning === 0}
-            class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30">
+            class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30 rounded-full">
             {$t.mode_weak}
           </button>
         </Tooltip>
@@ -256,12 +304,12 @@
           <Tooltip text="Number of cards for the Wildfire session.">
             <div class="relative flex-1 group">
               <input type="number" bind:value={cramAmount}
-                class="w-full bg-bg border border-dim text-accent font-body p-4 text-center text-lg focus:border-accent outline-none transition-colors no-spinner" />
+                class="w-full bg-bg border border-dim text-accent font-body p-4 text-center text-lg focus:border-accent outline-none transition-colors no-spinner rounded-full" />
               <span class="absolute right-4 top-1/2 -translate-y-1/2 text-dim text-xs uppercase tracking-widest pointer-events-none">{$t.unit_cram}</span>
             </div>
           </Tooltip>
           <Tooltip text="Study a random set of cards, even if not due.">
-            <button onclick={() => startSession('overclock')} class="px-8 border border-dim text-accent hover:bg-accent hover:text-bg font-heading text-lg transition-all">
+            <button onclick={() => startSession('overclock')} class="px-8 border border-dim text-accent hover:bg-accent hover:text-bg font-heading text-lg transition-all rounded-full">
               {$t.mode_cram}
             </button>
           </Tooltip>
@@ -286,18 +334,20 @@
       <!-- Scrollable List -->
       <div class="flex-1 overflow-y-auto pr-2 space-y-1">
         {#each allCards.sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
-          <div class="grid grid-cols-12 gap-4 p-3 border-b border-dim/30 hover:bg-dim/10 text-xs font-body items-center group">
+          <button
+            onclick={() => openGardenerModal(card)}
+            class="w-full grid grid-cols-12 gap-4 p-3 border-b border-dim/30 hover:bg-accent/10 hover:border-accent/50 text-xs font-body items-center group cursor-pointer transition-all hover:shadow-[0_0_15px_rgba(var(--color-accent-rgb),0.2)] rounded-lg">
              <div class="col-span-1 flex gap-0.5">
                {#each [1,2,3,4,5] as l}
                  <div class="w-1 h-3 {card.state >= l ? 'bg-accent' : 'bg-dim/30'}"></div>
                {/each}
              </div>
-             <div class="col-span-5 font-bold text-main truncate">{card.headword}</div>
-             <div class="col-span-3 text-dim truncate">{card.definition}</div>
+             <div class="col-span-5 font-bold text-main group-hover:text-accent transition-colors truncate text-left">{card.headword}</div>
+             <div class="col-span-3 text-dim truncate text-left">{card.definition}</div>
              <div class="col-span-3 text-right {new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
                {formatDate(card.due)}
              </div>
-          </div>
+          </button>
         {/each}
       </div>
     </div>
@@ -438,6 +488,103 @@
       <a href="/" class="inline-block bg-accent text-bg font-bold px-8 py-3 font-heading hover:shadow-[0_0_20px_currentColor] transition-all">
         {$t.btn_exit}
       </a>
+    </div>
+  {/if}
+
+  <!-- Gardener Edit Modal -->
+  {#if editingCard}
+    <div class="fixed inset-0 flex items-center justify-center z-50 px-4">
+      <!-- Backdrop -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onclick={closeGardenerModal}>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="relative bg-panel border-2 border-accent/50 p-8 rounded-2xl max-w-2xl w-full shadow-[0_0_60px_rgba(var(--color-accent-rgb),0.3)] max-h-[90vh] overflow-y-auto">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="font-heading text-3xl text-accent">
+            {$theme === 'ember' ? 'Tend This Seed' : 'Edit Card'}
+          </h2>
+          <button
+            onclick={closeGardenerModal}
+            class="text-dim hover:text-accent transition-colors text-2xl leading-none">
+            ✕
+          </button>
+        </div>
+
+        <!-- Form -->
+        <div class="space-y-6">
+          <!-- Headword -->
+          <div>
+            <!-- svelte-ignore a11y_label_has_associated_control -->
+            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Headword</label>
+            <input
+              bind:value={gardenerForm.headword}
+              class="w-full bg-bg border border-dim p-4 text-main font-heading text-2xl focus:border-accent outline-none transition-colors rounded-lg"
+              placeholder="Enter word..." />
+          </div>
+
+          <!-- Definition -->
+          <div>
+            <!-- svelte-ignore a11y_label_has_associated_control -->
+            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Definition</label>
+            <textarea
+              bind:value={gardenerForm.definition}
+              class="w-full bg-bg border border-dim p-4 text-accent font-body text-lg focus:border-accent outline-none transition-colors rounded-lg min-h-[100px] resize-y"
+              placeholder="Enter definition..."></textarea>
+          </div>
+
+          <!-- German Gloss (Optional) -->
+          <div>
+            <!-- svelte-ignore a11y_label_has_associated_control -->
+            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">German Translation (Optional)</label>
+            <input
+              bind:value={gardenerForm.gloss_de}
+              class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg"
+              placeholder="Deutsch..." />
+          </div>
+
+          <!-- Mnemonic (Optional) -->
+          <div>
+            <!-- svelte-ignore a11y_label_has_associated_control -->
+            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Mnemonic (Optional)</label>
+            <textarea
+              bind:value={gardenerForm.mnemonic}
+              class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg min-h-[80px] resize-y"
+              placeholder="Memory aid..."></textarea>
+          </div>
+
+          <!-- Etymology (Optional) -->
+          <div>
+            <!-- svelte-ignore a11y_label_has_associated_control -->
+            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Etymology (Optional)</label>
+            <input
+              bind:value={gardenerForm.etymology}
+              class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg"
+              placeholder="Word origin..." />
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4 mt-8">
+          <button
+            onclick={saveCardEdits}
+            class="flex-1 py-4 bg-accent text-bg font-heading text-lg font-bold hover:shadow-[0_0_30px_currentColor/40] transition-all rounded-full">
+            Save Changes
+          </button>
+          <button
+            onclick={() => deleteCard(editingCard!.id)}
+            class="px-6 py-4 border-2 border-danger text-danger hover:bg-danger hover:text-bg font-heading text-lg transition-all rounded-full"
+            title={$theme === 'ember' ? 'Compost' : 'Delete'}>
+            {$theme === 'ember' ? '🍂' : '🗑️'}
+          </button>
+        </div>
+      </div>
     </div>
   {/if}
 </div>

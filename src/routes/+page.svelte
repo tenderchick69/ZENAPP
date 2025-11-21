@@ -55,8 +55,13 @@
   {#if loading}
     <div class="text-center text-accent animate-flicker font-body">LOADING...</div>
   {:else}
-    <!-- Grid Layout Logic: Center if 1, Grid if > 1 -->
-    <div class="{decks.length === 1 ? 'max-w-xl mx-auto' : 'grid md:grid-cols-2 gap-8'}">
+    <!-- Section Header -->
+    <h2 class="text-2xl font-heading text-main mb-8 tracking-tight uppercase opacity-80">
+      {$theme === 'ember' ? 'Your Gardens' : 'Your Decks'}
+    </h2>
+
+    <!-- Grid Layout: Always grid when we have cards + import slot -->
+    <div class="grid md:grid-cols-2 gap-8">
 
       {#each decks as deck}
         <a href="/study?id={deck.id}"
@@ -106,12 +111,41 @@
           {/if}
         </a>
       {/each}
+
+      <!-- Empty Card Slot: Import CSV -->
+      <a href="/import"
+         class="group block relative transition-all duration-500 min-h-[200px] flex flex-col justify-center items-center
+         {$theme === 'ember'
+           ? 'border-2 border-dashed border-orange-900/30 bg-gradient-to-b from-[#1a0b05]/20 to-black/20 hover:border-orange-500/50 hover:shadow-[0_0_40px_rgba(255,69,0,0.1)] rounded-xl overflow-hidden'
+           : 'border-2 border-dashed border-dim/50 bg-panel/30 hover:border-accent hover:shadow-[0_0_20px_rgba(0,0,0,0.15)]'}">
+
+        <!-- Ember Mode: Plant Seeds Icon -->
+        {#if $theme === 'ember'}
+          <div class="text-center space-y-4 relative z-10">
+            <div class="text-6xl text-orange-800/40 group-hover:text-orange-500/60 transition-colors duration-500">
+              +
+            </div>
+            <p class="font-ember text-lg text-orange-100/50 group-hover:text-golden/70 transition-colors">
+              {$t.btn_import}
+            </p>
+          </div>
+
+        <!-- Syndicate/Zen Mode -->
+        {:else}
+          <div class="text-center space-y-4">
+            <div class="text-5xl text-dim/40 group-hover:text-accent transition-colors">
+              +
+            </div>
+            <p class="font-body text-sm text-dim group-hover:text-accent transition-colors uppercase tracking-wider">
+              {$t.btn_import}
+            </p>
+          </div>
+        {/if}
+      </a>
     </div>
 
-    <!-- Footer Links -->
+    <!-- Footer Links (AI only) -->
     <div class="flex justify-center gap-8 mt-24 font-body text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">
-       <a href="/import" class="text-dim hover:text-accent transition-colors">[ {$t.btn_import} ]</a>
-       <span class="text-dim opacity-20">|</span>
        <span class="text-dim cursor-not-allowed">[ {$t.btn_ai} ]</span>
     </div>
 
