@@ -199,7 +199,7 @@
 
   function handleSelect(word: any, e: MouseEvent) {
     e.stopPropagation();
-    if (word.mastered || word.burning || sessionComplete) return;
+    if (word.burning || sessionComplete) return;
     playSound('reveal');
     revealedWord = word;
   }

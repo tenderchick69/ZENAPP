@@ -129,7 +129,7 @@
     }
   }
 
-  async function startSession(mode: 'standard' | 'weakness' | 'overclock') {
+  async function startSession(mode: 'standard' | 'weakness' | 'overclock' | 'mastered') {
     sessionMode = mode;
     const now = new Date().toISOString();
     let query = supabase.from('cards').select('*').eq('deck_id', deckId);
@@ -137,14 +137,15 @@
     if (mode === 'standard') query = query.lt('state', 5).or(`state.eq.0,due.lte.${now}`).order('due', { ascending: true }).limit(50);
     else if (mode === 'weakness') query = query.gt('state', 0).lt('state', 5).limit(50);
     else if (mode === 'overclock') query = query.limit(cramAmount);
+    else if (mode === 'mastered') query = query.eq('state', 5).limit(50);
 
     const { data } = await query;
     if (data && data.length > 0) {
-      queue = mode === 'overclock' ? data.sort(() => Math.random() - 0.5) : data;
+      queue = (mode === 'overclock' || mode === 'mastered') ? data.sort(() => Math.random() - 0.5) : data;
       view = 'study';
       nextCard();
     } else {
-      alert("No cards available.");
+      showToastMessage($theme === 'ember' ? 'No souls to revisit.' : 'No mastered cards.');
     }
   }
 
@@ -277,44 +278,65 @@
         {/if}
       </div>
 
-      <!-- Stats (Bigger) -->
-      <div class="grid grid-cols-3 gap-6 mb-16">
-        <Tooltip text="Cards scheduled for review right now.">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none">
-            <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
-            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
-          </div>
-        </Tooltip>
-        <Tooltip text="Total cards in this deck.">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none">
-            <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
-            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
-          </div>
-        </Tooltip>
-        <Tooltip text="Cards fully memorized (Level 5).">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none">
-            <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
-            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
-          </div>
-        </Tooltip>
+      <!-- Stats Grid with Action Buttons -->
+      <div class="grid grid-cols-3 gap-6 mb-12">
+        <!-- Column 1: Wilting / Due -->
+        <div class="flex flex-col gap-4">
+          <Tooltip text="Cards scheduled for review right now.">
+            <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none">
+              <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
+              <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
+            </div>
+          </Tooltip>
+          <Tooltip text="Study cards that are due for review.">
+            <button
+              onclick={() => startSession('standard')}
+              disabled={stats.due === 0}
+              class="px-4 py-3 border border-dim text-dim font-body text-sm hover:border-danger hover:text-danger hover:shadow-[0_0_20px_rgba(var(--color-danger-rgb),0.3)] transition-all disabled:opacity-30 disabled:cursor-not-allowed rounded-lg cursor-pointer uppercase tracking-wider">
+              Study
+            </button>
+          </Tooltip>
+        </div>
+
+        <!-- Column 2: Garden Size / Total -->
+        <div class="flex flex-col gap-4">
+          <Tooltip text="Total cards in this deck.">
+            <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none">
+              <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
+              <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
+            </div>
+          </Tooltip>
+          <Tooltip text="Review all cards in random order.">
+            <button
+              onclick={() => startSession('weakness')}
+              disabled={stats.learning === 0}
+              class="px-4 py-3 border border-dim text-dim font-body text-sm hover:border-success hover:text-success hover:shadow-[0_0_20px_rgba(var(--color-success-rgb),0.3)] transition-all disabled:opacity-30 disabled:cursor-not-allowed rounded-lg cursor-pointer uppercase tracking-wider">
+              All
+            </button>
+          </Tooltip>
+        </div>
+
+        <!-- Column 3: Eternal / Mastered -->
+        <div class="flex flex-col gap-4">
+          <Tooltip text="Cards fully memorized (Level 5).">
+            <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none">
+              <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
+              <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
+            </div>
+          </Tooltip>
+          <Tooltip text="Test your knowledge of mastered cards.">
+            <button
+              onclick={() => startSession('mastered')}
+              disabled={stats.mastered === 0}
+              class="px-4 py-3 border border-dim text-dim font-body text-sm hover:border-accent hover:text-accent hover:shadow-[0_0_20px_rgba(var(--color-accent-rgb),0.3)] transition-all disabled:opacity-30 disabled:cursor-not-allowed rounded-lg cursor-pointer uppercase tracking-wider">
+              {$theme === 'ember' ? 'Souls' : $theme === 'frost' ? 'Traces' : 'Souls'}
+            </button>
+          </Tooltip>
+        </div>
       </div>
 
-      <!-- Menu -->
-      <div class="space-y-4 max-w-xl mx-auto w-full">
-        <Tooltip text="Study only the cards that are due.">
-          <button onclick={() => startSession('standard')} disabled={stats.due === 0}
-            class="w-full py-6 bg-accent disabled:opacity-30 disabled:cursor-not-allowed text-bg font-heading text-xl font-bold hover:bg-main transition-all text-center shadow-[0_0_30px_currentColor/20] rounded-full cursor-pointer">
-            {$t.mode_std}
-          </button>
-        </Tooltip>
-
-        <Tooltip text="Review all active cards, regardless of due date.">
-          <button onclick={() => startSession('weakness')} disabled={stats.learning === 0}
-            class="w-full py-4 border border-dim text-dim font-body text-lg hover:border-danger hover:text-danger transition-all disabled:opacity-30 rounded-full cursor-pointer">
-            {$t.mode_weak}
-          </button>
-        </Tooltip>
-
+      <!-- Wildfire Section -->
+      <div class="max-w-xl mx-auto w-full mb-8">
         <div class="flex gap-4">
           <Tooltip text="Number of cards for the Wildfire session.">
             <div class="relative flex-1 group">

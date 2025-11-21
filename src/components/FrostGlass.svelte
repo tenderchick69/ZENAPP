@@ -241,7 +241,7 @@
   // Word Selection Handler
   function handleSelect(word: any, e: MouseEvent) {
     e.stopPropagation();
-    if (word.mastered || fadingWords.includes(word.id) || sessionComplete) return;
+    if (fadingWords.includes(word.id) || sessionComplete) return;
     playSound('reveal');
     revealedWord = word;
   }
