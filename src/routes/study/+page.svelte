@@ -36,6 +36,10 @@
   let editingCard: Card | null = null;
   let gardenerForm = { headword: '', definition: '', mnemonic: '', etymology: '', gloss_de: '' };
 
+  // Toast Notifications
+  let toastMessage = '';
+  let showToast = false;
+
   onMount(async () => {
     if (!deckId) return goto('/');
     await loadStats();
@@ -70,6 +74,15 @@
     }
   }
 
+  // Toast Notification System
+  function showToastMessage(message: string) {
+    toastMessage = message;
+    showToast = true;
+    setTimeout(() => {
+      showToast = false;
+    }, 2000);
+  }
+
   // Gardener Modal Functions
   function openGardenerModal(card: Card) {
     editingCard = card;
@@ -100,17 +113,19 @@
     if (!error) {
       await loadStats(); // Reload all cards
       closeGardenerModal();
+      showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');
     }
   }
 
   async function deleteCard(cardId: number) {
-    if (!confirm('Delete this card permanently?')) return;
+    if (!confirm($theme === 'ember' ? 'Compost this seed?' : 'Delete this card permanently?')) return;
 
     const { error } = await supabase.from('cards').delete().eq('id', cardId);
 
     if (!error) {
       await loadStats(); // Reload all cards
       closeGardenerModal();
+      showToastMessage($theme === 'ember' ? 'Seed composted.' : 'Card deleted.');
     }
   }
 
@@ -356,10 +371,10 @@
   {:else if view === 'study'}
     {#if $theme === 'ember'}
       <!-- EMBER GARDEN VIEW -->
-      <EmberGarden {queue} on:grade={handleEmberGrade} on:exit={() => view = 'summary'} />
+      <EmberGarden {queue} on:grade={handleEmberGrade} on:exit={() => view = 'lobby'} />
     {:else if $theme === 'frost'}
       <!-- FROST GLASS VIEW -->
-      <FrostGlass {queue} on:grade={handleFrostGrade} on:exit={() => view = 'summary'} />
+      <FrostGlass {queue} on:grade={handleFrostGrade} on:exit={() => view = 'lobby'} />
     {:else if currentCard}
       <!-- STANDARD CARD VIEW -->
       <div class="w-full relative perspective-1000">
@@ -512,7 +527,7 @@
           </h2>
           <button
             onclick={closeGardenerModal}
-            class="text-dim hover:text-accent transition-colors text-2xl leading-none">
+            class="text-dim hover:text-accent transition-colors text-2xl leading-none cursor-pointer">
             ✕
           </button>
         </div>
@@ -574,16 +589,27 @@
         <div class="flex gap-4 mt-8">
           <button
             onclick={saveCardEdits}
-            class="flex-1 py-4 bg-accent text-bg font-heading text-lg font-bold hover:shadow-[0_0_30px_currentColor/40] transition-all rounded-full">
+            class="flex-1 py-4 bg-accent text-bg font-heading text-lg font-bold hover:shadow-[0_0_30px_currentColor/40] transition-all rounded-full cursor-pointer">
             Save Changes
           </button>
           <button
             onclick={() => deleteCard(editingCard!.id)}
-            class="px-6 py-4 border-2 border-danger text-danger hover:bg-danger hover:text-bg font-heading text-lg transition-all rounded-full"
+            class="px-6 py-4 border-2 border-danger text-danger hover:bg-danger hover:text-bg font-heading text-lg transition-all rounded-full cursor-pointer"
             title={$theme === 'ember' ? 'Compost' : 'Delete'}>
             {$theme === 'ember' ? '🍂' : '🗑️'}
           </button>
         </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Toast Notification -->
+  {#if showToast}
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+      <div class="bg-accent/95 text-bg px-8 py-4 rounded-full shadow-[0_0_40px_currentColor/50] backdrop-blur-sm">
+        <p class="font-ember text-lg font-bold tracking-wide whitespace-nowrap">
+          {toastMessage}
+        </p>
       </div>
     </div>
   {/if}

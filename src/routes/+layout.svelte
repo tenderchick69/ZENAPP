@@ -21,10 +21,10 @@
 <div class="min-h-screen neural-grid scanline relative overflow-x-hidden transition-colors duration-500">
   <!-- Header -->
   <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm">
-    <div class="font-heading text-xl tracking-widest cursor-default">
+    <a href="/" class="font-heading text-xl tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
       <span class="text-accent animate-flicker">{$t.title_1}</span>
       <span class="text-danger ml-2">{$t.title_2}</span>
-    </div>
+    </a>
 
     <div class="flex items-center gap-3">
       <!-- HELP MODE TOGGLE -->

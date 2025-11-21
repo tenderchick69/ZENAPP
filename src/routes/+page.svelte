@@ -9,7 +9,25 @@
 
   async function loadDecks() {
     const { data } = await supabase.from('decks').select('*').order('created_at', { ascending: false });
-    decks = data || [];
+
+    if (data) {
+      // Fetch due counts for each deck
+      const now = new Date().toISOString();
+      const decksWithCounts = await Promise.all(
+        data.map(async (deck) => {
+          const { count } = await supabase
+            .from('cards')
+            .select('*', { count: 'exact', head: true })
+            .eq('deck_id', deck.id)
+            .lt('state', 5)
+            .or(`state.eq.0,due.lte.${now}`);
+
+          return { ...deck, dueCount: count || 0 };
+        })
+      );
+      decks = decksWithCounts;
+    }
+
     loading = false;
   }
 
@@ -80,6 +98,21 @@
                {deck.name}
             </h3>
 
+            <!-- Due Count (Bottom Center) -->
+            {#if deck.dueCount > 0}
+              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+                <div class="bg-orange-500/20 border border-orange-500/50 px-4 py-1 rounded-full backdrop-blur-sm">
+                  <span class="text-orange-400 font-ember text-lg font-bold shadow-[0_0_10px_rgba(255,69,0,0.5)]">
+                    {deck.dueCount}
+                  </span>
+                </div>
+              </div>
+            {:else}
+              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-emerald-500/50 text-2xl">
+                ✓
+              </div>
+            {/if}
+
             <!-- Delete Button (Bottom Right) -->
             <div class="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                <button onclick={(e) => deleteDeck(deck.id, e)} class="text-orange-900 hover:text-red-500 p-2 transition-colors" title="Extinguish">
@@ -106,6 +139,13 @@
                 <span class="font-body text-xs text-dim group-hover:text-accent group-hover:translate-x-2 transition-transform uppercase tracking-widest">
                   {$t.action_open}
                 </span>
+                {#if deck.dueCount > 0}
+                  <span class="bg-accent/20 border border-accent/50 px-3 py-1 rounded-full text-accent font-heading text-sm font-bold">
+                    {deck.dueCount}
+                  </span>
+                {:else}
+                  <span class="text-success text-lg">✓</span>
+                {/if}
               </div>
             </div>
           {/if}
@@ -145,9 +185,11 @@
     </div>
 
     <!-- Footer Links (AI only) -->
+    <!-- Hidden until AI generation is implemented
     <div class="flex justify-center gap-8 mt-24 font-body text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">
        <span class="text-dim cursor-not-allowed">[ {$t.btn_ai} ]</span>
     </div>
+    -->
 
     {#if totalMastered > 0}
       <div class="text-center mt-8">
