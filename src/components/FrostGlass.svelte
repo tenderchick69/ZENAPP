@@ -495,12 +495,12 @@
         <div class="flex gap-4 justify-center mt-4">
           <button
             onclick={() => handleDecision('pass')}
-            class="px-6 py-3 bg-[#2a4a6a]/80 hover:bg-[#2a4a6a] text-white rounded-lg transition-all font-hand text-lg">
+            class="px-6 py-3 bg-[#2a4a6a]/80 hover:bg-[#2a4a6a] text-white rounded-lg transition-all font-hand text-lg cursor-pointer">
             I knew it
           </button>
           <button
             onclick={() => handleDecision('fail')}
-            class="px-6 py-3 bg-[#a8d8ea]/20 hover:bg-[#a8d8ea]/30 text-[#a8d8ea] rounded-lg transition-all font-hand text-lg">
+            class="px-6 py-3 bg-[#a8d8ea]/20 hover:bg-[#a8d8ea]/30 text-[#a8d8ea] rounded-lg transition-all font-hand text-lg cursor-pointer">
             Show me again
           </button>
         </div>

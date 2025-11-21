@@ -333,7 +333,7 @@
 
       <!-- Footer -->
       <div class="mt-12 flex justify-center gap-8 text-xs font-body uppercase tracking-widest text-dim">
-         <button onclick={() => view = 'inspect'} class="hover:text-accent transition-colors">[ {$t.btn_inspect} ]</button>
+         <button onclick={() => view = 'inspect'} class="hover:text-accent transition-colors cursor-pointer">[ {$t.btn_inspect} ]</button>
          <a href="/" class="hover:text-main transition-colors">[ {$t.btn_exit} ]</a>
       </div>
     </div>

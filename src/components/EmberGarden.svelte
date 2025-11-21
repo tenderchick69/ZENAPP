@@ -364,11 +364,11 @@
         <!-- Controls -->
         <div class="flex gap-6 justify-center mt-4">
           <button onclick={() => handleDecision('pass')}
-            class="px-10 py-4 bg-yellow-900/10 border border-yellow-600/30 text-yellow-500 hover:bg-yellow-500/20 hover:border-yellow-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,215,0,0.05)]">
+            class="px-10 py-4 bg-yellow-900/10 border border-yellow-600/30 text-yellow-500 hover:bg-yellow-500/20 hover:border-yellow-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,215,0,0.05)] cursor-pointer">
             I knew it
           </button>
           <button onclick={() => handleDecision('fail')}
-            class="px-10 py-4 bg-orange-900/10 border border-orange-600/30 text-orange-500 hover:bg-orange-500/20 hover:border-orange-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,69,0,0.05)]">
+            class="px-10 py-4 bg-orange-900/10 border border-orange-600/30 text-orange-500 hover:bg-orange-500/20 hover:border-orange-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,69,0,0.05)] cursor-pointer">
             Show again
           </button>
         </div>
