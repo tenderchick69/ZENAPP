@@ -286,13 +286,11 @@
       <!-- Stats Grid with Cubic Buttons -->
       <div class="grid grid-cols-3 gap-6 mb-8 w-full max-w-2xl mx-auto">
         <!-- Column 1: Wilting / Due -->
-        <div class="flex flex-col items-center gap-4 w-full">
-          <Tooltip text="Cards scheduled for review right now.">
-            <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none">
-              <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
-              <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
-            </div>
-          </Tooltip>
+        <div class="flex flex-col items-center justify-center gap-4">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none w-full">
+            <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
+            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
+          </div>
           <Tooltip text="Study cards that are due for review.">
             <button
               onclick={() => startSession('standard')}
@@ -304,13 +302,11 @@
         </div>
 
         <!-- Column 2: Garden Size / Total -->
-        <div class="flex flex-col items-center gap-4 w-full">
-          <Tooltip text="Total cards in this deck.">
-            <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none">
-              <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
-              <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
-            </div>
-          </Tooltip>
+        <div class="flex flex-col items-center justify-center gap-4">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none w-full">
+            <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
+            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
+          </div>
           <Tooltip text="Review all cards in random order.">
             <button
               onclick={() => startSession('all')}
@@ -322,13 +318,11 @@
         </div>
 
         <!-- Column 3: Eternal / Mastered -->
-        <div class="flex flex-col items-center gap-4 w-full">
-          <Tooltip text="Cards fully memorized (Level 5).">
-            <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none">
-              <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
-              <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
-            </div>
-          </Tooltip>
+        <div class="flex flex-col items-center justify-center gap-4">
+          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none w-full">
+            <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
+            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
+          </div>
           <Tooltip text="Test your knowledge of mastered cards.">
             <button
               onclick={() => startSession('souls')}
