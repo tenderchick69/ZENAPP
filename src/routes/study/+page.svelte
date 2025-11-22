@@ -284,9 +284,9 @@
       </div>
 
       <!-- Stats Grid with Cubic Buttons -->
-      <div class="grid grid-cols-3 gap-4 mb-12">
+      <div class="grid grid-cols-3 gap-6 mb-8 w-full max-w-2xl mx-auto">
         <!-- Column 1: Wilting / Due -->
-        <div class="flex flex-col items-center gap-4">
+        <div class="flex flex-col items-center gap-4 w-full">
           <Tooltip text="Cards scheduled for review right now.">
             <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none">
               <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
@@ -304,7 +304,7 @@
         </div>
 
         <!-- Column 2: Garden Size / Total -->
-        <div class="flex flex-col items-center gap-4">
+        <div class="flex flex-col items-center gap-4 w-full">
           <Tooltip text="Total cards in this deck.">
             <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none">
               <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
@@ -322,7 +322,7 @@
         </div>
 
         <!-- Column 3: Eternal / Mastered -->
-        <div class="flex flex-col items-center gap-4">
+        <div class="flex flex-col items-center gap-4 w-full">
           <Tooltip text="Cards fully memorized (Level 5).">
             <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none">
               <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
@@ -341,26 +341,26 @@
       </div>
 
       <!-- Wildfire Row -->
-      <div class="flex flex-row items-center justify-center gap-4 mt-8 mb-8">
+      <div class="flex flex-row items-center justify-center gap-2 mt-8 mb-8">
         <Tooltip text="Number of cards for the Wildfire session.">
           <input
             type="number"
             bind:value={cramAmount}
-            class="w-16 text-center bg-transparent border-b-2 border-accent focus:outline-none focus:ring-0 font-ember text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+            class="w-16 h-12 text-center bg-transparent border border-white/20 rounded-lg focus:outline-none focus:ring-0 focus:border-accent font-ember text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
         </Tooltip>
         <Tooltip text="Study a random set of cards, even if not due.">
           <button
             onclick={() => startSession('overclock')}
-            class="rounded-full px-6 py-2 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-ember">
+            class="rounded-xl h-12 px-6 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-ember">
             {$t.mode_cram}
           </button>
         </Tooltip>
       </div>
 
       <!-- Footer -->
-      <div class="mt-12 flex justify-center gap-8 text-xs font-body uppercase tracking-widest text-dim">
-         <button onclick={() => view = 'inspect'} class="hover:text-accent transition-colors cursor-pointer">[ {$t.btn_inspect} ]</button>
-         <a href="/" class="hover:text-main transition-colors">[ {$t.btn_exit} ]</a>
+      <div class="mt-12 flex justify-center gap-8">
+         <button onclick={() => view = 'inspect'} class="text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-widest">[ {$t.btn_inspect} ]</button>
+         <a href="/" class="text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-widest">[ {$t.btn_exit} ]</a>
       </div>
     </div>
 
