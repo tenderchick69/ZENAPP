@@ -20,7 +20,7 @@ const DICTIONARY = {
 
     // Home
     btn_import: 'DATA INGESTION',
-    btn_ai: 'AI GENERATION OFFLINE',
+    btn_ai: 'AI NEURAL SYNTHESIS',
     no_decks: 'NO IMPLANTS DETECTED',
     btn_seed: 'INSTALL DEMO SHARD',
     deck_sub: 'COGNITIVE SHARD',
@@ -76,7 +76,15 @@ const DICTIONARY = {
     col_word: 'SHARD',
     col_lvl: 'LVL',
     col_due: 'NEXT SYNC',
-    btn_back: 'RETURN'
+    btn_back: 'RETURN',
+
+    // AI Generate
+    generateTitle: 'NEURAL SYNTHESIS LAB',
+    chatMode: 'NEURAL LINK',
+    quickMode: 'RAPID FABRICATION',
+    createDeck: 'INITIALIZE SYNTHESIS',
+    regenerate: 'RECALIBRATE',
+    importDeck: 'UPLOAD TO MATRIX'
   },
   zen: {
     // Global
@@ -86,7 +94,7 @@ const DICTIONARY = {
 
     // Home
     btn_import: 'Import CSV',
-    btn_ai: 'AI Generator (Locked)',
+    btn_ai: 'AI Generator',
     no_decks: 'The garden is empty.',
     btn_seed: 'Plant First Seed',
     deck_sub: 'Vocabulary Deck',
@@ -142,7 +150,15 @@ const DICTIONARY = {
     col_word: 'Word',
     col_lvl: 'Level',
     col_due: 'Due',
-    btn_back: 'Back'
+    btn_back: 'Back',
+
+    // AI Generate
+    generateTitle: 'Create New Deck',
+    chatMode: 'Guided Creation',
+    quickMode: 'Quick Create',
+    createDeck: 'Create Deck',
+    regenerate: 'Try Again',
+    importDeck: 'Add to Collection'
   },
   ember: {
     // Global
@@ -208,7 +224,15 @@ const DICTIONARY = {
     col_word: 'Ember',
     col_lvl: 'Heat',
     col_due: 'Next Glow',
-    btn_back: 'Return'
+    btn_back: 'Return',
+
+    // AI Generate
+    generateTitle: 'Forge New Knowledge',
+    chatMode: 'Speak to the Flame',
+    quickMode: 'Quick Spark',
+    createDeck: 'Ignite Creation',
+    regenerate: 'Rekindle',
+    importDeck: 'Add to Garden'
   },
   frost: {
     // Global
@@ -274,7 +298,15 @@ const DICTIONARY = {
     col_word: 'Word',
     col_lvl: 'Clarity',
     col_due: 'Next Fog',
-    btn_back: 'Back'
+    btn_back: 'Back',
+
+    // AI Generate
+    generateTitle: 'Crystallize Words',
+    chatMode: 'Whisper to Frost',
+    quickMode: 'Flash Freeze',
+    createDeck: 'Form Crystal',
+    regenerate: 'Reshape',
+    importDeck: 'Preserve in Ice'
   }
 };
 

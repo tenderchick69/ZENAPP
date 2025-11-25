@@ -182,12 +182,12 @@
       </a>
     </div>
 
-    <!-- Footer Links (AI only) -->
-    <!-- Hidden until AI generation is implemented
-    <div class="flex justify-center gap-8 mt-24 font-body text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">
-       <span class="text-dim cursor-not-allowed">[ {$t.btn_ai} ]</span>
+    <!-- AI Generation Link -->
+    <div class="flex justify-center gap-8 mt-24 font-body text-xs uppercase tracking-widest">
+      <a href="/generate" class="text-accent hover:text-success transition-colors border border-accent/30 hover:border-success px-6 py-3 tracking-wider">
+        [ {$t.btn_ai} ]
+      </a>
     </div>
-    -->
 
     {#if totalMastered > 0}
       <div class="text-center mt-8">
