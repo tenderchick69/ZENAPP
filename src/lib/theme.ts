@@ -37,7 +37,7 @@ const DICTIONARY = {
     lobby_title: 'NEURAL LOBBY',
     lobby_id: 'ID',
     lobby_status: 'NET_STATUS: ONLINE',
-    stat_due: 'CRITICAL (DUE)',
+    stat_due: 'CRITICAL',
     stat_learn: 'IN TRANSIT',
     stat_master: 'MASTERED',
     mode_std: 'STANDARD EXECUTION',

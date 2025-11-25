@@ -295,7 +295,11 @@
             <button
               onclick={() => startSession('standard')}
               disabled={stats.due === 0}
-              class="w-24 h-24 aspect-square rounded-xl border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer">
+              class="w-24 h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer
+                {$theme === 'ember' ? 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black' :
+                 $theme === 'frost' ? 'border-slate-400 text-slate-300 hover:bg-slate-400 hover:text-[#1a2a3a]' :
+                 $theme === 'syndicate' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
+                 'border-stone-500 text-stone-400 hover:bg-stone-500 hover:text-[#1c1917]'}">
               Study
             </button>
           </Tooltip>
@@ -311,7 +315,11 @@
             <button
               onclick={() => startSession('all')}
               disabled={stats.learning === 0}
-              class="w-24 h-24 aspect-square rounded-xl border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer">
+              class="w-24 h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer
+                {$theme === 'ember' ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black' :
+                 $theme === 'frost' ? 'border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-[#1a2a3a]' :
+                 $theme === 'syndicate' ? 'border-lime-400 text-lime-400 hover:bg-lime-400 hover:text-black' :
+                 'border-lime-600 text-lime-500 hover:bg-lime-600 hover:text-[#1c1917]'}">
               All
             </button>
           </Tooltip>
@@ -327,7 +335,11 @@
             <button
               onclick={() => startSession('souls')}
               disabled={stats.mastered === 0}
-              class="w-24 h-24 aspect-square rounded-xl border-2 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer">
+              class="w-24 h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer
+                {$theme === 'ember' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
+                 $theme === 'frost' ? 'border-sky-400 text-sky-300 hover:bg-sky-400 hover:text-[#1a2a3a]' :
+                 $theme === 'syndicate' ? 'border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black' :
+                 'border-teal-500 text-teal-400 hover:bg-teal-500 hover:text-[#1c1917]'}">
               {$theme === 'ember' ? 'Souls' : $theme === 'frost' ? 'Traces' : 'Souls'}
             </button>
           </Tooltip>
