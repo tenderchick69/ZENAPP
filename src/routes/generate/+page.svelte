@@ -23,11 +23,74 @@
   let passwordError = '';
   let isVerifying = false;
 
+  // Loading messages
+  let loadingMessageIndex = 0;
+  let dots = '';
+  let messageInterval: number | undefined;
+  let dotInterval: number | undefined;
+
+  const LOADING_MESSAGES = {
+    syndicate: [
+      'Initializing neural pathways',
+      'Synthesizing cognitive data',
+      'Compiling lexical matrices',
+      'Uploading to neural network'
+    ],
+    zen: [
+      'Gathering words quietly',
+      'Letting knowledge flow',
+      'Breathing meaning into cards',
+      'Cultivating your deck'
+    ],
+    ember: [
+      'Stoking the flames of knowledge',
+      'Forging your vocabulary',
+      'Heating up the words',
+      'Igniting neural sparks'
+    ],
+    frost: [
+      'Crystallizing words',
+      'Freezing knowledge in place',
+      'Forming ice patterns',
+      'Condensing meanings'
+    ]
+  };
+
+  $: currentThemeMessages = LOADING_MESSAGES[$theme as keyof typeof LOADING_MESSAGES] || LOADING_MESSAGES.zen;
+  $: currentLoadingMessage = currentThemeMessages[loadingMessageIndex];
+
+  function startLoadingAnimation() {
+    loadingMessageIndex = 0;
+    dots = '';
+
+    // Rotate messages every 2.5 seconds
+    messageInterval = setInterval(() => {
+      loadingMessageIndex = (loadingMessageIndex + 1) % currentThemeMessages.length;
+    }, 2500) as unknown as number;
+
+    // Animate dots every 500ms
+    dotInterval = setInterval(() => {
+      dots = dots.length >= 3 ? '' : dots + '.';
+    }, 500) as unknown as number;
+  }
+
+  function stopLoadingAnimation() {
+    if (messageInterval) clearInterval(messageInterval);
+    if (dotInterval) clearInterval(dotInterval);
+    loadingMessageIndex = 0;
+    dots = '';
+  }
+
   onMount(() => {
     // Check if already unlocked in this session
     if (typeof sessionStorage !== 'undefined') {
       isUnlocked = sessionStorage.getItem('admin_unlocked') === 'true';
     }
+
+    // Cleanup intervals on unmount
+    return () => {
+      stopLoadingAnimation();
+    };
   });
 
   async function verifyPassword() {
@@ -68,6 +131,7 @@
   async function handleGenerate(params: GenerationParams) {
     state = 'loading';
     error = null;
+    startLoadingAnimation();
 
     try {
       const response = await fetch('/api/generate-deck', {
@@ -89,6 +153,8 @@
       console.error('Generation error:', e);
       error = e.message || 'Failed to generate deck';
       state = 'input';
+    } finally {
+      stopLoadingAnimation();
     }
   }
 
@@ -179,14 +245,7 @@
   {:else if state === 'loading'}
     <div class="loading-state">
       <div class="spinner"></div>
-      <p class="loading-text">Generating your deck...</p>
-      <p class="loading-subtext">
-        {#if mode === 'quick'}
-          Creating {generatedCards.length || '...'} cards...
-        {:else}
-          Crafting something special for you...
-        {/if}
-      </p>
+      <p class="loading-text">{currentLoadingMessage}{dots}</p>
     </div>
 
   {:else if state === 'preview'}
@@ -322,12 +381,9 @@
   .loading-text {
     font-size: 1.2rem;
     font-weight: 600;
-    color: var(--color-main);
-  }
-
-  .loading-subtext {
     color: var(--color-accent);
-    font-size: 0.9rem;
+    min-height: 1.5em;
+    letter-spacing: 0.02em;
   }
 
   /* Theme-specific overrides */
@@ -350,6 +406,34 @@
 
   [data-theme="zen"] .mode-toggle {
     border-color: rgba(168, 197, 197, 0.2);
+  }
+
+  /* Theme-specific loading messages */
+  [data-theme="syndicate"] .loading-text {
+    text-transform: uppercase;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 10px var(--color-accent);
+  }
+
+  [data-theme="ember"] .loading-text {
+    background: linear-gradient(135deg, #ffd700, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+  }
+
+  [data-theme="frost"] .loading-text {
+    color: #a0d8f1;
+    text-shadow: 0 0 8px rgba(160, 216, 241, 0.3);
+    font-weight: 500;
+  }
+
+  [data-theme="zen"] .loading-text {
+    color: var(--color-accent);
+    font-weight: 500;
+    letter-spacing: 0.03em;
   }
 
   /* Password Gate Styles */
