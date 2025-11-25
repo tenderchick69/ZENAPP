@@ -13,7 +13,7 @@
   let deckId = page.url.searchParams.get('id');
   let view: 'lobby' | 'study' | 'summary' | 'inspect' = 'lobby';
   let cramAmount = 20;
-  let sessionMode: 'standard' | 'weakness' | 'overclock' = 'standard';
+  let sessionMode: 'standard' | 'all' | 'souls' | 'overclock' = 'standard';
 
   // Data
   let queue: Card[] = [];
