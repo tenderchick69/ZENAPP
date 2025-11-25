@@ -8,7 +8,7 @@
 </script>
 
 <div
-  class="relative inline-block w-full"
+  class="relative inline-flex"
   onmouseenter={() => hovered = true}
   onmouseleave={() => hovered = false}
   role="group"

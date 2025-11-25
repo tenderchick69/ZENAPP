@@ -284,9 +284,9 @@
       </div>
 
       <!-- Stats Grid with Cubic Buttons -->
-      <div class="grid grid-cols-3 gap-6 mb-8 w-full max-w-2xl mx-auto">
+      <div class="grid grid-cols-3 gap-8 mb-12 w-full max-w-2xl mx-auto">
         <!-- Column 1: Wilting / Due -->
-        <div class="flex flex-col items-center justify-center gap-4">
+        <div class="flex flex-col items-center gap-6">
           <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none w-full">
             <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
@@ -302,7 +302,7 @@
         </div>
 
         <!-- Column 2: Garden Size / Total -->
-        <div class="flex flex-col items-center justify-center gap-4">
+        <div class="flex flex-col items-center gap-6">
           <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none w-full">
             <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
@@ -318,7 +318,7 @@
         </div>
 
         <!-- Column 3: Eternal / Mastered -->
-        <div class="flex flex-col items-center justify-center gap-4">
+        <div class="flex flex-col items-center gap-6">
           <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none w-full">
             <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
             <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
@@ -335,7 +335,7 @@
       </div>
 
       <!-- Wildfire Row -->
-      <div class="flex flex-row items-center justify-center gap-2 mt-8 mb-8">
+      <div class="flex flex-row items-center justify-center gap-6 mb-12">
         <Tooltip text="Number of cards for the Wildfire session.">
           <input
             type="number"
@@ -352,7 +352,7 @@
       </div>
 
       <!-- Footer -->
-      <div class="mt-12 flex justify-center gap-8">
+      <div class="flex justify-center gap-8">
          <button onclick={() => view = 'inspect'} class="text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-widest">[ {$t.btn_inspect} ]</button>
          <a href="/" class="text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-widest">[ {$t.btn_exit} ]</a>
       </div>
