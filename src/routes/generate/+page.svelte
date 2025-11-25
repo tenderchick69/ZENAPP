@@ -164,9 +164,9 @@
     </div>
 
     {#if mode === 'chat'}
-      <AIChat {onGenerate:handleGenerate} />
+      <AIChat onGenerate={handleGenerate} />
     {:else}
-      <QuickGenerate {onGenerate:handleGenerate} />
+      <QuickGenerate onGenerate={handleGenerate} />
     {/if}
 
     {#if error}
