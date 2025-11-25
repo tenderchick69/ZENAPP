@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { theme, t } from '$lib/theme';
-  import AIChat from '$components/AIChat.svelte';
-  import QuickGenerate from '$components/QuickGenerate.svelte';
-  import DeckPreview from '$components/DeckPreview.svelte';
-  import Tooltip from '$components/Tooltip.svelte';
+  import AIChat from '../../components/AIChat.svelte';
+  import QuickGenerate from '../../components/QuickGenerate.svelte';
+  import DeckPreview from '../../components/DeckPreview.svelte';
+  import Tooltip from '../../components/Tooltip.svelte';
   import type { GenerationParams } from '$lib/prompts';
   import type { CardData } from '$lib/openrouter';
 
