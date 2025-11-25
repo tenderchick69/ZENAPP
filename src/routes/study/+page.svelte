@@ -299,7 +299,7 @@
                 {$theme === 'ember' ? 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black' :
                  $theme === 'frost' ? 'border-slate-400 text-slate-300 hover:bg-slate-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
-                 'border-stone-500 text-stone-400 hover:bg-stone-500 hover:text-[#1c1917]'}">
+                 'border-[#c9a89a] text-[#c9a89a] hover:bg-[#c9a89a] hover:text-[#1c1917]'}">
               Study
             </button>
           </Tooltip>
@@ -319,7 +319,7 @@
                 {$theme === 'ember' ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black' :
                  $theme === 'frost' ? 'border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-lime-400 text-lime-400 hover:bg-lime-400 hover:text-black' :
-                 'border-lime-600 text-lime-500 hover:bg-lime-600 hover:text-[#1c1917]'}">
+                 'border-[#8a9a5b] text-[#8a9a5b] hover:bg-[#8a9a5b] hover:text-[#1c1917]'}">
               All
             </button>
           </Tooltip>
@@ -339,8 +339,8 @@
                 {$theme === 'ember' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
                  $theme === 'frost' ? 'border-sky-400 text-sky-300 hover:bg-sky-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black' :
-                 'border-teal-500 text-teal-400 hover:bg-teal-500 hover:text-[#1c1917]'}">
-              {$theme === 'ember' ? 'Souls' : $theme === 'frost' ? 'Traces' : 'Souls'}
+                 'border-[#a8c5c5] text-[#a8c5c5] hover:bg-[#a8c5c5] hover:text-[#1c1917]'}">
+              {$theme === 'ember' ? 'Souls' : $theme === 'frost' ? 'Traces' : $theme === 'syndicate' ? 'Archive' : 'Essence'}
             </button>
           </Tooltip>
         </div>
