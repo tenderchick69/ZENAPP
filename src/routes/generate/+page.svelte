@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { theme, t } from '$lib/theme';
   import AIChat from '$components/AIChat.svelte';
   import QuickGenerate from '$components/QuickGenerate.svelte';
@@ -15,6 +16,54 @@
   let generatedCards: CardData[] = [];
   let deckName = '';
   let error: string | null = null;
+
+  // Password gate
+  let isUnlocked = false;
+  let passwordInput = '';
+  let passwordError = '';
+  let isVerifying = false;
+
+  onMount(() => {
+    // Check if already unlocked in this session
+    if (typeof sessionStorage !== 'undefined') {
+      isUnlocked = sessionStorage.getItem('admin_unlocked') === 'true';
+    }
+  });
+
+  async function verifyPassword() {
+    if (!passwordInput.trim()) {
+      passwordError = 'Please enter a password';
+      return;
+    }
+
+    isVerifying = true;
+    passwordError = '';
+
+    try {
+      const response = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordInput }),
+      });
+
+      const data = await response.json();
+
+      if (data.valid) {
+        isUnlocked = true;
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('admin_unlocked', 'true');
+        }
+        passwordInput = '';
+      } else {
+        passwordError = 'Invalid password';
+        passwordInput = '';
+      }
+    } catch (e) {
+      passwordError = 'Verification failed';
+    } finally {
+      isVerifying = false;
+    }
+  }
 
   async function handleGenerate(params: GenerationParams) {
     state = 'loading';
@@ -60,7 +109,41 @@
     <h1 class="page-title">{$t.generateTitle || 'AI Deck Generator'}</h1>
   </header>
 
-  {#if state === 'input'}
+  {#if !isUnlocked}
+    <!-- Password Gate -->
+    <div class="password-gate">
+      <div class="password-box">
+        <h2 class="gate-title">🔒 Protected Access</h2>
+        <p class="gate-message">This feature is password-protected to prevent unauthorized API usage.</p>
+
+        <form onsubmit={(e) => { e.preventDefault(); verifyPassword(); }}>
+          <input
+            type="password"
+            bind:value={passwordInput}
+            placeholder="Enter admin password"
+            class="password-input"
+            disabled={isVerifying}
+            autofocus
+          />
+
+          {#if passwordError}
+            <p class="password-error">{passwordError}</p>
+          {/if}
+
+          <button type="submit" class="unlock-btn" disabled={isVerifying}>
+            {#if isVerifying}
+              Verifying...
+            {:else}
+              🔓 Unlock
+            {/if}
+          </button>
+        </form>
+
+        <p class="gate-note">Session unlocked until browser closes</p>
+      </div>
+    </div>
+
+  {:else if state === 'input'}
     <div class="mode-toggle">
       <Tooltip text="Chat with AI to describe exactly what you want">
         <button
@@ -269,6 +352,98 @@
     border-color: rgba(168, 197, 197, 0.2);
   }
 
+  /* Password Gate Styles */
+  .password-gate {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 2rem;
+  }
+
+  .password-box {
+    max-width: 450px;
+    width: 100%;
+    padding: 3rem 2rem;
+    background: var(--color-panel);
+    border: 2px solid var(--color-dim);
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .gate-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-main);
+    margin: 0 0 1rem 0;
+  }
+
+  .gate-message {
+    color: var(--color-accent);
+    font-size: 0.95rem;
+    margin: 0 0 2rem 0;
+    line-height: 1.5;
+  }
+
+  .password-input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    background: var(--color-bg);
+    border: 2px solid var(--color-dim);
+    border-radius: 8px;
+    color: var(--color-main);
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .password-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  .password-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .password-error {
+    color: var(--color-danger);
+    font-size: 0.9rem;
+    margin: -0.5rem 0 1rem 0;
+  }
+
+  .unlock-btn {
+    width: 100%;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .unlock-btn:hover:not(:disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .unlock-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .gate-note {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--color-dim);
+    opacity: 0.7;
+  }
+
   @media (max-width: 640px) {
     .page-title {
       font-size: 2rem;
@@ -281,6 +456,14 @@
 
     .mode-btn {
       width: 100%;
+    }
+
+    .password-box {
+      padding: 2rem 1.5rem;
+    }
+
+    .gate-title {
+      font-size: 1.5rem;
     }
   }
 </style>
