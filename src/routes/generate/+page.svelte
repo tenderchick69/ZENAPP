@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { onMount, beforeNavigate } from 'svelte';
+  import { onMount } from 'svelte';
+  import { beforeNavigate } from '$app/navigation';
   import { theme, t } from '$lib/theme';
   import AIChat from '../../components/AIChat.svelte';
   import QuickGenerate from '../../components/QuickGenerate.svelte';
