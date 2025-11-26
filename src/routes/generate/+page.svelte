@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, beforeNavigate } from 'svelte';
   import { theme, t } from '$lib/theme';
   import AIChat from '../../components/AIChat.svelte';
   import QuickGenerate from '../../components/QuickGenerate.svelte';
@@ -81,10 +81,44 @@
     dots = '';
   }
 
+  // Navigation guard for unsaved decks
+  beforeNavigate((navigation) => {
+    if (state === 'preview' && generatedCards.length > 0) {
+      if (!confirm('You have an unsaved deck! Leave anyway?')) {
+        navigation.cancel();
+      }
+    }
+  });
+
   onMount(() => {
     // Check if already unlocked in this session
     if (typeof sessionStorage !== 'undefined') {
       isUnlocked = sessionStorage.getItem('admin_unlocked') === 'true';
+
+      // Check for unsaved deck from previous session
+      const savedDeck = sessionStorage.getItem('unsavedDeck');
+      if (savedDeck) {
+        try {
+          const data = JSON.parse(savedDeck);
+          const ageMinutes = (Date.now() - data.timestamp) / 1000 / 60;
+
+          // Only restore if less than 2 hours old
+          if (ageMinutes < 120) {
+            if (confirm(`You have an unsaved deck from earlier (${data.deckName}). Restore it?`)) {
+              generatedCards = data.cards;
+              deckName = data.deckName;
+              state = 'preview';
+            } else {
+              sessionStorage.removeItem('unsavedDeck');
+            }
+          } else {
+            sessionStorage.removeItem('unsavedDeck');
+          }
+        } catch (e) {
+          console.error('Failed to restore saved deck:', e);
+          sessionStorage.removeItem('unsavedDeck');
+        }
+      }
     }
 
     // Cleanup intervals on unmount
@@ -149,6 +183,15 @@
       generatedCards = data.cards;
       deckName = data.deckName;
       state = 'preview';
+
+      // Auto-save to sessionStorage as backup
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('unsavedDeck', JSON.stringify({
+          cards: generatedCards,
+          deckName: deckName,
+          timestamp: Date.now()
+        }));
+      }
     } catch (e: any) {
       console.error('Generation error:', e);
       error = e.message || 'Failed to generate deck';

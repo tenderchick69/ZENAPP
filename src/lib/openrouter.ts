@@ -65,10 +65,22 @@ export async function generateDeckContent(
   }
 
   const data = await response.json();
-  const content = data.choices?.[0]?.message?.content;
+  let content = data.choices?.[0]?.message?.content;
 
   if (!content) {
     throw new Error('No content in OpenRouter response');
+  }
+
+  // Clean up JSON response - strip markdown blocks and extra text
+  content = content.trim();
+
+  // Remove markdown code blocks if AI added them
+  content = content.replace(/^```json\n?/i, '').replace(/\n?```$/i, '');
+
+  // Try to extract JSON object if there's extra text
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    content = jsonMatch[0];
   }
 
   // Parse JSON response

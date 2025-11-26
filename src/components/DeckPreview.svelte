@@ -42,7 +42,12 @@
 
       if (cardsError) throw cardsError;
 
-      // 3. Success! Redirect to home
+      // 3. Clear saved deck from sessionStorage
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('unsavedDeck');
+      }
+
+      // 4. Success! Redirect to home
       goto('/');
     } catch (e: any) {
       console.error('Import failed:', e);

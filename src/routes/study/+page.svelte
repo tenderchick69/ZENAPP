@@ -135,7 +135,7 @@
     let query = supabase.from('cards').select('*').eq('deck_id', deckId);
 
     if (mode === 'standard') query = query.lt('state', 5).or(`state.eq.0,due.lte.${now}`).order('due', { ascending: true }).limit(50);
-    else if (mode === 'all') query = query.gt('state', 0).lt('state', 5).limit(50);
+    else if (mode === 'all') query = query.lt('state', 5).limit(50);
     else if (mode === 'overclock') query = query.limit(cramAmount);
     else if (mode === 'souls') query = query.eq('state', 5).limit(50);
 
@@ -314,7 +314,7 @@
           <Tooltip text="Review all cards in random order.">
             <button
               onclick={() => startSession('all')}
-              disabled={stats.learning === 0}
+              disabled={stats.total - stats.mastered === 0}
               class="w-24 h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer
                 {$theme === 'ember' ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black' :
                  $theme === 'frost' ? 'border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-[#1a2a3a]' :

@@ -52,7 +52,9 @@ CRITICAL RULES:
 - Be accurate - don't make up words or false etymologies
 - Always provide all required fields (use empty string "" if field not applicable)
 
-Remember: This is NOT Duolingo. This is real language learning.`;
+Remember: This is NOT Duolingo. This is real language learning.
+
+CRITICAL: Your response must be ONLY valid JSON. No markdown, no \`\`\`json blocks, no explanation before or after. Just the raw JSON object starting with { and ending with }`;
 }
 
 export function buildUserPrompt(params: GenerationParams): string {
