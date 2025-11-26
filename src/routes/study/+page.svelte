@@ -161,9 +161,21 @@
     isEditing = false;
   }
 
-  function speak(text: string) {
+  function speak(text: string, lang?: string) {
     if (!window.speechSynthesis) return;
+
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
     const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.8; // Slightly slower for learning
+    u.volume = 1.0;
+
+    // Set language if provided (format: 'ko-KR', 'ja-JP', etc.)
+    if (lang) {
+      u.lang = lang;
+    }
+
     window.speechSynthesis.speak(u);
   }
 
@@ -409,8 +421,8 @@
       <FrostGlass {queue} on:grade={handleFrostGrade} on:exit={() => view = 'lobby'} />
     {:else if currentCard}
       <!-- STANDARD CARD VIEW -->
-      <div class="w-full relative perspective-1000">
-        <div class="border border-dim bg-panel p-10 h-[600px] flex flex-col justify-between shadow-2xl relative overflow-hidden transition-colors">
+      <div class="w-full max-w-3xl mx-auto relative perspective-1000">
+        <div class="border border-dim bg-panel p-12 min-h-[700px] flex flex-col justify-between shadow-2xl relative overflow-hidden transition-colors rounded-2xl">
 
           <!-- Pips -->
           <div class="flex justify-between items-center mb-2">
@@ -430,11 +442,12 @@
         <div class="flex-1 flex flex-col justify-center items-center overflow-y-auto text-center relative group py-4">
 
            <!-- Audio/Edit Buttons -->
-           <div class="absolute top-0 right-0 z-10">
+           <div class="absolute top-0 right-0 z-10 flex gap-2">
              <button onclick={(e) => { e.stopPropagation(); if (currentCard) speak(currentCard.headword); }}
-               aria-label="Play audio"
-               class="p-2 text-dim hover:text-accent transition-colors">
-               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+               aria-label="Play pronunciation"
+               title="Listen to pronunciation"
+               class="p-3 text-accent hover:text-success transition-all hover:scale-110 bg-panel/50 hover:bg-panel rounded-lg border border-transparent hover:border-accent/30">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
              </button>
            </div>
            <div class="absolute top-0 left-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -456,37 +469,38 @@
              </div>
            {:else}
              <button type="button"
-                 class="text-5xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors bg-transparent border-none"
+                 class="text-6xl md:text-7xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors bg-transparent border-none"
+                 style="text-shadow: 0 2px 8px rgba(0,0,0,0.15);"
                  onclick={() => { if (currentCard) speak(currentCard.headword); }}>
                  {currentCard.headword}
              </button>
 
              {#if isRevealed}
-               <div class="space-y-6 w-full max-w-md" class:animate-glitch={$theme === 'syndicate'}>
-                  {#if currentCard.ipa}<p class="text-dim font-body text-sm">/{currentCard.ipa}/</p>{/if}
-                  <p class="text-2xl text-accent font-body leading-relaxed">{currentCard.definition}</p>
+               <div class="space-y-6 w-full max-w-xl" class:animate-glitch={$theme === 'syndicate'}>
+                  {#if currentCard.ipa}<p class="text-dim font-body text-base">/{currentCard.ipa}/</p>{/if}
+                  <p class="text-3xl text-accent font-body leading-relaxed">{currentCard.definition}</p>
 
                   <!-- Rich Data Block -->
                   {#if currentCard.mnemonic || currentCard.etymology}
                     <div class="grid gap-4 text-left border-t border-dim/30 pt-4 mt-4">
                       {#if currentCard.mnemonic}
-                        <div class="bg-dim/10 p-3 rounded border border-dim/20 relative group/hint">
-                          <span class="text-[10px] uppercase text-danger font-heading block mb-1">Mnemonic</span>
-                          <p class="text-sm font-body text-main blur-[2px] group-hover/hint:blur-0 transition-all cursor-help">{currentCard.mnemonic}</p>
+                        <div class="bg-dim/10 p-4 rounded border border-dim/20 relative group/hint">
+                          <span class="text-xs uppercase text-danger font-heading block mb-2">Mnemonic</span>
+                          <p class="text-base font-body text-main blur-[2px] group-hover/hint:blur-0 transition-all cursor-help leading-relaxed">{currentCard.mnemonic}</p>
                         </div>
                       {/if}
 
                       {#if currentCard.etymology}
-                        <div>
-                          <span class="text-[10px] uppercase text-dim font-heading">Etymology</span>
-                          <p class="text-xs font-body text-dim italic">{currentCard.etymology}</p>
+                        <div class="bg-dim/5 p-3 rounded">
+                          <span class="text-xs uppercase text-accent/80 font-heading block mb-1">Etymology</span>
+                          <p class="text-base font-body text-main/90 italic leading-relaxed">{currentCard.etymology}</p>
                         </div>
                       {/if}
                     </div>
                   {/if}
 
                   {#if currentCard.example}
-                    <div class="text-sm text-dim border-l-2 border-danger pl-4 text-left italic">
+                    <div class="text-base text-main/80 border-l-2 border-danger pl-4 text-left italic leading-relaxed">
                       "{currentCard.example}"
                     </div>
                   {/if}
