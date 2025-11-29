@@ -3,9 +3,11 @@ export type Card = {
   deck_id: number;
   headword: string;
   definition: string;
+  synonyms?: string;
   pos: string;
   ipa: string;
   example: string;
+  example_gloss?: string;
   gloss_de?: string;
   mnemonic?: string;
   etymology?: string;

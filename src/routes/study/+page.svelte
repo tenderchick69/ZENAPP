@@ -480,6 +480,14 @@
                   {#if currentCard.ipa}<p class="text-dim font-body text-base">/{currentCard.ipa}/</p>{/if}
                   <p class="text-3xl text-accent font-body leading-relaxed">{currentCard.definition}</p>
 
+                  <!-- Synonyms Section -->
+                  {#if currentCard.synonyms}
+                    <div class="bg-success/5 p-3 rounded border border-success/20">
+                      <span class="text-xs uppercase text-success/80 font-heading block mb-1">Related Words</span>
+                      <p class="text-base font-body text-success leading-relaxed">{currentCard.synonyms}</p>
+                    </div>
+                  {/if}
+
                   <!-- Rich Data Block -->
                   {#if currentCard.mnemonic || currentCard.etymology}
                     <div class="grid gap-4 text-left border-t border-dim/30 pt-4 mt-4">
@@ -500,8 +508,15 @@
                   {/if}
 
                   {#if currentCard.example}
-                    <div class="text-base text-main/80 border-l-2 border-danger pl-4 text-left italic leading-relaxed">
-                      "{currentCard.example}"
+                    <div class="border-l-2 border-danger pl-4 text-left space-y-2">
+                      <p class="text-base text-main/90 italic leading-relaxed font-bold">
+                        "{currentCard.example}"
+                      </p>
+                      {#if currentCard.example_gloss}
+                        <p class="text-sm text-dim italic leading-relaxed">
+                          "{currentCard.example_gloss}"
+                        </p>
+                      {/if}
                     </div>
                   {/if}
                </div>

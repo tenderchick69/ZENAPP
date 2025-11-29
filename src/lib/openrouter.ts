@@ -2,10 +2,11 @@
 export interface CardData {
   headword: string;
   definition: string;
+  synonyms?: string;
   pos: string;
   ipa: string;
   example: string;
-  exampleTranslation?: string;
+  exampleGloss?: string;
   mnemonic: string;
   etymology: string;
   tags: string;
@@ -110,10 +111,11 @@ export async function generateDeckContent(
     return {
       headword: card.headword || 'Unknown',
       definition: card.definition || '',
+      synonyms: card.synonyms || '',
       pos: card.pos || '',
       ipa: card.ipa || '',
       example: card.example || '',
-      exampleTranslation: card.exampleTranslation || '',
+      exampleGloss: card.exampleGloss || '',
       mnemonic: card.mnemonic || '',
       etymology: card.etymology || '',
       tags: card.tags || '',
@@ -139,9 +141,11 @@ export function prepareCardsForDb(cards: CardData[], deckId: number) {
       deck_id: deckId,
       headword: card.headword.trim(),
       definition: card.definition.trim(),
+      synonyms: card.synonyms?.trim() || '',
       pos: card.pos.trim(),
       ipa: card.ipa.trim(),
       example: card.example.trim(),
+      example_gloss: card.exampleGloss?.trim() || '',
       mnemonic: card.mnemonic.trim(),
       etymology: card.etymology.trim(),
       tags: card.tags.trim(),

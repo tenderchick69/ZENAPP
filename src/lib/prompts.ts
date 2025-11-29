@@ -21,17 +21,24 @@ OUTPUT FORMAT (exact structure required):
   "cards": [
     {
       "headword": "The word/phrase in the target language",
-      "definition": "Clear definition/translation in ${nativeLanguage}",
+      "definition": "Clear, concise meaning in ${nativeLanguage} (1-2 short definitions, NOT a paragraph)",
+      "synonyms": "2-4 related words in TARGET language, comma-separated (e.g., if Korean word: 멋지다, 굉장하다, 최고)",
       "pos": "Part of speech: noun, verb, adj, adv, phrase, interjection, etc.",
       "ipa": "Pronunciation guide (IPA notation or romanization)",
       "example": "Natural example sentence in the target language",
-      "exampleTranslation": "Translation of the example sentence in ${nativeLanguage}",
+      "exampleGloss": "Translation of the example sentence in ${nativeLanguage}",
       "mnemonic": "Creative memory aid, cultural context, or usage tip",
       "etymology": "Word origin or interesting background (if relevant, otherwise empty string)",
       "tags": "Comma-separated tags for categorization (e.g., 'casual,informal,young')"
     }
   ]
 }
+
+IMPORTANT FIELD REQUIREMENTS:
+- **definition**: Keep SHORT - 1-3 words in ${nativeLanguage}. NOT a full sentence.
+- **synonyms**: ALWAYS in the TARGET language (Korean synonyms for Korean words, Japanese for Japanese, etc.). Provide 2-4 related words.
+- **exampleGloss**: ALWAYS translate the example sentence so learners understand the context.
+- **mnemonic**: Include cultural context, memory tricks, usage warnings for slang/taboo words.
 
 QUALITY GUIDELINES:
 1. **Be culturally authentic** - Use phrases native speakers ACTUALLY say, not textbook garbage

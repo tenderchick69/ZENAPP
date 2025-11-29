@@ -92,8 +92,9 @@
         <tr>
           <th>Word</th>
           <th>Meaning</th>
-          <th>POS</th>
+          <th>Synonyms</th>
           <th>Example</th>
+          <th>Translation</th>
           <th>Mnemonic</th>
         </tr>
       </thead>
@@ -102,8 +103,9 @@
           <tr>
             <td class="headword">{card.headword}</td>
             <td>{card.definition}</td>
-            <td class="pos">{card.pos}</td>
+            <td class="synonyms">{card.synonyms || '-'}</td>
             <td class="example">{card.example}</td>
+            <td class="example-gloss">{card.exampleGloss || '-'}</td>
             <td class="mnemonic">{card.mnemonic}</td>
           </tr>
         {/each}
