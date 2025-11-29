@@ -12,7 +12,7 @@
   type Mode = 'chat' | 'quick';
   type State = 'input' | 'loading' | 'preview';
 
-  let mode: Mode = 'chat';
+  let mode: Mode = 'quick';
   let state: State = 'input';
   let generatedCards: CardData[] = [];
   let deckName = '';

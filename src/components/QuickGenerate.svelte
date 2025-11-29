@@ -28,14 +28,6 @@
   <div class="form-grid">
 
     <div class="form-group">
-      <label for="native-lang">Your Language (definitions in)</label>
-      <select id="native-lang" bind:value={nativeLanguage}>
-        <option value="English">🇬🇧 English</option>
-        <option value="German">🇩🇪 German</option>
-      </select>
-    </div>
-
-    <div class="form-group">
       <label for="target-lang">Language to Learn</label>
       <select id="target-lang" bind:value={targetLanguage}>
         {#each SUPPORTED_LANGUAGES as lang}
