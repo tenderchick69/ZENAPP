@@ -24,10 +24,19 @@
     error = null;
 
     try {
-      // 1. Create deck in Supabase
+      // Get current user
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        throw new Error('You must be logged in to create decks');
+      }
+
+      // 1. Create deck in Supabase (linked to user)
       const { data: deck, error: deckError } = await supabase
         .from('decks')
-        .insert({ name: deckName })
+        .insert({
+          name: deckName,
+          user_id: currentUser.id
+        })
         .select()
         .single();
 

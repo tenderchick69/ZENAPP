@@ -1,15 +1,17 @@
 <script lang="ts">
   import { theme } from '$lib/theme';
+  import { userPreferences } from '$lib/auth';
   import { SUPPORTED_LANGUAGES } from '$lib/languages';
   import { CATEGORY_GROUPS } from '$lib/categories';
   import type { GenerationParams } from '$lib/prompts';
 
   export let onGenerate: (params: GenerationParams) => void;
 
-  let nativeLanguage: 'English' | 'German' = 'English';
-  let targetLanguage = 'Korean';
+  // Pre-fill from user preferences (with fallbacks)
+  let nativeLanguage: 'English' | 'German' = ($userPreferences?.native_language as 'English' | 'German') || 'English';
+  let targetLanguage = $userPreferences?.target_language || 'Korean';
   let category = 'random';
-  let level: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
+  let level: 'beginner' | 'intermediate' | 'advanced' = ($userPreferences?.experience_level as 'beginner' | 'intermediate' | 'advanced') || 'beginner';
   let cardCount = 20;
 
   function handleGenerate() {

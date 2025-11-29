@@ -1,7 +1,23 @@
 <script>
+  import { onMount } from 'svelte';
   import '../app.css';
   import { theme, t } from '$lib/theme';
   import { helpMode } from '$lib/tooltip';
+  import { initAuth, user, userPreferences, signInWithGoogle, signOut } from '$lib/auth';
+  import Onboarding from '../components/Onboarding.svelte';
+
+  let showOnboarding = false;
+
+  onMount(async () => {
+    await initAuth();
+
+    // Show onboarding for new users (no preferences set)
+    user.subscribe($user => {
+      if ($user && !$userPreferences) {
+        showOnboarding = true;
+      }
+    });
+  });
 
   function toggleTheme() {
     theme.update(current => {
@@ -10,6 +26,10 @@
       if (current === 'ember') return 'frost';
       return 'syndicate';
     });
+  }
+
+  function handleOnboardingComplete() {
+    showOnboarding = false;
   }
 </script>
 
@@ -41,10 +61,88 @@
         class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none">
         MODE: {$theme}
       </button>
+
+      <!-- AUTH: User Menu or Sign In -->
+      {#if $user}
+        <div class="user-menu">
+          <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" />
+          <span class="user-name">{$user.user_metadata.name}</span>
+          <button onclick={signOut} class="sign-out-btn">Sign Out</button>
+        </div>
+      {:else}
+        <button onclick={signInWithGoogle} class="sign-in-btn">
+          Sign in with Google
+        </button>
+      {/if}
     </div>
   </header>
 
   <main class="relative z-10 w-full max-w-4xl mx-auto px-6 py-12 flex flex-col gap-8">
     <slot />
   </main>
+
+  <!-- Onboarding Modal -->
+  {#if showOnboarding}
+    <Onboarding onComplete={handleOnboardingComplete} />
+  {/if}
 </div>
+
+<style>
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--color-accent);
+  }
+
+  .user-name {
+    font-size: 0.9rem;
+    color: var(--color-main);
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .user-name {
+      display: block;
+    }
+  }
+
+  .sign-out-btn {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--color-dim);
+    color: var(--color-dim);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .sign-out-btn:hover {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
+
+  .sign-in-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .sign-in-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--color-accent);
+  }
+</style>

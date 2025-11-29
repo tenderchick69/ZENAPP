@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { beforeNavigate } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import { theme, t } from '$lib/theme';
+  import { user } from '$lib/auth';
   import AIChat from '../../components/AIChat.svelte';
   import QuickGenerate from '../../components/QuickGenerate.svelte';
   import DeckPreview from '../../components/DeckPreview.svelte';
@@ -17,12 +18,7 @@
   let generatedCards: CardData[] = [];
   let deckName = '';
   let error: string | null = null;
-
-  // Password gate
-  let isUnlocked = false;
-  let passwordInput = '';
-  let passwordError = '';
-  let isVerifying = false;
+  let isImporting = false;
 
   // Loading messages
   let loadingMessageIndex = 0;
@@ -82,6 +78,11 @@
     dots = '';
   }
 
+  // Redirect to home if not logged in
+  $: if ($user === null) {
+    goto('/');
+  }
+
   // Navigation guard for unsaved decks
   beforeNavigate((navigation) => {
     // Don't warn if we're importing (isImporting flag) or if preview is cleared
@@ -93,11 +94,8 @@
   });
 
   onMount(() => {
-    // Check if already unlocked in this session
+    // Check for unsaved deck from previous session
     if (typeof sessionStorage !== 'undefined') {
-      isUnlocked = sessionStorage.getItem('admin_unlocked') === 'true';
-
-      // Check for unsaved deck from previous session
       const savedDeck = sessionStorage.getItem('unsavedDeck');
       if (savedDeck) {
         try {
@@ -128,41 +126,6 @@
       stopLoadingAnimation();
     };
   });
-
-  async function verifyPassword() {
-    if (!passwordInput.trim()) {
-      passwordError = 'Please enter a password';
-      return;
-    }
-
-    isVerifying = true;
-    passwordError = '';
-
-    try {
-      const response = await fetch('/api/verify-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: passwordInput }),
-      });
-
-      const data = await response.json();
-
-      if (data.valid) {
-        isUnlocked = true;
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem('admin_unlocked', 'true');
-        }
-        passwordInput = '';
-      } else {
-        passwordError = 'Invalid password';
-        passwordInput = '';
-      }
-    } catch (e) {
-      passwordError = 'Verification failed';
-    } finally {
-      isVerifying = false;
-    }
-  }
 
   async function handleGenerate(params: GenerationParams) {
     state = 'loading';
@@ -220,41 +183,7 @@
     <h1 class="page-title">{$t.generateTitle || 'AI Deck Generator'}</h1>
   </header>
 
-  {#if !isUnlocked}
-    <!-- Password Gate -->
-    <div class="password-gate">
-      <div class="password-box">
-        <h2 class="gate-title">🔒 Protected Access</h2>
-        <p class="gate-message">This feature is password-protected to prevent unauthorized API usage.</p>
-
-        <form onsubmit={(e) => { e.preventDefault(); verifyPassword(); }}>
-          <input
-            type="password"
-            bind:value={passwordInput}
-            placeholder="Enter admin password"
-            class="password-input"
-            disabled={isVerifying}
-            autofocus
-          />
-
-          {#if passwordError}
-            <p class="password-error">{passwordError}</p>
-          {/if}
-
-          <button type="submit" class="unlock-btn" disabled={isVerifying}>
-            {#if isVerifying}
-              Verifying...
-            {:else}
-              🔓 Unlock
-            {/if}
-          </button>
-        </form>
-
-        <p class="gate-note">Session unlocked until browser closes</p>
-      </div>
-    </div>
-
-  {:else if state === 'input'}
+  {#if state === 'input'}
     <div class="mode-toggle">
       <Tooltip text="Chat with AI to describe exactly what you want">
         <button
