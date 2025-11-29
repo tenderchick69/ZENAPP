@@ -64,10 +64,10 @@
     loadingMessageIndex = 0;
     dots = '';
 
-    // Rotate messages every 2.5 seconds
+    // Rotate messages every 8 seconds (slower, more readable)
     messageInterval = setInterval(() => {
       loadingMessageIndex = (loadingMessageIndex + 1) % currentThemeMessages.length;
-    }, 2500) as unknown as number;
+    }, 8000) as unknown as number;
 
     // Animate dots every 500ms
     dotInterval = setInterval(() => {
@@ -84,7 +84,8 @@
 
   // Navigation guard for unsaved decks
   beforeNavigate((navigation) => {
-    if (state === 'preview' && generatedCards.length > 0) {
+    // Don't warn if we're importing (isImporting flag) or if preview is cleared
+    if (state === 'preview' && generatedCards.length > 0 && !isImporting) {
       if (!confirm('You have an unsaved deck! Leave anyway?')) {
         navigation.cancel();
       }

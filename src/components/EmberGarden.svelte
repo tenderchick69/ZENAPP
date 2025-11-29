@@ -306,7 +306,7 @@
     <div class="absolute top-6 right-6 z-40">
       <button
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
-        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-4 py-2 rounded hover:border-orange-500 bg-black/50">
+        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-4 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer">
         Exit Garden
       </button>
     </div>

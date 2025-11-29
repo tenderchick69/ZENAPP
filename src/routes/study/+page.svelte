@@ -74,6 +74,17 @@
     }
   }
 
+  async function deleteDeck() {
+    if (!confirm('Delete this deck? All cards will be permanently lost.')) return;
+
+    // Delete all cards first
+    await supabase.from('cards').delete().eq('deck_id', deckId);
+    // Delete the deck
+    await supabase.from('decks').delete().eq('id', deckId);
+    // Redirect to home
+    goto('/');
+  }
+
   // Toast Notification System
   function showToastMessage(message: string) {
     toastMessage = message;
@@ -285,7 +296,7 @@
           />
           <div class="text-xs text-dim mt-2">Press Enter to Save</div>
         {:else}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_click_events_have_key_keys -->
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <h1 class="text-5xl md:text-7xl font-heading text-main tracking-tight cursor-pointer hover:text-accent transition-colors flex items-center justify-center gap-4"
               onclick={() => isRenaming = true}>
@@ -293,6 +304,17 @@
             <span class="opacity-0 group-hover:opacity-50 text-2xl">✎</span>
           </h1>
         {/if}
+
+        <!-- Delete Button (Top Right) -->
+        <button
+          onclick={deleteDeck}
+          class="absolute top-0 right-0 text-dim hover:text-danger transition-colors p-2 cursor-pointer"
+          title="Delete deck">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
       </div>
 
       <!-- Stats Grid with Cubic Buttons -->

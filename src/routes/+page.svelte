@@ -39,17 +39,6 @@
     totalMastered = count || 0;
   }
 
-  async function deleteDeck(id: number, e: Event) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!confirm('Delete this deck? All cards will be lost.')) return;
-
-    await supabase.from('cards').delete().eq('deck_id', id);
-    await supabase.from('decks').delete().eq('id', id);
-    await loadDecks();
-    await loadMasteryCount();
-  }
-
   onMount(() => {
     loadDecks();
     loadMasteryCount();
@@ -111,20 +100,10 @@
               </div>
             {/if}
 
-            <!-- Delete Button (Bottom Right) -->
-            <div class="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-               <button onclick={(e) => deleteDeck(deck.id, e)} class="text-orange-900 hover:text-red-500 p-2 transition-colors" title="Extinguish">
-                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-               </button>
-            </div>
-
           <!-- SYNDICATE / ZEN MODE STYLING (Legacy) -->
           {:else}
-            <!-- Status & Delete (Top Right) -->
+            <!-- Status Indicator (Top Right) -->
             <div class="absolute top-4 right-4 flex gap-3">
-               <button onclick={(e) => deleteDeck(deck.id, e)} class="text-dim hover:text-danger p-1 transition-colors z-20">
-                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-               </button>
                <div class="w-2 h-2 bg-success rounded-full shadow-[0_0_10px_currentColor]"></div>
             </div>
 
