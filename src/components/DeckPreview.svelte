@@ -9,6 +9,7 @@
   export let deckName: string;
   export let onRegenerate: () => void;
   export let onRename: (name: string) => void;
+  export let onImportStart: (() => void) | undefined = undefined;
 
   let isImporting = false;
   let isEditing = false;
@@ -22,6 +23,11 @@
   async function handleImport() {
     isImporting = true;
     error = null;
+
+    // Notify parent that import is starting (prevents beforeNavigate warning)
+    if (onImportStart) {
+      onImportStart();
+    }
 
     try {
       // Get current user

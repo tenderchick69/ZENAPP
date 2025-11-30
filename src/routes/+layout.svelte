@@ -7,16 +7,21 @@
   import Onboarding from '../components/Onboarding.svelte';
 
   let showOnboarding = false;
+  let hasCheckedOnboarding = false;
+
+  // Only show onboarding ONCE for new users (when preferences don't exist at all)
+  $: {
+    if ($user && $userPreferences === null && !hasCheckedOnboarding) {
+      showOnboarding = true;
+      hasCheckedOnboarding = true;
+    } else if ($userPreferences !== null && !hasCheckedOnboarding) {
+      // User has preferences, never show onboarding
+      hasCheckedOnboarding = true;
+    }
+  }
 
   onMount(async () => {
     await initAuth();
-
-    // Show onboarding for new users (no preferences set)
-    user.subscribe($user => {
-      if ($user && !$userPreferences) {
-        showOnboarding = true;
-      }
-    });
   });
 
   function toggleTheme() {
@@ -40,7 +45,7 @@
 
 <div class="min-h-screen neural-grid scanline relative overflow-x-hidden transition-colors duration-500">
   <!-- Header -->
-  <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm">
+  <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm header-fixed">
     <a href="/" class="font-heading text-xl tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
       <span class="text-accent animate-flicker">{$t.title_1}</span>
       <span class="text-danger ml-2">{$t.title_2}</span>
@@ -88,6 +93,11 @@
 </div>
 
 <style>
+  /* Fixed header sizing across all themes */
+  .header-fixed {
+    min-height: 60px;
+  }
+
   .user-menu {
     display: flex;
     align-items: center;
@@ -99,12 +109,14 @@
     height: 32px;
     border-radius: 50%;
     border: 2px solid var(--color-accent);
+    flex-shrink: 0;
   }
 
   .user-name {
-    font-size: 0.9rem;
+    font-size: 14px;
     color: var(--color-main);
     display: none;
+    white-space: nowrap;
   }
 
   @media (min-width: 768px) {
@@ -122,6 +134,7 @@
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
   }
 
   .sign-out-btn:hover {
@@ -139,6 +152,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
   }
 
   .sign-in-btn:hover {

@@ -120,15 +120,15 @@
 
   {:else}
     <!-- Decks Exist: Show Grid + Add Options -->
-    <h2 class="text-2xl font-heading text-main mb-8 tracking-tight uppercase opacity-80">
+    <h2 class="text-2xl font-heading text-main mb-8 tracking-tight uppercase opacity-80 text-center">
       {$theme === 'ember' ? 'Your Gardens' : 'Your Decks'}
     </h2>
 
     <!-- Deck Grid -->
-    <div class="grid md:grid-cols-2 gap-8">
+    <div class="flex flex-wrap justify-center gap-8">
       {#each decks as deck}
         <a href="/study?id={deck.id}"
-           class="group block relative transition-all duration-500 min-h-[200px] flex flex-col justify-center items-center
+           class="group block relative transition-all duration-500 min-h-[200px] flex flex-col justify-center items-center w-full md:w-[calc(50%-1rem)] max-w-[400px]
            {$theme === 'ember'
              ? 'border border-orange-900/40 bg-gradient-to-b from-[#1a0b05] to-black hover:border-orange-500/60 hover:shadow-[0_0_50px_rgba(255,69,0,0.15)] rounded-xl overflow-hidden'
              : 'border border-dim bg-panel hover:border-accent hover:shadow-[0_0_30px_rgba(0,0,0,0.2)] p-8'}">

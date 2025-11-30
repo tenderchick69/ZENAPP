@@ -221,6 +221,11 @@
   function handleRename(name: string) {
     deckName = name;
   }
+
+  function handleImportStart() {
+    // Set flag to prevent beforeNavigate warning
+    isImporting = true;
+  }
 </script>
 
 <div class="generate-page" data-theme={$theme}>
@@ -321,6 +326,7 @@
         {deckName}
         onRegenerate={handleRegenerate}
         onRename={handleRename}
+        onImportStart={handleImportStart}
       />
     {/if}
   {/if}
@@ -364,10 +370,11 @@
   }
 
   .mode-toggle {
-    max-width: 600px;
+    max-width: 500px;
+    width: fit-content;
     margin: 0 auto 2rem;
     display: flex;
-    gap: 0.5rem;
+    gap: 0;
     padding: 0.5rem;
     background: var(--color-panel);
     border-radius: 12px;
