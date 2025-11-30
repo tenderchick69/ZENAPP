@@ -620,6 +620,9 @@ body[data-theme='frost'] .header-title-sub {
 .hero-container {
   width: 100%;
   max-width: 100%;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  box-sizing: border-box;
   overflow: visible;
 }
 
@@ -654,10 +657,21 @@ body[data-theme='ember'] .hero-title {
   text-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
 }
 
-/* Frost: Handwritten, more organic */
+/* Frost: Handwritten - Caveat is WIDER so needs smaller max size */
 body[data-theme='frost'] .hero-title {
   font-style: normal;
   letter-spacing: 0;
-  font-size: clamp(2.5rem, 10vw, 6rem);
-  font-weight: 700;
+  font-size: clamp(2rem, 8vw, 4rem);
+  font-weight: 400;
+}
+
+/* Mobile safety */
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: clamp(1.5rem, 10vw, 2.5rem) !important;
+  }
+  .hero-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
