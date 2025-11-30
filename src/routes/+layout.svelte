@@ -53,10 +53,10 @@
 
 <div class="min-h-screen neural-grid scanline relative transition-colors duration-500">
   <!-- Header -->
-  <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm" style="height: 60px; min-height: 60px; max-height: 60px;">
-    <a href="/" class="font-heading text-xl tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
-      <span class="text-accent animate-flicker">{$t.title_1}</span>
-      <span class="text-danger ml-2">{$t.title_2}</span>
+  <header class="header-bar relative z-10 px-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm">
+    <a href="/" class="header-title cursor-pointer hover:opacity-80 transition-opacity flex items-center">
+      <span class="text-accent header-title-main">{$t.title_1}</span>
+      <span class="text-danger header-title-sub">{$t.title_2}</span>
     </a>
 
     <div class="flex items-center gap-3">

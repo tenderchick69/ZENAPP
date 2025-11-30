@@ -45,13 +45,13 @@
   });
 </script>
 
-<section class="space-y-12 w-full">
-  <div class="text-center space-y-2 mb-16 overflow-visible px-4">
+<section class="space-y-12 w-full overflow-x-hidden">
+  <div class="hero-container text-center space-y-2 mb-16 px-6 md:px-8">
     {#if $theme === 'syndicate'}
       <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>
     {/if}
 
-    <h1 class="font-heading font-black uppercase italic tracking-tighter overflow-visible" style="font-size: clamp(2.5rem, 10vw, 6rem);">
+    <h1 class="hero-title font-heading font-black uppercase tracking-tight">
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent
         {$theme === 'ember' ? 'to-warmth' : 'to-blue-600'}">
         {$t.subtitle}

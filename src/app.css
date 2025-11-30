@@ -537,3 +537,127 @@ body[data-theme='zen'] .min-h-screen > * {
 .animate-frost-appear {
   animation: frost-appear 0.5s ease-out forwards;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CONSISTENT HEADER STYLES (All Themes)
+   ══════════════════════════════════════════════════════════════ */
+.header-bar {
+  height: 60px;
+  min-height: 60px;
+  max-height: 60px;
+}
+
+.header-title {
+  font-family: var(--font-heading);
+  font-size: 1.125rem; /* 18px base */
+  letter-spacing: 0.1em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.header-title-main {
+  font-weight: 700;
+}
+
+.header-title-sub {
+  margin-left: 0.5rem;
+  font-weight: 400;
+}
+
+/* Syndicate: Tech/cyber feel */
+body:not([data-theme]) .header-title,
+body[data-theme='syndicate'] .header-title {
+  font-size: 1.125rem;
+  letter-spacing: 0.15em;
+}
+
+body:not([data-theme]) .header-title-main,
+body[data-theme='syndicate'] .header-title-main {
+  animation: flicker 3s ease-in-out infinite;
+}
+
+/* Zen: Elegant serif */
+body[data-theme='zen'] .header-title {
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+
+body[data-theme='zen'] .header-title-main {
+  animation: none !important;
+  font-weight: 400;
+}
+
+body[data-theme='zen'] .header-title-sub {
+  font-weight: 300;
+}
+
+/* Ember: Warm, glowing */
+body[data-theme='ember'] .header-title {
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+}
+
+body[data-theme='ember'] .header-title-main {
+  animation: ember-pulse 3s ease-in-out infinite;
+}
+
+/* Frost: Handwritten, larger for readability */
+body[data-theme='frost'] .header-title {
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+
+body[data-theme='frost'] .header-title-main,
+body[data-theme='frost'] .header-title-sub {
+  animation: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HERO TITLE STYLES (Home Page)
+   ══════════════════════════════════════════════════════════════ */
+.hero-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 8vw, 5rem);
+  line-height: 1.1;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* Syndicate: Italic, tighter tracking */
+body:not([data-theme]) .hero-title,
+body[data-theme='syndicate'] .hero-title {
+  font-style: italic;
+  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 8vw, 5rem);
+}
+
+/* Zen: Elegant, lighter weight */
+body[data-theme='zen'] .hero-title {
+  font-style: normal;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  font-size: clamp(1.75rem, 7vw, 4rem);
+}
+
+/* Ember: Warm glow effect */
+body[data-theme='ember'] .hero-title {
+  font-style: normal;
+  letter-spacing: 0.02em;
+  font-size: clamp(1.75rem, 7vw, 4rem);
+  text-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+}
+
+/* Frost: Handwritten, more organic */
+body[data-theme='frost'] .hero-title {
+  font-style: normal;
+  letter-spacing: 0;
+  font-size: clamp(2.5rem, 10vw, 6rem);
+  font-weight: 700;
+}
