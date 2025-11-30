@@ -73,6 +73,7 @@ export async function savePreferences(prefs: Partial<UserPreferences>) {
     });
 
   if (!error) {
-    userPreferences.update(p => ({ ...p, ...prefs } as UserPreferences));
+    // Reload preferences from database to get full object
+    await loadPreferences(currentUser.id);
   }
 }

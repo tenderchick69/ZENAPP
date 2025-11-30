@@ -46,12 +46,12 @@
 </script>
 
 <section class="space-y-12 w-full">
-  <div class="text-center space-y-2 mb-16">
+  <div class="text-center space-y-2 mb-16 overflow-visible px-4">
     {#if $theme === 'syndicate'}
       <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>
     {/if}
 
-    <h1 class="font-heading text-5xl md:text-8xl font-black uppercase italic tracking-tighter">
+    <h1 class="font-heading text-5xl md:text-8xl font-black uppercase italic tracking-tighter overflow-visible">
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent
         {$theme === 'ember' ? 'to-warmth' : 'to-blue-600'}">
         {$t.subtitle}

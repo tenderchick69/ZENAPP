@@ -95,7 +95,9 @@
 <style>
   /* Fixed header sizing across all themes */
   .header-fixed {
-    min-height: 60px;
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
   }
 
   .user-menu {
@@ -105,15 +107,16 @@
   }
 
   .avatar {
-    width: 32px;
-    height: 32px;
+    width: 32px !important;
+    height: 32px !important;
     border-radius: 50%;
     border: 2px solid var(--color-accent);
     flex-shrink: 0;
   }
 
   .user-name {
-    font-size: 14px;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
     color: var(--color-main);
     display: none;
     white-space: nowrap;

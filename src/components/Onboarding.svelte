@@ -18,6 +18,17 @@
     });
     onComplete();
   }
+
+  async function handleSkip() {
+    // Save minimal preferences to prevent modal from reappearing
+    await savePreferences({
+      native_language: 'English',
+      target_language: 'Korean',
+      experience_level: 'beginner',
+      theme: $theme
+    });
+    onComplete();
+  }
 </script>
 
 <div class="onboarding-overlay" data-theme={$theme}>
@@ -68,7 +79,7 @@
       <button type="submit" class="submit-btn">🚀 Start Learning</button>
     </form>
 
-    <button class="skip-btn" onclick={onComplete}>Skip for now</button>
+    <button class="skip-btn" onclick={handleSkip}>Skip for now</button>
   </div>
 </div>
 
