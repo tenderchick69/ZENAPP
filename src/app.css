@@ -539,7 +539,7 @@ body[data-theme='zen'] .min-h-screen > * {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CONSISTENT HEADER STYLES (All Themes)
+   HEADER - FIXED SIZE ACROSS ALL THEMES
    ══════════════════════════════════════════════════════════════ */
 .header-bar {
   height: 60px;
@@ -549,7 +549,8 @@ body[data-theme='zen'] .min-h-screen > * {
 
 .header-title {
   font-family: var(--font-heading);
-  font-size: 1.125rem; /* 18px base */
+  /* SAME SIZE FOR ALL THEMES */
+  font-size: 1.25rem !important;
   letter-spacing: 0.1em;
   line-height: 1;
   white-space: nowrap;
@@ -564,49 +565,18 @@ body[data-theme='zen'] .min-h-screen > * {
   font-weight: 400;
 }
 
-/* Syndicate: Tech/cyber feel */
-body:not([data-theme]) .header-title,
-body[data-theme='syndicate'] .header-title {
-  font-size: 1.125rem;
-  letter-spacing: 0.15em;
-}
-
-body:not([data-theme]) .header-title-main,
-body[data-theme='syndicate'] .header-title-main {
+/* Theme-specific: ONLY change animations, NOT size */
+body[data-theme='syndicate'] .header-title-main,
+body:not([data-theme]) .header-title-main {
   animation: flicker 3s ease-in-out infinite;
-}
-
-/* Zen: Elegant serif */
-body[data-theme='zen'] .header-title {
-  font-size: 1.25rem;
-  letter-spacing: 0.08em;
-  font-weight: 400;
 }
 
 body[data-theme='zen'] .header-title-main {
   animation: none !important;
-  font-weight: 400;
-}
-
-body[data-theme='zen'] .header-title-sub {
-  font-weight: 300;
-}
-
-/* Ember: Warm, glowing */
-body[data-theme='ember'] .header-title {
-  font-size: 1.25rem;
-  letter-spacing: 0.08em;
 }
 
 body[data-theme='ember'] .header-title-main {
   animation: ember-pulse 3s ease-in-out infinite;
-}
-
-/* Frost: Handwritten, larger for readability */
-body[data-theme='frost'] .header-title {
-  font-size: 1.5rem;
-  letter-spacing: 0.02em;
-  font-weight: 700;
 }
 
 body[data-theme='frost'] .header-title-main,
@@ -615,7 +585,7 @@ body[data-theme='frost'] .header-title-sub {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   HERO TITLE STYLES (Home Page) - NORMALIZED ACROSS ALL THEMES
+   HERO TITLE STYLES - ALL THEMES SAME VISUAL SIZE
    ══════════════════════════════════════════════════════════════ */
 .hero-container {
   width: 100%;
@@ -626,60 +596,52 @@ body[data-theme='frost'] .header-title-sub {
 }
 
 .hero-title {
+  /* BASE: Same size for ALL themes */
+  font-size: clamp(2.5rem, 10vw, 6rem) !important;
   line-height: 1.1;
   word-break: break-word;
+  font-weight: 700;
 }
 
-/* ═══ SYNDICATE: Orbitron is compact, needs larger size ═══ */
-body:not([data-theme]) .hero-title,
-body[data-theme='syndicate'] .hero-title {
-  font-size: clamp(2.5rem, 9vw, 5.5rem);
+/* Syndicate: Orbitron - compact font, italic style */
+body[data-theme='syndicate'] .hero-title,
+body:not([data-theme]) .hero-title {
   font-style: italic;
   letter-spacing: -0.02em;
 }
 
-/* ═══ ZEN: Cormorant is tall/narrow, needs medium-large size ═══ */
+/* Zen: Cormorant - elegant serif, normal style */
 body[data-theme='zen'] .hero-title {
-  font-size: clamp(2.25rem, 8vw, 5rem);
   font-style: normal;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
-/* ═══ EMBER: Same as Zen (Cormorant) ═══ */
+/* Ember: Cormorant - warm glow effect */
 body[data-theme='ember'] .hero-title {
-  font-size: clamp(2.25rem, 8vw, 5rem);
   font-style: normal;
-  letter-spacing: 0.02em;
-  text-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+  letter-spacing: 0.01em;
+  text-shadow: 0 0 40px rgba(255, 107, 53, 0.4);
 }
 
-/* ═══ FROST: Caveat is WIDE, needs smaller size to match others visually ═══ */
+/* Frost: Caveat is WIDER - reduce size slightly to compensate */
 body[data-theme='frost'] .hero-title {
-  font-size: clamp(2rem, 7vw, 4rem);
+  font-size: clamp(2rem, 9vw, 5rem) !important;
   font-style: normal;
   letter-spacing: 0;
   font-weight: 700;
 }
 
-/* Mobile: All themes get same treatment */
+/* Mobile */
 @media (max-width: 640px) {
   .hero-container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-
-  body:not([data-theme]) .hero-title,
-  body[data-theme='syndicate'] .hero-title {
-    font-size: clamp(1.75rem, 10vw, 3rem);
+  .hero-title {
+    font-size: clamp(1.75rem, 12vw, 3rem) !important;
   }
-
-  body[data-theme='zen'] .hero-title,
-  body[data-theme='ember'] .hero-title {
-    font-size: clamp(1.75rem, 10vw, 3rem);
-  }
-
   body[data-theme='frost'] .hero-title {
-    font-size: clamp(1.5rem, 9vw, 2.5rem);
+    font-size: clamp(1.5rem, 10vw, 2.5rem) !important;
   }
 }

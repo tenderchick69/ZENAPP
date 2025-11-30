@@ -59,32 +59,34 @@
       <span class="text-danger header-title-sub">{$t.title_2}</span>
     </a>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3" style="min-width: 200px; justify-content: flex-end;">
       <!-- HELP MODE TOGGLE -->
       <button
         onclick={() => helpMode.update(v => !v)}
-        class="w-6 h-6 flex items-center justify-center border text-xs font-mono rounded-full transition-all cursor-pointer
+        class="w-8 h-8 flex items-center justify-center border text-xs font-mono rounded-full transition-all cursor-pointer
         {$helpMode ? 'bg-accent text-bg border-accent' : 'border-dim text-dim hover:border-accent hover:text-accent'}">
         ?
       </button>
 
-      <!-- THEME TOGGLE (Now cycles 3 modes) -->
+      <!-- THEME TOGGLE - 3 letter abbreviation, fixed width -->
       <button
         onclick={toggleTheme}
-        class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none">
-        MODE: {$theme}
+        class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none"
+        style="min-width: 60px; text-align: center;">
+        {$theme === 'syndicate' ? 'SYN' : $theme === 'zen' ? 'ZEN' : $theme === 'ember' ? 'EMB' : 'FRO'}
       </button>
 
       <!-- AUTH: User Menu or Sign In -->
       {#if $user}
         <div class="user-menu">
           <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" style="width: 32px; height: 32px; flex-shrink: 0;" />
-          <span class="user-name" style="font-size: 14px; line-height: 1.2;">{$user.user_metadata.name}</span>
-          <button onclick={signOut} class="sign-out-btn">Sign Out</button>
+          <button onclick={signOut} class="sign-out-btn" title="Sign Out" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+            ⏻
+          </button>
         </div>
       {:else}
         <button onclick={signInWithGoogle} class="sign-in-btn">
-          Sign in with Google
+          Sign in
         </button>
       {/if}
     </div>
