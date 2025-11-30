@@ -45,7 +45,7 @@
   });
 </script>
 
-<section class="space-y-12 w-full overflow-x-hidden">
+<section class="space-y-12 w-full">
   <div class="hero-container text-center space-y-2 mb-16 px-6 md:px-8">
     {#if $theme === 'syndicate'}
       <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>

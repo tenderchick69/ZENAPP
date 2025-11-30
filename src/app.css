@@ -615,63 +615,71 @@ body[data-theme='frost'] .header-title-sub {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   HERO TITLE STYLES (Home Page)
+   HERO TITLE STYLES (Home Page) - NORMALIZED ACROSS ALL THEMES
    ══════════════════════════════════════════════════════════════ */
 .hero-container {
   width: 100%;
   max-width: 100%;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
   box-sizing: border-box;
-  overflow: visible;
 }
 
 .hero-title {
-  font-size: clamp(2rem, 8vw, 5rem);
   line-height: 1.1;
   word-break: break-word;
-  hyphens: auto;
 }
 
-/* Syndicate: Italic, tighter tracking */
+/* ═══ SYNDICATE: Orbitron is compact, needs larger size ═══ */
 body:not([data-theme]) .hero-title,
 body[data-theme='syndicate'] .hero-title {
+  font-size: clamp(2.5rem, 9vw, 5.5rem);
   font-style: italic;
   letter-spacing: -0.02em;
-  font-size: clamp(2rem, 8vw, 5rem);
 }
 
-/* Zen: Elegant, lighter weight */
+/* ═══ ZEN: Cormorant is tall/narrow, needs medium-large size ═══ */
 body[data-theme='zen'] .hero-title {
+  font-size: clamp(2.25rem, 8vw, 5rem);
   font-style: normal;
   letter-spacing: 0.02em;
   font-weight: 600;
-  font-size: clamp(1.75rem, 7vw, 4rem);
 }
 
-/* Ember: Warm glow effect */
+/* ═══ EMBER: Same as Zen (Cormorant) ═══ */
 body[data-theme='ember'] .hero-title {
+  font-size: clamp(2.25rem, 8vw, 5rem);
   font-style: normal;
   letter-spacing: 0.02em;
-  font-size: clamp(1.75rem, 7vw, 4rem);
   text-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
 }
 
-/* Frost: Handwritten - Caveat is WIDER so needs smaller max size */
+/* ═══ FROST: Caveat is WIDE, needs smaller size to match others visually ═══ */
 body[data-theme='frost'] .hero-title {
+  font-size: clamp(2rem, 7vw, 4rem);
   font-style: normal;
   letter-spacing: 0;
-  font-size: clamp(2rem, 8vw, 4rem);
-  font-weight: 400;
+  font-weight: 700;
 }
 
-/* Mobile safety */
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: clamp(1.5rem, 10vw, 2.5rem) !important;
-  }
+/* Mobile: All themes get same treatment */
+@media (max-width: 640px) {
   .hero-container {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  body:not([data-theme]) .hero-title,
+  body[data-theme='syndicate'] .hero-title {
+    font-size: clamp(1.75rem, 10vw, 3rem);
+  }
+
+  body[data-theme='zen'] .hero-title,
+  body[data-theme='ember'] .hero-title {
+    font-size: clamp(1.75rem, 10vw, 3rem);
+  }
+
+  body[data-theme='frost'] .hero-title {
+    font-size: clamp(1.5rem, 9vw, 2.5rem);
   }
 }
