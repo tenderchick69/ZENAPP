@@ -51,7 +51,7 @@
       <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>
     {/if}
 
-    <h1 class="font-heading text-5xl md:text-8xl font-black uppercase italic tracking-tighter overflow-visible">
+    <h1 class="font-heading font-black uppercase italic tracking-tighter overflow-visible" style="font-size: clamp(2.5rem, 10vw, 6rem);">
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent
         {$theme === 'ember' ? 'to-warmth' : 'to-blue-600'}">
         {$t.subtitle}

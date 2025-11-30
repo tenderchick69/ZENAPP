@@ -11,10 +11,18 @@
 
   // Only show onboarding ONCE for new users (when preferences don't exist at all)
   $: {
+    console.log('🎯 [ONBOARDING] Reactive check triggered');
+    console.log('   User ID:', $user?.id);
+    console.log('   Preferences:', $userPreferences);
+    console.log('   hasCheckedOnboarding:', hasCheckedOnboarding);
+    console.log('   showOnboarding:', showOnboarding);
+
     if ($user && $userPreferences === null && !hasCheckedOnboarding) {
+      console.log('✅ [ONBOARDING] Showing onboarding modal (new user)');
       showOnboarding = true;
       hasCheckedOnboarding = true;
     } else if ($userPreferences !== null && !hasCheckedOnboarding) {
+      console.log('✅ [ONBOARDING] User has preferences, hiding onboarding');
       // User has preferences, never show onboarding
       hasCheckedOnboarding = true;
     }
@@ -43,9 +51,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;600&family=Cormorant+Garamond:wght@300;400;600&family=Caveat:wght@700&family=Patrick+Hand&display=swap" rel="stylesheet">
 </svelte:head>
 
-<div class="min-h-screen neural-grid scanline relative overflow-x-hidden transition-colors duration-500">
+<div class="min-h-screen neural-grid scanline relative transition-colors duration-500">
   <!-- Header -->
-  <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm header-fixed">
+  <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm header-fixed" style="height: 60px; min-height: 60px; max-height: 60px;">
     <a href="/" class="font-heading text-xl tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
       <span class="text-accent animate-flicker">{$t.title_1}</span>
       <span class="text-danger ml-2">{$t.title_2}</span>
@@ -70,8 +78,8 @@
       <!-- AUTH: User Menu or Sign In -->
       {#if $user}
         <div class="user-menu">
-          <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" />
-          <span class="user-name">{$user.user_metadata.name}</span>
+          <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" style="width: 32px; height: 32px; flex-shrink: 0;" />
+          <span class="user-name" style="font-size: 14px; line-height: 1.2;">{$user.user_metadata.name}</span>
           <button onclick={signOut} class="sign-out-btn">Sign Out</button>
         </div>
       {:else}

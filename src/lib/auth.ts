@@ -35,12 +35,15 @@ export async function initAuth() {
 }
 
 async function loadPreferences(userId: string) {
-  const { data } = await supabase
+  console.log('🔍 [AUTH] Loading preferences for user:', userId);
+  const { data, error } = await supabase
     .from('user_preferences')
     .select('*')
     .eq('id', userId)
     .single();
 
+  console.log('✅ [AUTH] Loaded preferences:', data);
+  console.log('❌ [AUTH] Error (if any):', error);
   userPreferences.set(data);
 }
 
@@ -61,8 +64,12 @@ export async function signOut() {
 }
 
 export async function savePreferences(prefs: Partial<UserPreferences>) {
+  console.log('💾 [AUTH] Saving preferences:', prefs);
   const { data: { user: currentUser } } = await supabase.auth.getUser();
-  if (!currentUser) return;
+  if (!currentUser) {
+    console.log('❌ [AUTH] No current user, cannot save preferences');
+    return;
+  }
 
   const { error } = await supabase
     .from('user_preferences')
@@ -71,6 +78,8 @@ export async function savePreferences(prefs: Partial<UserPreferences>) {
       ...prefs,
       updated_at: new Date().toISOString()
     });
+
+  console.log('💾 [AUTH] Save result - Error:', error);
 
   if (!error) {
     // Reload preferences from database to get full object
