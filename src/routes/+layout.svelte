@@ -53,7 +53,7 @@
 
 <div class="min-h-screen neural-grid scanline relative transition-colors duration-500">
   <!-- Header -->
-  <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm header-fixed" style="height: 60px; min-height: 60px; max-height: 60px;">
+  <header class="relative z-10 p-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm" style="height: 60px; min-height: 60px; max-height: 60px;">
     <a href="/" class="font-heading text-xl tracking-widest cursor-pointer hover:opacity-80 transition-opacity">
       <span class="text-accent animate-flicker">{$t.title_1}</span>
       <span class="text-danger ml-2">{$t.title_2}</span>
@@ -101,13 +101,6 @@
 </div>
 
 <style>
-  /* Fixed header sizing across all themes */
-  .header-fixed {
-    height: 60px !important;
-    min-height: 60px !important;
-    max-height: 60px !important;
-  }
-
   .user-menu {
     display: flex;
     align-items: center;

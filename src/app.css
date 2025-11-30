@@ -276,8 +276,6 @@ body[data-theme='zen'] .group.block {
    ZEN - Typography (Elegant & Light)
    ══════════════════════════════════════════════════════════════ */
 body[data-theme='zen'] .font-heading {
-  font-weight: 300 !important;
-  letter-spacing: 0.05em !important;
   text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
 }
 
@@ -296,7 +294,6 @@ body[data-theme='zen'] .uppercase {
 body[data-theme='zen'] h1,
 body[data-theme='zen'] .text-4xl,
 body[data-theme='zen'] .text-5xl {
-  font-weight: 300 !important;
   line-height: 1.1 !important;
 }
 
