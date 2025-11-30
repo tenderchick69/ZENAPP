@@ -11,6 +11,7 @@ export interface UserPreferences {
   target_language: string;
   experience_level: string;
   theme: string;
+  is_approved: boolean;
 }
 
 // Initialize auth state

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { beforeNavigate } from '$app/navigation';
   import { theme, t } from '$lib/theme';
-  import { user } from '$lib/auth';
+  import { user, userPreferences, signInWithGoogle } from '$lib/auth';
+  import { supabase } from '$lib/supabase';
   import AIChat from '../../components/AIChat.svelte';
   import QuickGenerate from '../../components/QuickGenerate.svelte';
   import DeckPreview from '../../components/DeckPreview.svelte';
@@ -19,6 +20,15 @@
   let deckName = '';
   let error: string | null = null;
   let isImporting = false;
+
+  // Admin code gate
+  let adminCode = '';
+  let adminError = '';
+  let isVerifying = false;
+
+  // Check approval status
+  $: isApproved = $userPreferences?.is_approved === true;
+  $: showAdminGate = $user && !isApproved;
 
   // Loading messages
   let loadingMessageIndex = 0;
@@ -78,11 +88,6 @@
     dots = '';
   }
 
-  // Redirect to home if not logged in
-  $: if ($user === null) {
-    goto('/');
-  }
-
   // Navigation guard for unsaved decks
   beforeNavigate((navigation) => {
     // Don't warn if we're importing (isImporting flag) or if preview is cleared
@@ -92,6 +97,47 @@
       }
     }
   });
+
+  async function verifyAdminCode() {
+    if (!adminCode.trim()) {
+      adminError = 'Please enter the code';
+      return;
+    }
+
+    isVerifying = true;
+    adminError = '';
+
+    try {
+      const response = await fetch('/api/verify-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: adminCode })
+      });
+
+      const { valid } = await response.json();
+
+      if (valid && $user) {
+        // Mark user as approved in database
+        await supabase
+          .from('user_preferences')
+          .upsert({
+            id: $user.id,
+            is_approved: true
+          });
+
+        // Update local state
+        userPreferences.update(p => p ? { ...p, is_approved: true } : p);
+        adminCode = '';
+      } else {
+        adminError = 'Invalid code';
+        adminCode = '';
+      }
+    } catch (e) {
+      adminError = 'Verification failed';
+    } finally {
+      isVerifying = false;
+    }
+  }
 
   onMount(() => {
     // Check for unsaved deck from previous session
@@ -183,52 +229,100 @@
     <h1 class="page-title">{$t.generateTitle || 'AI Deck Generator'}</h1>
   </header>
 
-  {#if state === 'input'}
-    <div class="mode-toggle">
-      <Tooltip text="Chat with AI to describe exactly what you want">
-        <button
-          class="mode-btn"
-          class:active={mode === 'chat'}
-          onclick={() => mode = 'chat'}>
-          💬 {$t.chatMode || 'Chat Mode'}
+  {#if !$user}
+    <!-- Not logged in - show sign in prompt -->
+    <div class="password-gate">
+      <div class="password-box">
+        <h2 class="gate-title">Sign In Required</h2>
+        <p class="gate-message">
+          You need to sign in with Google to use the AI deck generator.
+        </p>
+        <button onclick={signInWithGoogle} class="unlock-btn">
+          Sign in with Google
         </button>
-      </Tooltip>
-      <Tooltip text="Quick options - select language, category, and go">
-        <button
-          class="mode-btn"
-          class:active={mode === 'quick'}
-          onclick={() => mode = 'quick'}>
-          ⚡ {$t.quickMode || 'Quick Generate'}
-        </button>
-      </Tooltip>
-    </div>
-
-    {#if mode === 'chat'}
-      <AIChat onGenerate={handleGenerate} />
-    {:else}
-      <QuickGenerate onGenerate={handleGenerate} />
-    {/if}
-
-    {#if error}
-      <div class="error-message">
-        <strong>Error:</strong> {error}
-        <button onclick={() => error = null} class="dismiss-btn">×</button>
+        <p class="gate-note">Your decks will be saved to your account</p>
       </div>
-    {/if}
-
-  {:else if state === 'loading'}
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p class="loading-text">{currentLoadingMessage}{dots}</p>
     </div>
 
-  {:else if state === 'preview'}
-    <DeckPreview
-      cards={generatedCards}
-      {deckName}
-      onRegenerate={handleRegenerate}
-      onRename={handleRename}
-    />
+  {:else if showAdminGate}
+    <!-- Logged in but not approved - show admin code -->
+    <div class="password-gate">
+      <div class="password-box">
+        <h2 class="gate-title">Unlock AI Generator</h2>
+        <p class="gate-message">
+          Enter the admin code to unlock AI deck generation. You only need to do this once.
+        </p>
+        <input
+          type="password"
+          bind:value={adminCode}
+          onkeydown={(e) => e.key === 'Enter' && verifyAdminCode()}
+          placeholder="Enter admin code"
+          class="password-input"
+          disabled={isVerifying}
+          autofocus
+        />
+        {#if adminError}
+          <p class="password-error">{adminError}</p>
+        {/if}
+        <button
+          onclick={verifyAdminCode}
+          class="unlock-btn"
+          disabled={isVerifying}>
+          {isVerifying ? 'Verifying...' : 'Unlock Generator'}
+        </button>
+        <p class="gate-note">Contact admin for the code</p>
+      </div>
+    </div>
+
+  {:else}
+    <!-- Approved user - show full generator -->
+    {#if state === 'input'}
+      <div class="mode-toggle">
+        <Tooltip text="Chat with AI to describe exactly what you want">
+          <button
+            class="mode-btn"
+            class:active={mode === 'chat'}
+            onclick={() => mode = 'chat'}>
+            💬 {$t.chatMode || 'Chat Mode'}
+          </button>
+        </Tooltip>
+        <Tooltip text="Quick options - select language, category, and go">
+          <button
+            class="mode-btn"
+            class:active={mode === 'quick'}
+            onclick={() => mode = 'quick'}>
+            ⚡ {$t.quickMode || 'Quick Generate'}
+          </button>
+        </Tooltip>
+      </div>
+
+      {#if mode === 'chat'}
+        <AIChat onGenerate={handleGenerate} />
+      {:else}
+        <QuickGenerate onGenerate={handleGenerate} />
+      {/if}
+
+      {#if error}
+        <div class="error-message">
+          <strong>Error:</strong> {error}
+          <button onclick={() => error = null} class="dismiss-btn">×</button>
+        </div>
+      {/if}
+
+    {:else if state === 'loading'}
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p class="loading-text">{currentLoadingMessage}{dots}</p>
+      </div>
+
+    {:else if state === 'preview'}
+      <DeckPreview
+        cards={generatedCards}
+        {deckName}
+        onRegenerate={handleRegenerate}
+        onRename={handleRename}
+      />
+    {/if}
   {/if}
 </div>
 
