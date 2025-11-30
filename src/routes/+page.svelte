@@ -61,15 +61,71 @@
 
   {#if loading}
     <div class="text-center text-accent animate-flicker font-body">LOADING...</div>
+  {:else if decks.length === 0}
+    <!-- Empty State: AI Generation Primary -->
+    <div class="max-w-2xl mx-auto space-y-6">
+      <!-- Primary: AI Generation (Large, Prominent) -->
+      <a href="/generate"
+         class="group block relative transition-all duration-500 min-h-[240px] flex flex-col justify-center items-center cursor-pointer
+         {$theme === 'ember'
+           ? 'border-2 border-orange-500/60 bg-gradient-to-b from-[#1a0b05] to-black hover:border-golden hover:shadow-[0_0_60px_rgba(255,69,0,0.25)] rounded-xl overflow-hidden'
+           : 'border-2 border-accent bg-panel hover:border-success hover:shadow-[0_0_40px_var(--color-accent)] p-8'}">
+
+        {#if $theme === 'ember'}
+          <!-- Ember: Glowing Fire Icon -->
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,69,0,0.08),transparent_70%)] opacity-70 group-hover:opacity-100 transition-opacity duration-700"></div>
+          <div class="text-center space-y-6 relative z-10">
+            <div class="text-7xl group-hover:scale-110 transition-transform duration-500">✨</div>
+            <p class="font-ember text-2xl text-golden group-hover:text-orange-100 transition-colors drop-shadow-[0_0_20px_rgba(255,215,0,0.5)]">
+              {$t.btn_ai}
+            </p>
+            <p class="text-sm text-orange-100/50 font-ember">Create with AI</p>
+          </div>
+        {:else}
+          <!-- Syndicate/Zen/Frost: Glowing Icon -->
+          <div class="text-center space-y-6">
+            <div class="text-7xl text-accent group-hover:text-success transition-colors group-hover:scale-110 transition-transform duration-300">✨</div>
+            <p class="font-heading text-2xl text-accent group-hover:text-success transition-colors uppercase tracking-wide">
+              {$t.btn_ai}
+            </p>
+            <p class="text-sm text-dim font-body">Create decks with AI</p>
+          </div>
+        {/if}
+      </a>
+
+      <!-- Secondary: CSV Import (Smaller, Subtle) -->
+      <a href="/import"
+         class="group block relative transition-all duration-300 min-h-[120px] flex flex-col justify-center items-center cursor-pointer
+         {$theme === 'ember'
+           ? 'border border-dashed border-orange-900/30 bg-gradient-to-b from-[#1a0b05]/20 to-black/20 hover:border-orange-500/40 hover:shadow-[0_0_30px_rgba(255,69,0,0.08)] rounded-lg'
+           : 'border border-dashed border-dim/40 bg-panel/30 hover:border-accent/60 hover:shadow-[0_0_20px_rgba(0,0,0,0.1)]'}">
+
+        {#if $theme === 'ember'}
+          <div class="text-center space-y-3 relative z-10">
+            <div class="text-3xl text-orange-800/50 group-hover:text-orange-500/70 transition-colors">+</div>
+            <p class="font-ember text-sm text-orange-100/40 group-hover:text-orange-100/60 transition-colors">
+              {$t.btn_import}
+            </p>
+          </div>
+        {:else}
+          <div class="text-center space-y-3">
+            <div class="text-3xl text-dim/40 group-hover:text-dim transition-colors">+</div>
+            <p class="font-body text-xs text-dim/60 group-hover:text-dim transition-colors uppercase tracking-wider">
+              {$t.btn_import}
+            </p>
+          </div>
+        {/if}
+      </a>
+    </div>
+
   {:else}
-    <!-- Section Header -->
+    <!-- Decks Exist: Show Grid + Add Options -->
     <h2 class="text-2xl font-heading text-main mb-8 tracking-tight uppercase opacity-80">
       {$theme === 'ember' ? 'Your Gardens' : 'Your Decks'}
     </h2>
 
-    <!-- Grid Layout: Always grid when we have cards + import slot -->
+    <!-- Deck Grid -->
     <div class="grid md:grid-cols-2 gap-8">
-
       {#each decks as deck}
         <a href="/study?id={deck.id}"
            class="group block relative transition-all duration-500 min-h-[200px] flex flex-col justify-center items-center
@@ -100,7 +156,7 @@
               </div>
             {/if}
 
-          <!-- SYNDICATE / ZEN MODE STYLING (Legacy) -->
+          <!-- SYNDICATE / ZEN / FROST MODE STYLING -->
           {:else}
             <!-- Status Indicator (Top Right) -->
             <div class="absolute top-4 right-4 flex gap-3">
@@ -128,48 +184,62 @@
           {/if}
         </a>
       {/each}
+    </div>
 
-      <!-- Empty Card Slot: Import CSV -->
-      <a href="/import"
-         class="group block relative transition-all duration-500 min-h-[200px] flex flex-col justify-center items-center
+    <!-- Add New Deck Section -->
+    <div class="mt-16 max-w-xl mx-auto space-y-4">
+      <h3 class="text-center text-sm font-body text-dim uppercase tracking-widest mb-6">Add New Deck</h3>
+
+      <!-- Primary: AI Generation -->
+      <a href="/generate"
+         class="group block relative transition-all duration-300 min-h-[140px] flex flex-col justify-center items-center cursor-pointer
          {$theme === 'ember'
-           ? 'border-2 border-dashed border-orange-900/30 bg-gradient-to-b from-[#1a0b05]/20 to-black/20 hover:border-orange-500/50 hover:shadow-[0_0_40px_rgba(255,69,0,0.1)] rounded-xl overflow-hidden'
-           : 'border-2 border-dashed border-dim/50 bg-panel/30 hover:border-accent hover:shadow-[0_0_20px_rgba(0,0,0,0.15)]'}">
+           ? 'border-2 border-orange-500/50 bg-gradient-to-b from-[#1a0b05]/80 to-black/80 hover:border-golden hover:shadow-[0_0_50px_rgba(255,69,0,0.2)] rounded-lg overflow-hidden'
+           : 'border-2 border-accent/70 bg-panel hover:border-success hover:shadow-[0_0_30px_var(--color-accent)]'}">
 
-        <!-- Ember Mode: Plant Seeds Icon -->
         {#if $theme === 'ember'}
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,69,0,0.06),transparent_70%)] opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div class="text-center space-y-4 relative z-10">
-            <div class="text-6xl text-orange-800/40 group-hover:text-orange-500/60 transition-colors duration-500">
-              +
-            </div>
-            <p class="font-ember text-lg text-orange-100/50 group-hover:text-golden/70 transition-colors">
-              {$t.btn_import}
+            <div class="text-5xl group-hover:scale-110 transition-transform duration-500">✨</div>
+            <p class="font-ember text-xl text-golden group-hover:text-orange-100 transition-colors drop-shadow-[0_0_15px_rgba(255,215,0,0.4)]">
+              {$t.btn_ai}
             </p>
           </div>
-
-        <!-- Syndicate/Zen Mode -->
         {:else}
           <div class="text-center space-y-4">
-            <div class="text-5xl text-dim/40 group-hover:text-accent transition-colors">
-              +
-            </div>
-            <p class="font-body text-sm text-dim group-hover:text-accent transition-colors uppercase tracking-wider">
-              {$t.btn_import}
+            <div class="text-5xl text-accent group-hover:text-success transition-colors group-hover:scale-110 transition-transform duration-300">✨</div>
+            <p class="font-heading text-lg text-accent group-hover:text-success transition-colors uppercase tracking-wide">
+              {$t.btn_ai}
+            </p>
+          </div>
+        {/if}
+      </a>
+
+      <!-- Secondary: CSV Import -->
+      <a href="/import"
+         class="group block relative transition-all duration-300 min-h-[80px] flex flex-col justify-center items-center cursor-pointer
+         {$theme === 'ember'
+           ? 'border border-dashed border-orange-900/30 bg-gradient-to-b from-[#1a0b05]/10 to-black/10 hover:border-orange-500/30 rounded-md'
+           : 'border border-dashed border-dim/40 bg-panel/20 hover:border-accent/50'}">
+
+        {#if $theme === 'ember'}
+          <div class="text-center space-y-2 relative z-10">
+            <p class="font-ember text-sm text-orange-100/40 group-hover:text-orange-100/60 transition-colors">
+              + {$t.btn_import}
+            </p>
+          </div>
+        {:else}
+          <div class="text-center space-y-2">
+            <p class="font-body text-xs text-dim/60 group-hover:text-dim transition-colors uppercase tracking-wider">
+              + {$t.btn_import}
             </p>
           </div>
         {/if}
       </a>
     </div>
 
-    <!-- AI Generation Link -->
-    <div class="flex justify-center gap-8 mt-24 font-body text-xs uppercase tracking-widest">
-      <a href="/generate" class="text-accent hover:text-success transition-colors border border-accent/30 hover:border-success px-6 py-3 tracking-wider">
-        [ {$t.btn_ai} ]
-      </a>
-    </div>
-
     {#if totalMastered > 0}
-      <div class="text-center mt-8">
+      <div class="text-center mt-12">
         <a href="/graveyard" class="inline-block text-xs font-body text-accent hover:text-success transition-colors border border-accent/30 hover:border-success px-4 py-2">
           {$t.grave_link} · {totalMastered}
         </a>
