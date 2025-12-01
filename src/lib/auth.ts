@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 
 export const user = writable<User | null>(null);
 export const userPreferences = writable<UserPreferences | null>(null);
+export const authInitialized = writable(false);
 
 export interface UserPreferences {
   id: string;
@@ -22,6 +23,9 @@ export async function initAuth() {
   if (session?.user) {
     await loadPreferences(session.user.id);
   }
+
+  // Mark auth as fully initialized (preferences loaded)
+  authInitialized.set(true);
 
   // Listen for auth changes
   supabase.auth.onAuthStateChange(async (event, session) => {
