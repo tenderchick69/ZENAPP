@@ -92,7 +92,7 @@
     </div>
   </header>
 
-  <main class="relative z-10 w-full max-w-4xl mx-auto px-6 py-12 flex flex-col gap-8">
+  <main class="relative z-10 w-full px-6 py-12 flex flex-col gap-8">
     <slot />
   </main>
 

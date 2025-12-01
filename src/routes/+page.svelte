@@ -46,7 +46,7 @@
 </script>
 
 <section class="space-y-12 w-full">
-  <div class="hero-container text-center space-y-2 mb-16 px-4">
+  <div class="hero-container text-center space-y-2 mb-16 w-full">
     {#if $theme === 'syndicate'}
       <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>
     {/if}
@@ -59,6 +59,7 @@
     </h1>
   </div>
 
+  <div class="max-w-4xl mx-auto w-full">
   {#if loading}
     <div class="text-center text-accent animate-flicker font-body">LOADING...</div>
   {:else if decks.length === 0}
@@ -246,4 +247,5 @@
       </div>
     {/if}
   {/if}
+  </div>
 </section>
