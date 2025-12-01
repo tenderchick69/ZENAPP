@@ -101,8 +101,8 @@
    Inspired by: Winter breath, condensation, crystal ice
    ══════════════════════════════════════════════════════════════ */
 [data-theme='frost'] {
-  --font-heading: "Caveat", cursive;
-  --font-body: "Patrick Hand", cursive;
+  --font-heading: "Caveat", "Segoe Script", "Bradley Hand", cursive;
+  --font-body: "Patrick Hand", "Segoe Script", "Bradley Hand", cursive;
 
   /* Glass tint */
   --color-main: #e8f4f8;
@@ -500,8 +500,8 @@ body[data-theme='zen'] .min-h-screen > * {
   .font-ember { font-family: "Cormorant Garamond", "Georgia", serif; }
 
   /* Frost theme utilities */
-  .font-finger { font-family: "Caveat", cursive; }
-  .font-hand { font-family: "Patrick Hand", cursive; }
+  .font-finger { font-family: "Caveat", "Segoe Script", "Bradley Hand", cursive; }
+  .font-hand { font-family: "Patrick Hand", "Segoe Script", "Bradley Hand", cursive; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -549,11 +549,11 @@ body[data-theme='zen'] .min-h-screen > * {
 .zen-living-gradient {
   background: linear-gradient(
     90deg,
-    #333 0%,
-    #555 25%,
-    #777 50%,
-    #555 75%,
-    #333 100%
+    #444 0%,
+    #666 25%,
+    #888 50%,
+    #666 75%,
+    #444 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -614,11 +614,18 @@ body[data-theme='zen'] .min-h-screen > * {
 
 .header-title {
   font-family: var(--font-heading);
-  /* SAME SIZE FOR ALL THEMES */
-  font-size: 1.25rem !important;
-  letter-spacing: 0.1em;
+  /* SAME SIZE FOR ALL THEMES - smaller on mobile */
+  font-size: 1rem !important;
+  letter-spacing: 0.05em;
   line-height: 1;
   white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .header-title {
+    font-size: 1.25rem !important;
+    letter-spacing: 0.1em;
+  }
 }
 
 .header-title-main {
@@ -626,8 +633,14 @@ body[data-theme='zen'] .min-h-screen > * {
 }
 
 .header-title-sub {
-  margin-left: 0.5rem;
+  margin-left: 0.25rem;
   font-weight: 400;
+}
+
+@media (min-width: 768px) {
+  .header-title-sub {
+    margin-left: 0.5rem;
+  }
 }
 
 /* Theme-specific: ONLY change animations, NOT size */

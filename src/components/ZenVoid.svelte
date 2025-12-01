@@ -311,7 +311,7 @@
         class="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
                transition-all duration-700 text-4xl md:text-5xl lg:text-6xl tracking-wider font-light
                {w.dissolving ? 'opacity-0 scale-75' : 'opacity-100'}
-               {i === currentIndex && !w.dissolving ? 'zen-living-gradient' : 'text-[#1a1a1a] hover:text-[#333]'}"
+               {i === currentIndex && !w.dissolving ? 'zen-living-gradient' : 'text-[#2a2a2a] hover:text-[#444]'}"
         style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) translateY({Math.sin(w.drift) * 8}px);"
         onclick={(e) => handleWordClick(w, e)}>
         {w.headword}

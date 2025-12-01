@@ -55,13 +55,13 @@
 
 <div class="min-h-screen neural-grid scanline relative transition-colors duration-500">
   <!-- Header -->
-  <header class="header-bar relative z-10 px-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm">
+  <header class="header-bar relative z-10 px-3 md:px-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm">
     <a href="/" class="header-title cursor-pointer hover:opacity-80 transition-opacity flex items-center">
       <span class="text-accent header-title-main">{$t.title_1}</span>
       <span class="text-danger header-title-sub">{$t.title_2}</span>
     </a>
 
-    <div class="flex items-center gap-3" style="min-width: 200px; justify-content: flex-end;">
+    <div class="flex items-center gap-2 md:gap-3" style="justify-content: flex-end;">
       <!-- HELP MODE TOGGLE -->
       <button
         onclick={() => helpMode.update(v => !v)}

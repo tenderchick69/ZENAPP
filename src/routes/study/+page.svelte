@@ -299,29 +299,32 @@
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
-    <div class="w-full border border-dim bg-panel p-12 shadow-lg relative overflow-hidden transition-colors min-h-[600px] flex flex-col justify-center rounded-3xl">
+    <div class="w-full border border-dim bg-panel p-6 md:p-12 shadow-lg relative overflow-hidden transition-colors min-h-[auto] md:min-h-[600px] flex flex-col justify-center rounded-3xl">
       {#if $theme === 'syndicate'}
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
 
       <!-- Header / Renamer -->
-      <div class="mb-12 text-center relative group">
+      <div class="mb-6 md:mb-12 text-center relative group">
         {#if isRenaming}
           <!-- svelte-ignore a11y_autofocus -->
           <input
             bind:value={deckName}
             onkeydown={(e) => e.key === 'Enter' && renameDeck()}
-            class="text-5xl md:text-7xl font-heading text-main bg-transparent border-b-2 border-accent text-center outline-none w-full"
+            class="text-3xl md:text-7xl font-heading text-main bg-transparent border-b-2 border-accent text-center outline-none w-full"
             autofocus
           />
           <div class="text-xs text-dim mt-2">Press Enter to Save</div>
         {:else}
-          <!-- svelte-ignore a11y_click_events_have_key_keys -->
-          <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-          <h1 class="text-5xl md:text-7xl font-heading text-main tracking-tight cursor-pointer hover:text-accent transition-colors flex items-center justify-center gap-4"
-              onclick={() => isRenaming = true}>
+          <h1 class="text-3xl md:text-7xl font-heading text-main tracking-tight flex items-center justify-center gap-2 md:gap-4">
             {deckName || 'Loading...'}
-            <span class="opacity-0 group-hover:opacity-50 text-2xl">✎</span>
+            <!-- Rename button - only clickable element -->
+            <button
+              onclick={() => isRenaming = true}
+              class="opacity-30 hover:opacity-70 text-lg md:text-2xl cursor-pointer transition-opacity"
+              title="Rename deck">
+              ✎
+            </button>
           </h1>
         {/if}
 
@@ -338,18 +341,18 @@
       </div>
 
       <!-- Stats Grid with Cubic Buttons -->
-      <div class="grid grid-cols-3 gap-8 mb-12 w-full max-w-2xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-12 w-full max-w-2xl mx-auto">
         <!-- Column 1: Wilting / Due -->
-        <div class="flex flex-col items-center gap-6">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none w-full">
-            <div class="text-5xl md:text-6xl font-heading text-danger mb-2">{stats.due}</div>
-            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-danger">{$t.stat_due}</div>
+        <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
+          <div class="bg-bg/50 border border-dim p-4 md:p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full">
+            <div class="text-3xl md:text-6xl font-heading text-danger mb-1 md:mb-2">{stats.due}</div>
+            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-danger">{$t.stat_due}</div>
           </div>
           <Tooltip text="Study cards that are due for review.">
             <button
               onclick={() => startSession('standard')}
               disabled={stats.due === 0}
-              class="w-24 h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer
+              class="w-16 h-16 md:w-24 md:h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-sm md:text-lg cursor-pointer flex-shrink-0
                 {$theme === 'ember' ? 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black' :
                  $theme === 'frost' ? 'border-slate-400 text-slate-300 hover:bg-slate-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
@@ -360,16 +363,16 @@
         </div>
 
         <!-- Column 2: Garden Size / Total -->
-        <div class="flex flex-col items-center gap-6">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none w-full">
-            <div class="text-5xl md:text-6xl font-heading text-success mb-2">{stats.total}</div>
-            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-success">{$t.stat_learn}</div>
+        <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
+          <div class="bg-bg/50 border border-dim p-4 md:p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full">
+            <div class="text-3xl md:text-6xl font-heading text-success mb-1 md:mb-2">{stats.total}</div>
+            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-success">{$t.stat_learn}</div>
           </div>
           <Tooltip text="Review all cards in random order.">
             <button
               onclick={() => startSession('all')}
               disabled={stats.total - stats.mastered === 0}
-              class="w-24 h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer
+              class="w-16 h-16 md:w-24 md:h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-sm md:text-lg cursor-pointer flex-shrink-0
                 {$theme === 'ember' ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black' :
                  $theme === 'frost' ? 'border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-lime-400 text-lime-400 hover:bg-lime-400 hover:text-black' :
@@ -380,16 +383,16 @@
         </div>
 
         <!-- Column 3: Eternal / Mastered -->
-        <div class="flex flex-col items-center gap-6">
-          <div class="bg-bg/50 border border-dim p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none w-full">
-            <div class="text-5xl md:text-6xl font-heading text-accent mb-2">{stats.mastered}</div>
-            <div class="text-xs tracking-[0.2em] uppercase text-dim group-hover:text-accent">{$t.stat_master}</div>
+        <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
+          <div class="bg-bg/50 border border-dim p-4 md:p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full">
+            <div class="text-3xl md:text-6xl font-heading text-accent mb-1 md:mb-2">{stats.mastered}</div>
+            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-accent">{$t.stat_master}</div>
           </div>
           <Tooltip text="Test your knowledge of mastered cards.">
             <button
               onclick={() => startSession('souls')}
               disabled={stats.mastered === 0}
-              class="w-24 h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-lg cursor-pointer
+              class="w-16 h-16 md:w-24 md:h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-sm md:text-lg cursor-pointer flex-shrink-0
                 {$theme === 'ember' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
                  $theme === 'frost' ? 'border-sky-400 text-sky-300 hover:bg-sky-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black' :
@@ -401,26 +404,26 @@
       </div>
 
       <!-- Wildfire Row -->
-      <div class="flex flex-row items-center justify-center gap-6 mb-12">
+      <div class="flex flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-12">
         <Tooltip text="Number of cards for the Wildfire session.">
           <input
             type="number"
             bind:value={cramAmount}
-            class="w-16 h-12 text-center bg-transparent border border-white/20 rounded-lg focus:outline-none focus:ring-0 focus:border-accent font-ember text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+            class="w-14 md:w-16 h-10 md:h-12 text-center bg-transparent border border-white/20 rounded-lg focus:outline-none focus:ring-0 focus:border-accent font-ember text-lg md:text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
         </Tooltip>
         <Tooltip text="Study a random set of cards, even if not due.">
           <button
             onclick={() => startSession('overclock')}
-            class="rounded-xl h-12 px-6 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-ember">
+            class="rounded-xl h-10 md:h-12 px-4 md:px-6 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-ember text-sm md:text-base">
             {$t.mode_cram}
           </button>
         </Tooltip>
       </div>
 
       <!-- Footer -->
-      <div class="flex justify-center gap-8">
-         <button onclick={() => view = 'inspect'} class="text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-widest">[ {$t.btn_inspect} ]</button>
-         <a href="/" class="text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-widest">[ {$t.btn_exit} ]</a>
+      <div class="flex justify-center gap-4 md:gap-8">
+         <button onclick={() => view = 'inspect'} class="text-xs md:text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest">[ {$t.btn_inspect} ]</button>
+         <a href="/" class="text-xs md:text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest">[ {$t.btn_exit} ]</a>
       </div>
     </div>
 
