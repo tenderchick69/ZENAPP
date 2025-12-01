@@ -287,7 +287,6 @@ body[data-theme='zen'] .font-body {
 body[data-theme='zen'] .uppercase {
   text-transform: uppercase !important;
   letter-spacing: 0.15em !important;
-  font-size: 0.85em !important;
 }
 
 /* Larger headings for that editorial feel */
