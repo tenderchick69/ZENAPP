@@ -538,6 +538,72 @@ body[data-theme='zen'] .min-h-screen > * {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   ZEN VOID ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+/* Void Font */
+.font-void {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+}
+
+/* Living gradient - subtle animated gradient for active word */
+.zen-living-gradient {
+  background: linear-gradient(
+    90deg,
+    #333 0%,
+    #555 25%,
+    #777 50%,
+    #555 75%,
+    #333 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: living-gradient 4s ease-in-out infinite;
+}
+
+@keyframes living-gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Breathing ring animation */
+@keyframes void-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.5;
+  }
+}
+
+.animate-void-breathe {
+  animation: void-breathe 4s ease-in-out infinite;
+}
+
+/* Breathing text (progress counter) */
+@keyframes void-breathe-text {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.animate-void-breathe-text {
+  animation: void-breathe-text 4s ease-in-out infinite;
+}
+
+/* Word float animation */
+@keyframes void-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-void-float {
+  animation: void-float 6s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
    HEADER - FIXED SIZE ACROSS ALL THEMES
    ══════════════════════════════════════════════════════════════ */
 .header-bar {

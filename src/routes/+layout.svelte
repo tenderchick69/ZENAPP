@@ -49,8 +49,8 @@
 </script>
 
 <svelte:head>
-  <!-- Google Fonts: Syndicate (Orbitron, Share Tech Mono), Zen (Inter), Ember (Cormorant Garamond), Frost (Caveat, Patrick Hand) -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;600&family=Cormorant+Garamond:wght@300;400;600&family=Caveat:wght@700&family=Patrick+Hand&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Syndicate (Orbitron, Share Tech Mono), Zen (Inter), Ember (Cormorant Garamond), Frost (Caveat, Patrick Hand), Void (Space Grotesk) -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;600&family=Cormorant+Garamond:wght@300;400;600&family=Caveat:wght@700&family=Patrick+Hand&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
 </svelte:head>
 
 <div class="min-h-screen neural-grid scanline relative transition-colors duration-500">
