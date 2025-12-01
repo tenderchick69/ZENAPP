@@ -293,8 +293,8 @@
         <h1 class="text-6xl text-yellow-500 font-ember tracking-widest mb-4 drop-shadow-[0_0_20px_gold] animate-pulse">GARDEN COMPLETE</h1>
         <p class="text-orange-300/70 text-xl mb-8 font-light">All embers now burn eternal.</p>
         <button
-          onclick={() => dispatch('exit')}
-          class="px-8 py-3 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-900/30 rounded transition-all uppercase tracking-widest text-sm">
+          onclick={() => dispatch('complete')}
+          class="px-8 py-3 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-900/30 rounded transition-all uppercase tracking-widest text-sm cursor-pointer">
           Return to Hub
         </button>
       </div>

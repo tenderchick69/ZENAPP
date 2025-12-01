@@ -520,9 +520,9 @@
           Every word now perfectly visible
         </p>
         <button
-          onclick={() => dispatch('exit')}
-          class="px-8 py-3 border border-[#a8d8ea]/50 text-[#a8d8ea] hover:bg-[#a8d8ea]/20 rounded transition-all uppercase tracking-widest text-sm font-hand">
-          Step Away
+          onclick={() => dispatch('complete')}
+          class="px-8 py-3 border border-[#a8d8ea]/50 text-[#a8d8ea] hover:bg-[#a8d8ea]/20 rounded transition-all uppercase tracking-widest text-sm font-hand cursor-pointer">
+          Return to Hub
         </button>
       </div>
     </div>

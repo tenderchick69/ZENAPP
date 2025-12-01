@@ -348,9 +348,9 @@
           All words have dissolved into knowing.
         </p>
         <button
-          onclick={() => dispatch('exit')}
-          class="px-8 py-3 border border-[#333] text-[#444] hover:text-[#666] hover:border-[#444] rounded transition-all uppercase tracking-[0.3em] text-sm">
-          Return
+          onclick={() => dispatch('complete')}
+          class="px-8 py-3 border border-[#333] text-[#444] hover:text-[#666] hover:border-[#444] rounded transition-all uppercase tracking-[0.3em] text-sm cursor-pointer">
+          Return to Hub
         </button>
       </div>
     </div>

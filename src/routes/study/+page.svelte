@@ -460,13 +460,13 @@
   {:else if view === 'study'}
     {#if $theme === 'ember'}
       <!-- EMBER GARDEN VIEW -->
-      <EmberGarden {queue} on:grade={handleEmberGrade} on:exit={() => view = 'lobby'} />
+      <EmberGarden {queue} on:grade={handleEmberGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
     {:else if $theme === 'frost'}
       <!-- FROST GLASS VIEW -->
-      <FrostGlass {queue} on:grade={handleFrostGrade} on:exit={() => view = 'lobby'} />
+      <FrostGlass {queue} on:grade={handleFrostGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
     {:else if $theme === 'zen'}
       <!-- ZEN VOID VIEW -->
-      <ZenVoid {queue} on:grade={handleZenGrade} on:exit={() => view = 'lobby'} />
+      <ZenVoid {queue} on:grade={handleZenGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
     {:else if currentCard}
       <!-- STANDARD CARD VIEW -->
       <div class="w-full max-w-3xl mx-auto relative perspective-1000">
