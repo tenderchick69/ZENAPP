@@ -51,7 +51,7 @@
       <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>
     {/if}
 
-    <h1 class="hero-title font-heading uppercase">
+    <h1 class="hero-title font-heading uppercase" style="font-size: 5rem; color: red;">
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent
         {$theme === 'ember' ? 'to-warmth' : 'to-blue-600'}">
         {$t.subtitle}
