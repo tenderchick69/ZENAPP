@@ -9,6 +9,7 @@
   import EmberGarden from '../../components/EmberGarden.svelte';
   import FrostGlass from '../../components/FrostGlass.svelte';
   import ZenVoid from '../../components/ZenVoid.svelte';
+  import SyndicateGrid from '../../components/SyndicateGrid.svelte';
   import Tooltip from '../../components/Tooltip.svelte';
 
   let deckId = page.url.searchParams.get('id');
@@ -293,6 +294,25 @@
       }
     }
   }
+
+  // Handler for SyndicateGrid grade events
+  async function handleSyndicateGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
+    const { id, rating } = event.detail;
+    const card = queue.find(c => c.id === id);
+    if (!card) return;
+
+    if (rating === 'fail') {
+      sessionStats.wrong++;
+      const updates = calculateNextReview(card, 'fail');
+      await supabase.from('cards').update({ state: updates.state }).eq('id', card.id);
+    } else {
+      sessionStats.correct++;
+      if (sessionMode === 'standard') {
+        const updates = calculateNextReview(card, 'pass');
+        await supabase.from('cards').update(updates).eq('id', card.id);
+      }
+    }
+  }
 </script>
 
 <div class="min-h-[80vh] flex flex-col items-center justify-center max-w-2xl mx-auto px-6">
@@ -467,6 +487,9 @@
     {:else if $theme === 'zen'}
       <!-- ZEN VOID VIEW -->
       <ZenVoid {queue} on:grade={handleZenGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
+    {:else if $theme === 'syndicate'}
+      <!-- SYNDICATE GRID VIEW -->
+      <SyndicateGrid {queue} on:grade={handleSyndicateGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
     {:else if currentCard}
       <!-- STANDARD CARD VIEW -->
       <div class="w-full max-w-3xl mx-auto relative perspective-1000">
