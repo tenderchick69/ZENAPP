@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from 'svelte';
   import { fade, scale } from 'svelte/transition';
+  import { speak } from '$lib/tts';
 
   export let queue: any[] = [];
   const dispatch = createEventDispatcher();
@@ -325,7 +326,12 @@
           <div class="text-orange-500 text-lg font-serif mb-2">{revealedWord.gloss_de}</div>
         {/if}
 
-        <h2 class="text-6xl text-orange-100 mb-3 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)]">{revealedWord.headword}</h2>
+        <!-- Headword (Click to hear) -->
+        <button
+          onclick={() => speak(revealedWord.headword)}
+          class="text-6xl text-orange-100 mb-3 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
+          {revealedWord.headword}
+        </button>
 
         {#if revealedWord.ipa}
           <!-- Use font-sans for IPA legibility -->

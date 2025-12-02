@@ -801,3 +801,31 @@ body[data-theme='frost'] .hero-title {
     font-size: clamp(1.5rem, 10vw, 2.5rem) !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TTS SPEAKABLE STYLES
+   Visual feedback for clickable audio elements
+   ══════════════════════════════════════════════════════════════ */
+.tts-speakable {
+  position: relative;
+  cursor: pointer;
+}
+
+.tts-speakable::after {
+  content: '🔊';
+  position: absolute;
+  right: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.5em;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tts-speakable:hover::after {
+  opacity: 0.6;
+}
+
+.tts-speakable:active::after {
+  opacity: 1;
+}

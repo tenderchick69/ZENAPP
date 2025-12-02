@@ -2,6 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { fade, scale } from 'svelte/transition';
   import type { Card } from '$lib/srs';
+  import { speak } from '$lib/tts';
 
   // Svelte 5 props syntax
   let { queue = [] }: { queue?: Card[] } = $props();
@@ -447,10 +448,12 @@
           <div class="text-[#a8d8ea] text-lg font-hand mb-2">{revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword -->
-        <h2 class="text-5xl text-[#a8d8ea] mb-3 font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)]">
+        <!-- Headword (Click to hear) -->
+        <button
+          onclick={() => revealedWord && speak(revealedWord.headword)}
+          class="text-5xl text-[#a8d8ea] mb-3 font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
           {revealedWord.headword}
-        </h2>
+        </button>
 
         <!-- IPA -->
         {#if revealedWord.ipa}

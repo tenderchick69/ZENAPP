@@ -6,6 +6,7 @@
   import { goto } from '$app/navigation';
   import { t, theme } from '$lib/theme';
   import { helpMode } from '$lib/tooltip';
+  import { speak as ttsSpeak } from '$lib/tts';
   import EmberGarden from '../../components/EmberGarden.svelte';
   import FrostGlass from '../../components/FrostGlass.svelte';
   import ZenVoid from '../../components/ZenVoid.svelte';
@@ -174,22 +175,9 @@
     isEditing = false;
   }
 
+  // Use TTS utility - alias for backward compatibility
   function speak(text: string, lang?: string) {
-    if (!window.speechSynthesis) return;
-
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.8; // Slightly slower for learning
-    u.volume = 1.0;
-
-    // Set language if provided (format: 'ko-KR', 'ja-JP', etc.)
-    if (lang) {
-      u.lang = lang;
-    }
-
-    window.speechSynthesis.speak(u);
+    ttsSpeak(text, lang || 'English');
   }
 
   function toggleEdit() {

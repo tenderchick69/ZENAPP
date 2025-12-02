@@ -84,7 +84,10 @@ const DICTIONARY = {
     quickMode: 'RAPID FABRICATION',
     createDeck: 'INITIALIZE SYNTHESIS',
     regenerate: 'RECALIBRATE',
-    importDeck: 'UPLOAD TO MATRIX'
+    importDeck: 'UPLOAD TO MATRIX',
+
+    // Export
+    btn_export: 'EXTRACT DATA'
   },
   zen: {
     // Global
@@ -158,7 +161,10 @@ const DICTIONARY = {
     quickMode: 'Quick Create',
     createDeck: 'Create Deck',
     regenerate: 'Try Again',
-    importDeck: 'Add to Collection'
+    importDeck: 'Add to Collection',
+
+    // Export
+    btn_export: 'Export'
   },
   ember: {
     // Global
@@ -232,7 +238,10 @@ const DICTIONARY = {
     quickMode: 'Quick Spark',
     createDeck: 'Ignite Creation',
     regenerate: 'Rekindle',
-    importDeck: 'Add to Garden'
+    importDeck: 'Add to Garden',
+
+    // Export
+    btn_export: 'Preserve Seeds'
   },
   frost: {
     // Global
@@ -306,7 +315,10 @@ const DICTIONARY = {
     quickMode: 'Flash Freeze',
     createDeck: 'Form Crystal',
     regenerate: 'Reshape',
-    importDeck: 'Preserve in Ice'
+    importDeck: 'Preserve in Ice',
+
+    // Export
+    btn_export: 'Freeze to File'
   }
 };
 
