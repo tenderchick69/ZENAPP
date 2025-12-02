@@ -12,6 +12,7 @@
   import ZenVoid from '../../components/ZenVoid.svelte';
   import SyndicateGrid from '../../components/SyndicateGrid.svelte';
   import Tooltip from '../../components/Tooltip.svelte';
+  import ImageGenerator from '../../components/ImageGenerator.svelte';
 
   let deckId = page.url.searchParams.get('id');
   let view: 'lobby' | 'study' | 'summary' | 'inspect' = 'lobby';
@@ -37,7 +38,7 @@
 
   // Gardener (Edit Card) Modal
   let editingCard: Card | null = null;
-  let gardenerForm = { headword: '', definition: '', mnemonic: '', etymology: '', gloss_de: '' };
+  let gardenerForm = { headword: '', definition: '', mnemonic: '', etymology: '', gloss_de: '', image_url: '', image_prompt: '' };
 
   // Toast Notifications
   let toastMessage = '';
@@ -105,7 +106,9 @@
       definition: card.definition,
       mnemonic: card.mnemonic || '',
       etymology: card.etymology || '',
-      gloss_de: card.gloss_de || ''
+      gloss_de: card.gloss_de || '',
+      image_url: (card as any).image_url || '',
+      image_prompt: (card as any).image_prompt || ''
     };
   }
 
@@ -121,7 +124,9 @@
       definition: gardenerForm.definition,
       mnemonic: gardenerForm.mnemonic || null,
       etymology: gardenerForm.etymology || null,
-      gloss_de: gardenerForm.gloss_de || null
+      gloss_de: gardenerForm.gloss_de || null,
+      image_url: gardenerForm.image_url || null,
+      image_prompt: gardenerForm.image_prompt || null
     }).eq('id', editingCard.id);
 
     if (!error) {
@@ -702,6 +707,27 @@
               bind:value={gardenerForm.etymology}
               class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg"
               placeholder="Word origin..." />
+          </div>
+
+          <!-- Image Generation -->
+          <div>
+            <!-- svelte-ignore a11y_label_has_associated_control -->
+            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">
+              {$theme === 'ember' ? 'Seed Vision' : $theme === 'frost' ? 'Crystal Image' : $theme === 'syndicate' ? 'VISUAL RENDER' : 'Card Image'}
+            </label>
+            <ImageGenerator
+              card={{
+                headword: gardenerForm.headword,
+                definition: gardenerForm.definition,
+                mnemonic: gardenerForm.mnemonic,
+                etymology: gardenerForm.etymology
+              }}
+              currentImageUrl={gardenerForm.image_url}
+              onImageGenerated={(url, prompt) => {
+                gardenerForm.image_url = url;
+                gardenerForm.image_prompt = prompt;
+              }}
+            />
           </div>
         </div>
 

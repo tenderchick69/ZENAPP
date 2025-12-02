@@ -16,6 +16,7 @@
     etymology?: string;
     example?: string;
     gloss_de?: string;
+    image_url?: string;
     x: number;
     y: number;
     drift: number;
@@ -390,6 +391,17 @@
         <p class="text-xl md:text-2xl text-[#555] mb-10 leading-relaxed font-light">
           {revealedWord.definition}
         </p>
+
+        <!-- Card Image -->
+        {#if revealedWord.image_url}
+          <div class="mb-8 flex justify-center">
+            <img
+              src={revealedWord.image_url}
+              alt={revealedWord.headword}
+              class="max-w-[200px] max-h-[200px] rounded-lg border border-[#222] opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </div>
+        {/if}
 
         <!-- Rich Data Block -->
         {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}

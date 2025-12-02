@@ -340,6 +340,12 @@
 
         <p class="text-2xl text-gray-200 mb-10 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
 
+        {#if revealedWord.image_url}
+          <div class="mb-8 flex justify-center">
+            <img src={revealedWord.image_url} alt={revealedWord.headword} class="max-w-[200px] max-h-[200px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity" />
+          </div>
+        {/if}
+
         <!-- RICH DATA BLOCK -->
         <div class="border-t border-orange-900/30 pt-6 mb-8 text-left space-y-6">
 
