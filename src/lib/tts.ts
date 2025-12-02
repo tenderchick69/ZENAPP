@@ -17,9 +17,33 @@ const LANGUAGE_CODES: Record<string, string> = {
 };
 
 /**
+ * Auto-detect language from text based on Unicode character ranges
+ */
+function detectLanguage(text: string): string {
+  // Korean (Hangul): U+AC00-U+D7AF (syllables), U+1100-U+11FF (Jamo)
+  if (/[\uAC00-\uD7AF\u1100-\u11FF]/.test(text)) {
+    return 'ko-KR';
+  }
+  // Japanese: Hiragana U+3040-U+309F, Katakana U+30A0-U+30FF
+  if (/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) {
+    return 'ja-JP';
+  }
+  // Chinese (CJK Unified): U+4E00-U+9FFF (also used in Japanese, but without kana = Chinese)
+  if (/[\u4E00-\u9FFF]/.test(text) && !/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) {
+    return 'zh-CN';
+  }
+  // Russian (Cyrillic): U+0400-U+04FF
+  if (/[\u0400-\u04FF]/.test(text)) {
+    return 'ru-RU';
+  }
+  // Default to null (will use provided language or English)
+  return '';
+}
+
+/**
  * Speak text using Web Speech API
  * @param text - The text to speak
- * @param language - The language name (e.g., 'Korean', 'Japanese')
+ * @param language - The language name (e.g., 'Korean', 'Japanese') - optional, auto-detects if not provided
  */
 export function speak(text: string, language: string = 'English'): void {
   if (!isTTSAvailable()) {
@@ -31,7 +55,11 @@ export function speak(text: string, language: string = 'English'): void {
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = LANGUAGE_CODES[language] || 'en-US';
+
+  // Auto-detect language from text, fall back to provided language
+  const detectedLang = detectLanguage(text);
+  utterance.lang = detectedLang || LANGUAGE_CODES[language] || 'en-US';
+
   utterance.rate = 0.8; // Slower for learning
   utterance.pitch = 1;
   utterance.volume = 1;
