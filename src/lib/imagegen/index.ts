@@ -6,11 +6,12 @@ export type { CardData, PromptResult } from './promptBuilder';
 export { createRunwareProvider } from './providers/runware';
 export { createReplicateProvider } from './providers/replicate';
 export { createOpenAIProvider } from './providers/openai';
+export { createLaozhangProvider } from './providers/laozhang';
 export type { ImageProvider, ImageGenerationOptions, ImageGenerationResult } from './providers/types';
 
 import type { ImageProvider, ImageGenerationResult, ImageGenerationOptions } from './providers/types';
 
-export type ProviderName = 'runware' | 'replicate' | 'openai';
+export type ProviderName = 'runware' | 'replicate' | 'laozhang' | 'openai';
 
 /**
  * Generate an image using the specified provider
@@ -53,12 +54,12 @@ export async function generateImage(
 export function getProviderOrder(preference: 'cost' | 'quality' | 'speed'): ProviderName[] {
   switch (preference) {
     case 'cost':
-      return ['runware', 'replicate', 'openai'];
+      return ['runware', 'replicate', 'laozhang', 'openai'];
     case 'quality':
-      return ['openai', 'replicate', 'runware'];
+      return ['openai', 'laozhang', 'replicate', 'runware'];
     case 'speed':
-      return ['runware', 'openai', 'replicate'];
+      return ['runware', 'laozhang', 'openai', 'replicate'];
     default:
-      return ['runware', 'replicate', 'openai'];
+      return ['runware', 'replicate', 'laozhang', 'openai'];
   }
 }

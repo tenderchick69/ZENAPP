@@ -7,6 +7,7 @@ import {
   createRunwareProvider,
   createReplicateProvider,
   createOpenAIProvider,
+  createLaozhangProvider,
   type CardData
 } from '$lib/imagegen';
 import { env } from '$env/dynamic/private';
@@ -14,9 +15,10 @@ import { env } from '$env/dynamic/private';
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.json();
-    const { card, provider: preferredProvider } = body as {
+    const { card, provider: preferredProvider, style } = body as {
       card: CardData;
-      provider?: 'runware' | 'replicate' | 'openai';
+      provider?: 'runware' | 'replicate' | 'laozhang' | 'openai';
+      style?: string;
     };
 
     // Validate card data
@@ -31,16 +33,30 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     // Check if at least one provider is configured
-    const hasProvider = env.RUNWARE_API_KEY || env.REPLICATE_API_TOKEN || env.OPENAI_API_KEY;
+    const hasProvider = env.RUNWARE_API_KEY || env.REPLICATE_API_TOKEN || env.LAOZHANG_API_KEY || env.OPENAI_API_KEY;
     if (!hasProvider) {
       throw error(500, 'No image generation providers configured');
     }
 
-    // Build the prompt
+    // Build the prompt with optional style
     const promptResult = buildImagePrompt(card);
+    let finalPrompt = promptResult.prompt;
+
+    // Apply style modifier if provided
+    if (style) {
+      const styleModifiers: Record<string, string> = {
+        illustrative: 'clean digital illustration style, soft lighting, centered composition',
+        comic: 'comic book art style, bold outlines, vibrant colors, dynamic',
+        minimal: 'minimalist design, simple shapes, clean lines, white space',
+        watercolor: 'watercolor painting style, soft edges, artistic brush strokes'
+      };
+      if (styleModifiers[style]) {
+        finalPrompt = `${promptResult.prompt}. Style: ${styleModifiers[style]}`;
+      }
+    }
 
     console.log('Generating image for:', card.headword);
-    console.log('Prompt:', promptResult.prompt);
+    console.log('Prompt:', finalPrompt);
 
     // Create providers based on preference
     const providers = [];
@@ -53,6 +69,9 @@ export const POST: RequestHandler = async ({ request }) => {
           break;
         case 'replicate':
           if (env.REPLICATE_API_TOKEN) providers.push(createReplicateProvider(env.REPLICATE_API_TOKEN));
+          break;
+        case 'laozhang':
+          if (env.LAOZHANG_API_KEY) providers.push(createLaozhangProvider(env.LAOZHANG_API_KEY, env.LAOZHANG_BASE_URL));
           break;
         case 'openai':
           if (env.OPENAI_API_KEY) providers.push(createOpenAIProvider(env.OPENAI_API_KEY));
@@ -67,13 +86,16 @@ export const POST: RequestHandler = async ({ request }) => {
     if (env.REPLICATE_API_TOKEN && !providers.find(p => p.name === 'replicate')) {
       providers.push(createReplicateProvider(env.REPLICATE_API_TOKEN));
     }
+    if (env.LAOZHANG_API_KEY && !providers.find(p => p.name === 'laozhang')) {
+      providers.push(createLaozhangProvider(env.LAOZHANG_API_KEY, env.LAOZHANG_BASE_URL));
+    }
     if (env.OPENAI_API_KEY && !providers.find(p => p.name === 'openai')) {
       providers.push(createOpenAIProvider(env.OPENAI_API_KEY));
     }
 
     // Generate the image
     const result = await generateImage(providers, {
-      prompt: promptResult.prompt,
+      prompt: finalPrompt,
       width: 512,
       height: 512
     });
