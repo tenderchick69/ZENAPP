@@ -48,14 +48,12 @@
   let pixels: Pixel[] = [];
   let dataRain: DataDrop[] = [];
   let revealedWord: WordState | null = null;
-  let currentIndex = 0;
   let audioCtx: AudioContext;
   let animationFrame: number;
   let sessionComplete = false;
   let scanlineOffset = 0;
 
   $: masteredCount = words.filter(w => w.mastered).length;
-  $: activeWord = words.find((w, i) => i === currentIndex && !w.mastered);
 
   // Trigger completion check
   $: if (words.length > 0 && masteredCount === words.length && !sessionComplete) {
@@ -279,14 +277,6 @@
       setTimeout(() => {
         words = words.map(w => w.id === targetId ? { ...w, mastered: true, decrypting: false } : w);
       }, 800);
-
-      // Move to next unmastered word
-      const nextIndex = words.findIndex((w, i) => i > currentIndex && !w.mastered);
-      if (nextIndex !== -1) currentIndex = nextIndex;
-      else {
-        const firstUnmastered = words.findIndex(w => !w.mastered);
-        if (firstUnmastered !== -1) currentIndex = firstUnmastered;
-      }
     } else {
       playSound('corrupt');
       const oldX = targetWord?.x;
@@ -356,7 +346,7 @@
                transition-all duration-300 text-lg md:text-2xl lg:text-3xl tracking-widest
                {w.decrypting ? 'syndicate-decrypt' : ''}
                {w.glitching ? 'syndicate-glitch' : ''}
-               {i === currentIndex && !w.decrypting && !w.glitching ? 'text-[#00fff2] syndicate-pulse' : 'text-[#1a3a3a] hover:text-[#00fff2]/70'}"
+               {!w.decrypting && !w.glitching ? 'text-[#00fff2]/60 hover:text-[#00fff2] syndicate-glow-subtle' : ''}"
         style="left: {w.x}%; top: {w.y}%;"
         onclick={(e) => handleWordClick(w, e)}>
         <span class="opacity-50">[</span>{w.headword}<span class="opacity-50">]</span>

@@ -452,7 +452,7 @@
     <div class="w-full h-[80vh] border border-dim bg-panel p-8 flex flex-col relative overflow-hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="font-heading text-2xl text-main">{$t.inspect_title}</h2>
-        <button onclick={() => view = 'lobby'} class="text-dim hover:text-accent font-body text-xs">[ {$t.btn_back} ]</button>
+        <button onclick={() => view = 'lobby'} class="text-dim hover:text-accent font-body text-xs cursor-pointer">[ {$t.btn_back} ]</button>
       </div>
 
       <!-- Scrollable List -->

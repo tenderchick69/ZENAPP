@@ -606,20 +606,22 @@ body[data-theme='zen'] .min-h-screen > * {
 /* ══════════════════════════════════════════════════════════════
    SYNDICATE GRID ANIMATIONS
    ══════════════════════════════════════════════════════════════ */
-/* Pulsing glow for active word */
-.syndicate-pulse {
-  animation: syndicate-pulse 2s ease-in-out infinite;
-  text-shadow: 0 0 10px #00fff2, 0 0 20px #00fff2, 0 0 30px #00fff2;
+/* Subtle glow for all words - readable but atmospheric */
+.syndicate-glow-subtle {
+  text-shadow: 0 0 8px rgba(0, 255, 242, 0.4);
+  animation: syndicate-breathe 3s ease-in-out infinite;
 }
 
-@keyframes syndicate-pulse {
+.syndicate-glow-subtle:hover {
+  text-shadow: 0 0 15px rgba(0, 255, 242, 0.7), 0 0 25px rgba(0, 255, 242, 0.4);
+}
+
+@keyframes syndicate-breathe {
   0%, 100% {
-    text-shadow: 0 0 10px #00fff2, 0 0 20px #00fff2, 0 0 30px #00fff2;
-    opacity: 1;
+    text-shadow: 0 0 8px rgba(0, 255, 242, 0.4);
   }
   50% {
-    text-shadow: 0 0 20px #00fff2, 0 0 40px #00fff2, 0 0 60px #00fff2;
-    opacity: 0.8;
+    text-shadow: 0 0 12px rgba(0, 255, 242, 0.5);
   }
 }
 
