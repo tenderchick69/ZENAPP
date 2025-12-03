@@ -87,12 +87,21 @@
         })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to generate image');
+        // Build detailed error message
+        if (data.details && data.details.length > 0) {
+          const detailStr = data.details
+            .map((d: { provider: string; error: string }) => `${d.provider}: ${d.error}`)
+            .join('\n');
+          error = `${data.error || 'Failed'}\n${detailStr}`;
+        } else {
+          error = data.error || data.message || 'Failed to generate image';
+        }
+        return;
       }
 
-      const data = await response.json();
       previewUrl = data.imageUrl;
       generatedPrompt = data.prompt;
       usedProvider = data.provider;
@@ -366,12 +375,14 @@
 
   .error-message {
     margin-top: 0.75rem;
-    padding: 0.5rem;
+    padding: 0.75rem;
     background: var(--color-danger);
     color: white;
-    font-size: 0.75rem;
-    text-align: center;
+    font-size: 0.7rem;
+    text-align: left;
     border-radius: 0.5rem;
+    white-space: pre-line;
+    line-height: 1.5;
   }
 
   .prompt-details {

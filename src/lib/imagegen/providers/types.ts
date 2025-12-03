@@ -1,9 +1,15 @@
 // src/lib/imagegen/providers/types.ts - Common types for image providers
 
+export interface ProviderError {
+  provider: string;
+  error: string;
+}
+
 export interface ImageGenerationResult {
   success: boolean;
   imageUrl?: string;
   error?: string;
+  errors?: ProviderError[];
   provider: string;
   cost?: number;
 }

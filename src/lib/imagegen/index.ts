@@ -7,15 +7,16 @@ export { createRunwareProvider } from './providers/runware';
 export { createReplicateProvider } from './providers/replicate';
 export { createOpenAIProvider } from './providers/openai';
 export { createLaozhangProvider } from './providers/laozhang';
-export type { ImageProvider, ImageGenerationOptions, ImageGenerationResult } from './providers/types';
+export type { ImageProvider, ImageGenerationOptions, ImageGenerationResult, ProviderError } from './providers/types';
 
-import type { ImageProvider, ImageGenerationResult, ImageGenerationOptions } from './providers/types';
+import type { ImageProvider, ImageGenerationResult, ImageGenerationOptions, ProviderError } from './providers/types';
 
 export type ProviderName = 'runware' | 'replicate' | 'laozhang' | 'openai';
 
 /**
  * Generate an image using the specified provider
  * Falls back to next provider if current one fails
+ * Returns detailed errors from each provider that was tried
  */
 export async function generateImage(
   providers: ImageProvider[],
@@ -29,21 +30,29 @@ export async function generateImage(
     };
   }
 
+  const errors: ProviderError[] = [];
+
   // Try each provider in order
   for (const provider of providers) {
-    if (!provider.isConfigured()) continue;
+    if (!provider.isConfigured()) {
+      errors.push({ provider: provider.name, error: 'Not configured' });
+      continue;
+    }
 
     const result = await provider.generate(options);
     if (result.success) {
       return result;
     }
 
-    console.warn(`Provider ${provider.name} failed: ${result.error}`);
+    const errorMsg = result.error || 'Unknown error';
+    errors.push({ provider: provider.name, error: errorMsg });
+    console.warn(`Provider ${provider.name} failed: ${errorMsg}`);
   }
 
   return {
     success: false,
     error: 'All providers failed',
+    errors,
     provider: 'none'
   };
 }
