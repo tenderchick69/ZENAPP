@@ -61,36 +61,48 @@ export const POST: RequestHandler = async ({ request }) => {
     // Create providers based on preference
     const providers = [];
 
-    // If user specified a provider, try it first
+    // If user specified a provider, ONLY use that provider (no fallback)
     if (preferredProvider) {
       switch (preferredProvider) {
         case 'runware':
-          if (env.RUNWARE_API_KEY) providers.push(createRunwareProvider(env.RUNWARE_API_KEY));
+          if (!env.RUNWARE_API_KEY) {
+            throw error(400, 'Runware API key not configured. Please select a different provider.');
+          }
+          providers.push(createRunwareProvider(env.RUNWARE_API_KEY));
           break;
         case 'replicate':
-          if (env.REPLICATE_API_TOKEN) providers.push(createReplicateProvider(env.REPLICATE_API_TOKEN));
+          if (!env.REPLICATE_API_TOKEN) {
+            throw error(400, 'Replicate API token not configured. Please select a different provider.');
+          }
+          providers.push(createReplicateProvider(env.REPLICATE_API_TOKEN));
           break;
         case 'laozhang':
-          if (env.LAOZHANG_API_KEY) providers.push(createLaozhangProvider(env.LAOZHANG_API_KEY, env.LAOZHANG_BASE_URL));
+          if (!env.LAOZHANG_API_KEY) {
+            throw error(400, 'Laozhang API key not configured. Please select a different provider.');
+          }
+          providers.push(createLaozhangProvider(env.LAOZHANG_API_KEY, env.LAOZHANG_BASE_URL));
           break;
         case 'openai':
-          if (env.OPENAI_API_KEY) providers.push(createOpenAIProvider(env.OPENAI_API_KEY));
+          if (!env.OPENAI_API_KEY) {
+            throw error(400, 'OpenAI API key not configured. Please select a different provider.');
+          }
+          providers.push(createOpenAIProvider(env.OPENAI_API_KEY));
           break;
       }
-    }
-
-    // Add remaining providers as fallbacks (cost-optimized order)
-    if (env.RUNWARE_API_KEY && !providers.find(p => p.name === 'runware')) {
-      providers.push(createRunwareProvider(env.RUNWARE_API_KEY));
-    }
-    if (env.REPLICATE_API_TOKEN && !providers.find(p => p.name === 'replicate')) {
-      providers.push(createReplicateProvider(env.REPLICATE_API_TOKEN));
-    }
-    if (env.LAOZHANG_API_KEY && !providers.find(p => p.name === 'laozhang')) {
-      providers.push(createLaozhangProvider(env.LAOZHANG_API_KEY, env.LAOZHANG_BASE_URL));
-    }
-    if (env.OPENAI_API_KEY && !providers.find(p => p.name === 'openai')) {
-      providers.push(createOpenAIProvider(env.OPENAI_API_KEY));
+    } else {
+      // No preference - add all configured providers (cost-optimized order)
+      if (env.RUNWARE_API_KEY) {
+        providers.push(createRunwareProvider(env.RUNWARE_API_KEY));
+      }
+      if (env.REPLICATE_API_TOKEN) {
+        providers.push(createReplicateProvider(env.REPLICATE_API_TOKEN));
+      }
+      if (env.LAOZHANG_API_KEY) {
+        providers.push(createLaozhangProvider(env.LAOZHANG_API_KEY, env.LAOZHANG_BASE_URL));
+      }
+      if (env.OPENAI_API_KEY) {
+        providers.push(createOpenAIProvider(env.OPENAI_API_KEY));
+      }
     }
 
     // Generate the image

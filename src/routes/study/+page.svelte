@@ -119,7 +119,9 @@
   async function saveCardEdits() {
     if (!editingCard) return;
 
-    const { error } = await supabase.from('cards').update({
+    console.log('Saving card edits:', gardenerForm);
+
+    const { error: updateError } = await supabase.from('cards').update({
       headword: gardenerForm.headword,
       definition: gardenerForm.definition,
       mnemonic: gardenerForm.mnemonic || null,
@@ -129,11 +131,15 @@
       image_prompt: gardenerForm.image_prompt || null
     }).eq('id', editingCard.id);
 
-    if (!error) {
-      await loadStats(); // Reload all cards
-      closeGardenerModal();
-      showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');
+    if (updateError) {
+      console.error('Save failed:', updateError);
+      showToastMessage('Save failed: ' + updateError.message);
+      return;
     }
+
+    await loadStats(); // Reload all cards
+    closeGardenerModal();
+    showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');
   }
 
   async function deleteCard(cardId: number) {
