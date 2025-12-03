@@ -5,6 +5,15 @@ import type { ImageProvider, ImageGenerationOptions, ImageGenerationResult } fro
 
 const RUNWARE_API_URL = 'https://api.runware.ai/v1';
 
+// Generate a UUIDv4
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function createRunwareProvider(apiKey: string): ImageProvider {
   return {
     name: 'runware',
@@ -29,9 +38,10 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
           .trim()
           .slice(0, 500); // Limit length
 
-        // Runware API expects an array of task objects
+        // Runware API expects an array of task objects with taskUUID
         const requestBody = [{
           taskType: 'imageInference',
+          taskUUID: generateUUID(),
           positivePrompt: sanitizedPrompt,
           width: options.width || 512,
           height: options.height || 512,
