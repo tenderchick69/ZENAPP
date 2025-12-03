@@ -29,14 +29,17 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
           .trim()
           .slice(0, 500); // Limit length
 
-        const requestBody = {
+        // Runware API expects an array of task objects
+        const requestBody = [{
+          taskType: 'imageInference',
           positivePrompt: sanitizedPrompt,
           width: options.width || 512,
           height: options.height || 512,
           model: 'runware:100@1',
           numberResults: 1,
-          outputFormat: 'WEBP'
-        };
+          outputFormat: 'WEBP',
+          steps: 20
+        }];
 
         console.log('Runware request:', JSON.stringify(requestBody, null, 2));
 
@@ -73,10 +76,15 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
         const data = await response.json();
         console.log('Runware success response:', JSON.stringify(data, null, 2));
 
-        if (data.data && data.data[0]?.imageURL) {
+        // Response is an array, find the imageInference result
+        const imageResult = Array.isArray(data)
+          ? data.find((item: Record<string, unknown>) => item.taskType === 'imageInference')
+          : data.data?.[0];
+
+        if (imageResult?.imageURL) {
           return {
             success: true,
-            imageUrl: data.data[0].imageURL,
+            imageUrl: imageResult.imageURL,
             provider: 'runware',
             cost: 0.001 // ~$0.001 per image
           };
