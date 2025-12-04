@@ -42,16 +42,16 @@ export const POST: RequestHandler = async ({ request }) => {
     const promptResult = buildImagePrompt(card);
     let finalPrompt = promptResult.prompt;
 
-    // Apply style modifier if provided
-    if (style) {
+    // Apply style modifier if provided (photorealistic = no modifier, use model default)
+    if (style && style !== 'photorealistic') {
       const styleModifiers: Record<string, string> = {
-        illustrative: 'clean digital illustration style, soft lighting, centered composition',
-        comic: 'comic book art style, bold outlines, vibrant colors, dynamic',
-        minimal: 'minimalist design, simple shapes, clean lines, white space',
-        watercolor: 'watercolor painting style, soft edges, artistic brush strokes'
+        illustrative: ', illustration style',
+        comic: ', comic book art style',
+        minimal: ', minimalist icon',
+        watercolor: ', watercolor painting style'
       };
       if (styleModifiers[style]) {
-        finalPrompt = `${promptResult.prompt}. Style: ${styleModifiers[style]}`;
+        finalPrompt = `${promptResult.prompt}${styleModifiers[style]}`;
       }
     }
 

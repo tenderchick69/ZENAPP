@@ -117,7 +117,13 @@
   }
 
   async function saveCardEdits() {
-    if (!editingCard) return;
+    console.log('=== SAVE BUTTON CLICKED ===');
+    console.log('editingCard:', editingCard);
+
+    if (!editingCard) {
+      console.log('No editingCard, returning early');
+      return;
+    }
 
     console.log('Saving card edits:', gardenerForm);
 

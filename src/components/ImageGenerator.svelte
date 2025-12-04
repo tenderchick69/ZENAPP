@@ -26,7 +26,7 @@
   // Modal state
   let showModal = $state(false);
   let selectedProvider = $state('runware');
-  let selectedStyle = $state('illustrative');
+  let selectedStyle = $state('photorealistic');
 
   // Provider options with costs
   const providers = [
@@ -36,8 +36,9 @@
     { id: 'openai', name: 'OpenAI', cost: '~$0.04', desc: 'Best Quality' }
   ];
 
-  // Style options
+  // Style options - photorealistic is default
   const styles = [
+    { id: 'photorealistic', name: 'Photorealistic' },
     { id: 'illustrative', name: 'Illustrative' },
     { id: 'comic', name: 'Comic' },
     { id: 'minimal', name: 'Minimal' },
