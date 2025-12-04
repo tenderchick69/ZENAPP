@@ -215,7 +215,7 @@
       if (mode === 'souls') {
         queue = data.map(card => ({ ...card, state: 4 })).sort(() => Math.random() - 0.5);
       } else {
-        queue = (mode === 'overclock' || mode === 'all') ? data.sort(() => Math.random() - 0.5) : data;
+        queue = (mode === 'overclock' || mode === 'all') ? [...data].sort(() => Math.random() - 0.5) : data;
       }
       view = 'study';
       nextCard();
@@ -501,7 +501,7 @@
 
       <!-- Scrollable List -->
       <div class="flex-1 overflow-y-auto pr-2 space-y-1">
-        {#each allCards.sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
+        {#each [...allCards].sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
           <button
             onclick={() => openGardenerModal(card)}
             class="w-full grid grid-cols-12 gap-4 p-3 border-b border-dim/30 hover:bg-accent/10 hover:border-accent/50 text-xs font-body items-center group cursor-pointer transition-all hover:shadow-[0_0_15px_rgba(var(--color-accent-rgb),0.2)] rounded-lg">
