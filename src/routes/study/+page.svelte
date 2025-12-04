@@ -486,7 +486,7 @@
 
       <!-- Footer -->
       <div class="flex justify-center gap-4 md:gap-8">
-         <button onclick={() => view = 'inspect'} class="text-xs md:text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest">[ {$t.btn_inspect} ]</button>
+         <button type="button" onclick={() => view = 'inspect'} class="text-xs md:text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest">[ {$t.btn_inspect} ]</button>
          <a href="/" class="text-xs md:text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest">[ {$t.btn_exit} ]</a>
       </div>
     </div>
@@ -496,7 +496,7 @@
     <div class="w-full h-[80vh] border border-dim bg-panel p-8 flex flex-col relative overflow-hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="font-heading text-2xl text-main">{$t.inspect_title}</h2>
-        <button onclick={() => view = 'lobby'} class="text-dim hover:text-accent font-body text-xs cursor-pointer">[ {$t.btn_back} ]</button>
+        <button type="button" onclick={() => view = 'lobby'} class="text-dim hover:text-accent font-body text-xs cursor-pointer">[ {$t.btn_back} ]</button>
       </div>
 
       <!-- Scrollable List -->
