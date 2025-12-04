@@ -4,7 +4,20 @@
   import { speak } from '$lib/tts';
 
   export let queue: any[] = [];
+  export let showImages: boolean = false;
   const dispatch = createEventDispatcher();
+
+  // Helper to get card image URL (handles both old and new formats)
+  function getCardImageUrl(card: any): string | null {
+    if (card.image_urls && Array.isArray(card.image_urls) && card.image_urls.length > 0) {
+      const idx = card.selected_image_index || 0;
+      return card.image_urls[idx] || card.image_urls[0];
+    }
+    if (card.image_url) {
+      return card.image_url;
+    }
+    return null;
+  }
 
   // Word state
   type WordState = {
@@ -17,6 +30,8 @@
     example?: string;
     gloss_de?: string;
     image_url?: string;
+    image_urls?: string[];
+    selected_image_index?: number;
     x: number;
     y: number;
     drift: number;
@@ -311,12 +326,23 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
-               transition-all duration-700 text-4xl md:text-5xl lg:text-6xl tracking-wider font-light
-               {w.dissolving ? 'opacity-0 scale-75' : 'opacity-100'}
-               {i === currentIndex && !w.dissolving ? 'zen-living-gradient' : 'text-[#2a2a2a] hover:text-[#444]'}"
+               transition-all duration-700
+               {w.dissolving ? 'opacity-0 scale-75' : 'opacity-100'}"
         style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) translateY({Math.sin(w.drift) * 8}px);"
         onclick={(e) => handleWordClick(w, e)}>
-        {w.headword}
+        {#if showImages && getCardImageUrl(w)}
+          <img
+            src={getCardImageUrl(w)}
+            alt={w.headword}
+            class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg border border-[#333] shadow-lg
+                   {i === currentIndex && !w.dissolving ? 'ring-2 ring-[#444] shadow-[0_0_20px_rgba(100,100,100,0.3)]' : 'opacity-60 hover:opacity-90'}"
+          />
+        {:else}
+          <span class="text-4xl md:text-5xl lg:text-6xl tracking-wider font-light
+                       {i === currentIndex && !w.dissolving ? 'zen-living-gradient' : 'text-[#2a2a2a] hover:text-[#444]'}">
+            {w.headword}
+          </span>
+        {/if}
       </div>
     {/if}
   {/each}
@@ -328,10 +354,18 @@
     </span>
   </div>
 
-  <!-- Exit Button -->
+  <!-- Exit Button & Image Toggle -->
   {#if !sessionComplete}
-    <div class="absolute top-6 right-6 z-40">
+    <div class="absolute top-6 right-6 z-40 flex gap-2">
       <button
+        type="button"
+        onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
+        class="text-[#222] hover:text-[#444] text-xs tracking-[0.3em] transition-colors uppercase border border-[#1a1a1a] px-3 py-2 rounded hover:border-[#333] bg-black/50 cursor-pointer"
+        title={showImages ? 'Show Text' : 'Show Images'}>
+        {showImages ? 'Aa' : '🖼️'}
+      </button>
+      <button
+        type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
         class="text-[#222] hover:text-[#444] text-xs tracking-[0.3em] transition-colors uppercase border border-[#1a1a1a] px-4 py-2 rounded hover:border-[#333] bg-black/50 cursor-pointer">
         Exit
@@ -393,10 +427,10 @@
         </p>
 
         <!-- Card Image -->
-        {#if revealedWord.image_url}
+        {#if getCardImageUrl(revealedWord)}
           <div class="mb-8 flex justify-center">
             <img
-              src={revealedWord.image_url}
+              src={getCardImageUrl(revealedWord)}
               alt={revealedWord.headword}
               class="max-w-[200px] max-h-[200px] rounded-lg border border-[#222] opacity-80 hover:opacity-100 transition-opacity"
             />

@@ -4,7 +4,20 @@
   import { speak } from '$lib/tts';
 
   export let queue: any[] = [];
+  export let showImages: boolean = false;
   const dispatch = createEventDispatcher();
+
+  // Helper to get card image URL (handles both old and new formats)
+  function getCardImageUrl(card: any): string | null {
+    if (card.image_urls && Array.isArray(card.image_urls) && card.image_urls.length > 0) {
+      const idx = card.selected_image_index || 0;
+      return card.image_urls[idx] || card.image_urls[0];
+    }
+    if (card.image_url) {
+      return card.image_url;
+    }
+    return null;
+  }
 
   let words: any[] = [];
   let embers: any[] = [];
@@ -276,14 +289,26 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="absolute transform -translate-x-1/2 -translate-y-1/2 select-none cursor-pointer
-             transition-[opacity,transform,filter,color,text-shadow] duration-1000
-             {w.mastered ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)] scale-110' : 'text-white/20 hover:text-orange-200 hover:scale-110'}
+             transition-[opacity,transform,filter] duration-1000
              {w.burning ? 'opacity-0 scale-150 blur-md' : 'opacity-100'}"
-      style="left: {w.x}%; top: {w.y}%; font-size: {w.mastered ? '2rem' : '1.5rem'};"
+      style="left: {w.x}%; top: {w.y}%;"
       onmouseenter={() => playSound('hover')}
       onclick={(e) => handleSelect(w, e)}
     >
-      {w.headword}
+      {#if showImages && getCardImageUrl(w)}
+        <img
+          src={getCardImageUrl(w)}
+          alt={w.headword}
+          class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg border-2 transition-all
+                 {w.mastered ? 'border-yellow-500 shadow-[0_0_20px_rgba(255,215,0,0.6)] scale-110' : 'border-orange-900/50 opacity-60 hover:opacity-100 hover:border-orange-500 hover:scale-110'}"
+        />
+      {:else}
+        <span class="transition-[color,text-shadow] duration-1000
+                     {w.mastered ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)] scale-110' : 'text-white/20 hover:text-orange-200 hover:scale-110'}"
+              style="font-size: {w.mastered ? '2rem' : '1.5rem'};">
+          {w.headword}
+        </span>
+      {/if}
     </div>
   {/each}
 
@@ -302,10 +327,18 @@
     </div>
   {/if}
 
-  <!-- Exit Button (Hidden if complete) -->
+  <!-- Exit Button & Image Toggle (Hidden if complete) -->
   {#if !sessionComplete}
-    <div class="absolute top-6 right-6 z-40">
+    <div class="absolute top-6 right-6 z-40 flex gap-2">
       <button
+        type="button"
+        onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
+        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-3 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
+        title={showImages ? 'Show Text' : 'Show Images'}>
+        {showImages ? 'Aa' : '🖼️'}
+      </button>
+      <button
+        type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
         class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-4 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer">
         Exit Garden
@@ -340,9 +373,9 @@
 
         <p class="text-2xl text-gray-200 mb-10 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
 
-        {#if revealedWord.image_url}
+        {#if getCardImageUrl(revealedWord)}
           <div class="mb-8 flex justify-center">
-            <img src={revealedWord.image_url} alt={revealedWord.headword} class="max-w-[200px] max-h-[200px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity" />
+            <img src={getCardImageUrl(revealedWord)} alt={revealedWord.headword} class="max-w-[200px] max-h-[200px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity" />
           </div>
         {/if}
 

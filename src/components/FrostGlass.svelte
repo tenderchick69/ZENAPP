@@ -5,8 +5,20 @@
   import { speak } from '$lib/tts';
 
   // Svelte 5 props syntax
-  let { queue = [] }: { queue?: Card[] } = $props();
+  let { queue = [], showImages = false }: { queue?: Card[], showImages?: boolean } = $props();
   const dispatch = createEventDispatcher();
+
+  // Helper to get card image URL (handles both old and new formats)
+  function getCardImageUrl(card: any): string | null {
+    if (card.image_urls && Array.isArray(card.image_urls) && card.image_urls.length > 0) {
+      const idx = card.selected_image_index || 0;
+      return card.image_urls[idx] || card.image_urls[0];
+    }
+    if (card.image_url) {
+      return card.image_url;
+    }
+    return null;
+  }
 
   // Word state type (Card + positioning)
   type WordState = Card & {
@@ -363,17 +375,30 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="absolute cursor-pointer transition-[opacity,filter,color,text-shadow] duration-500 select-none font-finger text-5xl md:text-6xl lg:text-7xl tracking-wide whitespace-nowrap"
+      class="absolute cursor-pointer transition-[opacity,filter] duration-500 select-none"
       class:animate-fog-return={fadingWords.includes(w.id)}
-      style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) rotate({w.rotation}deg); color: {style.color}; filter: {style.filter}; text-shadow: {style.textShadow};"
+      style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) rotate({w.rotation}deg);"
       onmouseenter={() => handleHover(w.id)}
       onmouseleave={() => hoveredWord = null}
       onclick={(e) => handleSelect(w, e)}>
 
-      {w.headword}
+      {#if showImages && getCardImageUrl(w)}
+        <img
+          src={getCardImageUrl(w)}
+          alt={w.headword}
+          class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg border-2 transition-all
+                 {w.mastered ? 'border-[#a8d8ea] shadow-[0_0_20px_rgba(168,216,234,0.5)] opacity-90' : 'border-white/20 opacity-30 hover:opacity-70 hover:border-[#a8d8ea]/50'}"
+          style="filter: {style.filter};"
+        />
+      {:else}
+        <span class="font-finger text-5xl md:text-6xl lg:text-7xl tracking-wide whitespace-nowrap transition-[color,text-shadow] duration-500"
+              style="color: {style.color}; text-shadow: {style.textShadow};">
+          {w.headword}
+        </span>
+      {/if}
 
       <!-- Frost Crystals for mastered words -->
-      {#if w.mastered}
+      {#if w.mastered && !showImages}
         <div class="absolute inset-0 pointer-events-none">
           <!-- Top-left crystal -->
           <svg class="absolute -top-3 -left-2 w-6 h-6 animate-frost-appear" style="animation-delay: 0s">
@@ -531,9 +556,16 @@
     </div>
   {/if}
 
-  <!-- Exit button -->
+  <!-- Exit button & Image Toggle -->
   {#if !sessionComplete}
-    <div class="absolute top-6 right-6 z-40">
+    <div class="absolute top-6 right-6 z-40 flex gap-2">
+      <button
+        type="button"
+        onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
+        class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-3 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer"
+        title={showImages ? 'Show Text' : 'Show Images'}>
+        {showImages ? 'Aa' : '🖼️'}
+      </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}

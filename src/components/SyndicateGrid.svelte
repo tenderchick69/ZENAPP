@@ -4,7 +4,20 @@
   import { speak } from '$lib/tts';
 
   export let queue: any[] = [];
+  export let showImages: boolean = false;
   const dispatch = createEventDispatcher();
+
+  // Helper to get card image URL (handles both old and new formats)
+  function getCardImageUrl(card: any): string | null {
+    if (card.image_urls && Array.isArray(card.image_urls) && card.image_urls.length > 0) {
+      const idx = card.selected_image_index || 0;
+      return card.image_urls[idx] || card.image_urls[0];
+    }
+    if (card.image_url) {
+      return card.image_url;
+    }
+    return null;
+  }
 
   // Word state
   type WordState = {
@@ -16,6 +29,9 @@
     etymology?: string;
     example?: string;
     gloss_de?: string;
+    image_url?: string;
+    image_urls?: string[];
+    selected_image_index?: number;
     x: number;
     y: number;
     mastered: boolean;
@@ -344,13 +360,24 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
-               transition-all duration-300 text-lg md:text-2xl lg:text-3xl tracking-widest
+               transition-all duration-300
                {w.decrypting ? 'syndicate-decrypt' : ''}
-               {w.glitching ? 'syndicate-glitch' : ''}
-               {!w.decrypting && !w.glitching ? 'text-[#00fff2]/60 hover:text-[#00fff2] syndicate-glow-subtle' : ''}"
+               {w.glitching ? 'syndicate-glitch' : ''}"
         style="left: {w.x}%; top: {w.y}%;"
         onclick={(e) => handleWordClick(w, e)}>
-        <span class="opacity-50">[</span>{w.headword}<span class="opacity-50">]</span>
+        {#if showImages && getCardImageUrl(w)}
+          <img
+            src={getCardImageUrl(w)}
+            alt={w.headword}
+            class="w-16 h-16 md:w-20 md:h-20 object-cover border-2 border-[#00fff2]/50 shadow-[0_0_15px_rgba(0,255,242,0.3)]
+                   hover:border-[#00fff2] hover:shadow-[0_0_25px_rgba(0,255,242,0.5)] transition-all"
+          />
+        {:else}
+          <span class="text-lg md:text-2xl lg:text-3xl tracking-widest
+                       {!w.decrypting && !w.glitching ? 'text-[#00fff2]/60 hover:text-[#00fff2] syndicate-glow-subtle' : ''}">
+            <span class="opacity-50">[</span>{w.headword}<span class="opacity-50">]</span>
+          </span>
+        {/if}
       </div>
     {/if}
   {/each}
@@ -362,9 +389,16 @@
     </span>
   </div>
 
-  <!-- Exit Button -->
+  <!-- Exit Button & Image Toggle -->
   {#if !sessionComplete}
-    <div class="absolute top-6 right-6 z-40">
+    <div class="absolute top-6 right-6 z-40 flex gap-2">
+      <button
+        type="button"
+        onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
+        class="text-[#00fff2]/50 hover:text-[#00fff2] text-xs tracking-[0.3em] transition-colors uppercase border border-[#00fff2]/30 px-3 py-2 hover:border-[#00fff2] bg-black/50 cursor-pointer font-mono"
+        title={showImages ? 'Show Text' : 'Show Images'}>
+        {showImages ? '[Aa]' : '[IMG]'}
+      </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}

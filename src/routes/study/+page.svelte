@@ -524,16 +524,16 @@
   {:else if view === 'study'}
     {#if $theme === 'ember'}
       <!-- EMBER GARDEN VIEW -->
-      <EmberGarden {queue} on:grade={handleEmberGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
+      <EmberGarden {queue} {showImages} on:grade={handleEmberGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if $theme === 'frost'}
       <!-- FROST GLASS VIEW -->
-      <FrostGlass {queue} on:grade={handleFrostGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
+      <FrostGlass {queue} {showImages} on:grade={handleFrostGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if $theme === 'zen'}
       <!-- ZEN VOID VIEW -->
-      <ZenVoid {queue} on:grade={handleZenGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
+      <ZenVoid {queue} {showImages} on:grade={handleZenGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if $theme === 'syndicate'}
       <!-- SYNDICATE GRID VIEW -->
-      <SyndicateGrid {queue} on:grade={handleSyndicateGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} />
+      <SyndicateGrid {queue} {showImages} on:grade={handleSyndicateGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if currentCard}
       <!-- STANDARD CARD VIEW -->
       <div class="w-full max-w-3xl mx-auto relative perspective-1000">
