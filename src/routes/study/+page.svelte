@@ -37,8 +37,8 @@
   let deckName = '';
 
   // Gardener (Edit Card) Modal
-  let editingCard: Card | null = $state(null);
-  let gardenerForm = $state({
+  let editingCard: Card | null = null;
+  let gardenerForm = {
     headword: '',
     definition: '',
     mnemonic: '',
@@ -46,7 +46,7 @@
     gloss_de: '',
     image_urls: [] as string[],
     selected_image_index: 0
-  });
+  };
 
   // Toast Notifications
   let toastMessage = '';
@@ -134,15 +134,7 @@
   }
 
   async function saveCardEdits() {
-    console.log('=== SAVE BUTTON CLICKED ===');
-    console.log('editingCard:', editingCard);
-
-    if (!editingCard) {
-      console.log('No editingCard, returning early');
-      return;
-    }
-
-    console.log('Saving card edits:', gardenerForm);
+    if (!editingCard) return;
 
     // Get the selected image for backward compatibility
     const selectedUrl = gardenerForm.image_urls[gardenerForm.selected_image_index] || null;
@@ -215,7 +207,6 @@
 
   // Use TTS utility - alias for backward compatibility
   function speak(text: string, lang?: string) {
-    console.log('TTS speak called:', text, 'lang:', lang || 'English');
     ttsSpeak(text, lang || 'English');
   }
 
