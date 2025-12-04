@@ -15,30 +15,30 @@
   import ImageGenerator from '../../components/ImageGenerator.svelte';
 
   let deckId = page.url.searchParams.get('id');
-  let view: 'lobby' | 'study' | 'summary' | 'inspect' = 'lobby';
-  let cramAmount = 20;
-  let sessionMode: 'standard' | 'all' | 'souls' | 'overclock' = 'standard';
+  let view = $state<'lobby' | 'study' | 'summary' | 'inspect'>('lobby');
+  let cramAmount = $state(20);
+  let sessionMode = $state<'standard' | 'all' | 'souls' | 'overclock'>('standard');
 
   // Data
-  let queue: Card[] = [];
-  let allCards: any[] = [];
-  let currentCard: Card | null = null;
+  let queue = $state<Card[]>([]);
+  let allCards = $state<any[]>([]);
+  let currentCard = $state<Card | null>(null);
 
   // State
-  let isRevealed = false;
-  let isEditing = false;
-  let editForm = { headword: '', definition: '' };
-  let sessionStats = { correct: 0, wrong: 0 };
-  let stats = { due: 0, learning: 0, mastered: 0, total: 0 };
-  let levelDist = [0, 0, 0, 0, 0, 0];
+  let isRevealed = $state(false);
+  let isEditing = $state(false);
+  let editForm = $state({ headword: '', definition: '' });
+  let sessionStats = $state({ correct: 0, wrong: 0 });
+  let stats = $state({ due: 0, learning: 0, mastered: 0, total: 0 });
+  let levelDist = $state([0, 0, 0, 0, 0, 0]);
 
   // Deck renaming
-  let isRenaming = false;
-  let deckName = '';
+  let isRenaming = $state(false);
+  let deckName = $state('');
 
   // Gardener (Edit Card) Modal
-  let editingCard: Card | null = null;
-  let gardenerForm = {
+  let editingCard = $state<Card | null>(null);
+  let gardenerForm = $state({
     headword: '',
     definition: '',
     mnemonic: '',
@@ -46,16 +46,42 @@
     gloss_de: '',
     image_urls: [] as string[],
     selected_image_index: 0
-  };
+  });
 
   // Toast Notifications
-  let toastMessage = '';
-  let showToast = false;
+  let toastMessage = $state('');
+  let showToast = $state(false);
+
+  // Image Mode Toggle
+  let showImages = $state(false);
 
   onMount(async () => {
     if (!deckId) return goto('/');
+    // Load image preference from localStorage
+    showImages = localStorage.getItem('study_show_images') === 'true';
     await loadStats();
   });
+
+  function toggleImageMode() {
+    showImages = !showImages;
+    localStorage.setItem('study_show_images', showImages.toString());
+  }
+
+  // Get the selected image URL for a card (handles both old and new formats)
+  function getCardImageUrl(card: Card | null): string | null {
+    if (!card) return null;
+    const cardAny = card as any;
+    // New format: image_urls array with selected_image_index
+    if (cardAny.image_urls && Array.isArray(cardAny.image_urls) && cardAny.image_urls.length > 0) {
+      const idx = cardAny.selected_image_index || 0;
+      return cardAny.image_urls[idx] || cardAny.image_urls[0];
+    }
+    // Legacy format: single image_url
+    if (cardAny.image_url) {
+      return cardAny.image_url;
+    }
+    return null;
+  }
 
   async function loadStats() {
     // Fetch deck name
@@ -530,8 +556,23 @@
         <!-- Card Content Container (Scrollable) -->
         <div class="flex-1 flex flex-col justify-center items-center overflow-y-auto text-center relative group py-4">
 
-           <!-- Audio/Edit Buttons -->
+           <!-- Audio/Edit/Image Toggle Buttons -->
            <div class="absolute top-0 right-0 z-10 flex gap-2">
+             <!-- Image Toggle -->
+             <button
+               type="button"
+               onclick={(e) => { e.stopPropagation(); toggleImageMode(); }}
+               aria-label="Toggle image mode"
+               title={showImages ? 'Hide images' : 'Show images'}
+               class="p-3 transition-all hover:scale-110 bg-panel/50 hover:bg-panel rounded-lg border border-transparent hover:border-accent/30 cursor-pointer
+                      {showImages ? 'text-success' : 'text-dim hover:text-accent'}">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                 <polyline points="21 15 16 10 5 21"></polyline>
+               </svg>
+             </button>
+             <!-- TTS Speaker -->
              <button
                type="button"
                onclick={(e) => { e.stopPropagation(); if (currentCard) speak(currentCard.headword); }}
@@ -559,12 +600,26 @@
                </div>
              </div>
            {:else}
-             <button type="button"
-                 class="text-6xl md:text-7xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors bg-transparent border-none"
-                 style="text-shadow: 0 2px 8px rgba(0,0,0,0.15);"
-                 onclick={() => { if (currentCard) speak(currentCard.headword); }}>
-                 {currentCard.headword}
-             </button>
+             <!-- Image Mode: Show image if available and enabled -->
+             {#if showImages && getCardImageUrl(currentCard)}
+               <!-- svelte-ignore a11y_click_events_have_key_events -->
+               <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+               <img
+                 src={getCardImageUrl(currentCard)}
+                 alt={currentCard.headword}
+                 onclick={() => { if (currentCard) openGardenerModal(currentCard); }}
+                 class="w-64 h-64 object-cover rounded-2xl mb-6 cursor-pointer border-2 border-accent/30 hover:border-accent hover:shadow-[0_0_30px_rgba(var(--color-accent-rgb),0.3)] transition-all"
+               />
+               <p class="text-lg text-dim font-body mb-2">{currentCard.headword}</p>
+             {:else}
+               <!-- Text Mode: Show headword -->
+               <button type="button"
+                   class="text-6xl md:text-7xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors bg-transparent border-none"
+                   style="text-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                   onclick={() => { if (currentCard) speak(currentCard.headword); }}>
+                   {currentCard.headword}
+               </button>
+             {/if}
 
              {#if isRevealed}
                <div class="space-y-6 w-full max-w-xl" class:animate-glitch={$theme === 'syndicate'}>

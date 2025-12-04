@@ -467,7 +467,7 @@
 
         <!-- Rich Data Block -->
         {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
-          <div class="border-t border-[#a8d8ea]/20 pt-6 mb-8 text-left space-y-6">
+          <div class="border-t border-[#a8d8ea]/20 pt-6 mb-8 text-center space-y-6">
 
             {#if revealedWord.mnemonic}
               <div class="bg-[#a8d8ea]/5 p-4 rounded border border-[#a8d8ea]/10">
@@ -479,12 +479,12 @@
             {#if revealedWord.etymology}
               <div>
                 <span class="text-[10px] uppercase text-gray-600 tracking-widest block mb-1 font-hand">Etymology</span>
-                <p class="text-sm text-gray-400 italic font-hand">{revealedWord.etymology}</p>
+                <p class="text-base text-gray-400 italic font-hand">{revealedWord.etymology}</p>
               </div>
             {/if}
 
             {#if revealedWord.example}
-              <div class="text-center pt-4">
+              <div class="pt-4">
                 <span class="text-[10px] uppercase text-[#a8d8ea]/40 tracking-[0.2em] font-hand">USAGE</span>
                 <div class="text-lg text-[#a8d8ea]/60 italic mt-2 font-hand">
                   "{revealedWord.example}"
@@ -535,8 +535,9 @@
   {#if !sessionComplete}
     <div class="absolute top-6 right-6 z-40">
       <button
+        type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
-        class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-4 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand">
+        class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-4 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer">
         Step Away
       </button>
     </div>

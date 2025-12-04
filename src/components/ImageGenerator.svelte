@@ -21,7 +21,13 @@
   let isGenerating = $state(false);
   let error = $state('');
   let currentIndex = $state(selectedImageIndex);
-  let images = $state<string[]>(imageUrls);
+  let images = $state<string[]>([...imageUrls]);
+
+  // Sync with props when they change (for legacy image_url migration)
+  $effect(() => {
+    images = [...imageUrls];
+    currentIndex = selectedImageIndex;
+  });
 
   // Modal state
   let showModal = $state(false);

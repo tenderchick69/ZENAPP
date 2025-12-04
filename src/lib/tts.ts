@@ -58,7 +58,17 @@ export function speak(text: string, language: string = 'English'): void {
 
   // Auto-detect language from text, fall back to provided language
   const detectedLang = detectLanguage(text);
-  utterance.lang = detectedLang || LANGUAGE_CODES[language] || 'en-US';
+  const targetLang = detectedLang || LANGUAGE_CODES[language] || 'en-US';
+  utterance.lang = targetLang;
+
+  // Try to find a matching voice for better pronunciation
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    const matchingVoice = voices.find(v => v.lang.startsWith(targetLang.split('-')[0]));
+    if (matchingVoice) {
+      utterance.voice = matchingVoice;
+    }
+  }
 
   utterance.rate = 0.8; // Slower for learning
   utterance.pitch = 1;
