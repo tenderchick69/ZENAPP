@@ -46,6 +46,8 @@ function detectLanguage(text: string): string {
  * @param language - The language name (e.g., 'Korean', 'Japanese') - optional, auto-detects if not provided
  */
 export function speak(text: string, language: string = 'English'): void {
+  console.log('TTS library speak:', { text, language, available: isTTSAvailable() });
+
   if (!isTTSAvailable()) {
     console.warn('TTS not available in this browser');
     return;
@@ -59,6 +61,8 @@ export function speak(text: string, language: string = 'English'): void {
   // Auto-detect language from text, fall back to provided language
   const detectedLang = detectLanguage(text);
   utterance.lang = detectedLang || LANGUAGE_CODES[language] || 'en-US';
+
+  console.log('TTS utterance:', { lang: utterance.lang, rate: 0.8, text });
 
   utterance.rate = 0.8; // Slower for learning
   utterance.pitch = 1;

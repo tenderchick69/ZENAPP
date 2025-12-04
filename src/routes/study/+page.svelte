@@ -37,8 +37,8 @@
   let deckName = '';
 
   // Gardener (Edit Card) Modal
-  let editingCard: Card | null = null;
-  let gardenerForm = {
+  let editingCard: Card | null = $state(null);
+  let gardenerForm = $state({
     headword: '',
     definition: '',
     mnemonic: '',
@@ -46,7 +46,7 @@
     gloss_de: '',
     image_urls: [] as string[],
     selected_image_index: 0
-  };
+  });
 
   // Toast Notifications
   let toastMessage = '';
@@ -215,6 +215,7 @@
 
   // Use TTS utility - alias for backward compatibility
   function speak(text: string, lang?: string) {
+    console.log('TTS speak called:', text, 'lang:', lang || 'English');
     ttsSpeak(text, lang || 'English');
   }
 
@@ -540,10 +541,12 @@
 
            <!-- Audio/Edit Buttons -->
            <div class="absolute top-0 right-0 z-10 flex gap-2">
-             <button onclick={(e) => { e.stopPropagation(); if (currentCard) speak(currentCard.headword); }}
+             <button
+               type="button"
+               onclick={(e) => { e.stopPropagation(); if (currentCard) speak(currentCard.headword); }}
                aria-label="Play pronunciation"
                title="Listen to pronunciation"
-               class="p-3 text-accent hover:text-success transition-all hover:scale-110 bg-panel/50 hover:bg-panel rounded-lg border border-transparent hover:border-accent/30">
+               class="p-3 text-accent hover:text-success transition-all hover:scale-110 bg-panel/50 hover:bg-panel rounded-lg border border-transparent hover:border-accent/30 cursor-pointer">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
              </button>
            </div>
@@ -676,7 +679,11 @@
       </div>
 
       <!-- Modal Content -->
-      <div class="relative bg-panel border-2 border-accent/50 p-8 rounded-2xl max-w-2xl w-full shadow-[0_0_60px_rgba(var(--color-accent-rgb),0.3)] max-h-[90vh] overflow-y-auto">
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="relative bg-panel border-2 border-accent/50 p-8 rounded-2xl max-w-2xl w-full shadow-[0_0_60px_rgba(var(--color-accent-rgb),0.3)] max-h-[90vh] overflow-y-auto"
+        onclick={(e) => e.stopPropagation()}>
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
@@ -768,6 +775,7 @@
         <!-- Actions -->
         <div class="flex gap-4 mt-8">
           <button
+            type="button"
             onclick={saveCardEdits}
             class="flex-1 py-4 bg-accent text-bg font-heading text-lg font-bold hover:shadow-[0_0_30px_currentColor/40] transition-all rounded-full cursor-pointer">
             Save Changes

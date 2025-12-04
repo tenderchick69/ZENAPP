@@ -150,46 +150,52 @@
 
 <div class="image-generator">
   <!-- Carousel / Preview Area -->
-  <div class="preview-container">
-    {#if images.length > 0}
-      <img src={images[currentIndex]} alt={card.headword} class="preview-image" />
+  <div class="carousel-wrapper">
+    {#if images.length > 1}
       <button
-        onclick={() => deleteImage(currentIndex)}
-        class="delete-btn"
-        title="Delete this image">
-        ✕
+        onclick={prevImage}
+        disabled={currentIndex === 0}
+        class="nav-arrow nav-arrow-left">
+        ‹
       </button>
-      {#if images.length > 1}
-        <div class="carousel-nav">
-          <button
-            onclick={prevImage}
-            disabled={currentIndex === 0}
-            class="nav-btn">
-            ←
-          </button>
-          <span class="image-count">{currentIndex + 1} / {images.length}</span>
-          <button
-            onclick={nextImage}
-            disabled={currentIndex === images.length - 1}
-            class="nav-btn">
-            →
-          </button>
+    {/if}
+
+    <div class="preview-container">
+      {#if images.length > 0}
+        <img src={images[currentIndex]} alt={card.headword} class="preview-image" />
+        <button
+          onclick={() => deleteImage(currentIndex)}
+          class="delete-btn"
+          title="Delete this image">
+          ✕
+        </button>
+        {#if images.length > 1}
+          <div class="image-counter">{currentIndex + 1} / {images.length}</div>
+        {/if}
+      {:else}
+        <div class="placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span class="placeholder-text">
+            {$theme === 'ember' ? 'Visualize this seed' :
+             $theme === 'frost' ? 'Crystallize an image' :
+             $theme === 'syndicate' ? 'RENDER VISUAL' :
+             'Generate image'}
+          </span>
         </div>
       {/if}
-    {:else}
-      <div class="placeholder">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-        <span class="placeholder-text">
-          {$theme === 'ember' ? 'Visualize this seed' :
-           $theme === 'frost' ? 'Crystallize an image' :
-           $theme === 'syndicate' ? 'RENDER VISUAL' :
-           'Generate image'}
-        </span>
-      </div>
+    </div>
+
+    {#if images.length > 1}
+      <button
+        onclick={nextImage}
+        disabled={currentIndex === images.length - 1}
+        class="nav-arrow nav-arrow-right">
+        ›
+      </button>
     {/if}
   </div>
 
@@ -285,12 +291,47 @@
     margin-top: 1rem;
   }
 
+  .carousel-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .nav-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: var(--color-panel);
+    border: 1px solid var(--color-dim);
+    border-radius: 50%;
+    color: var(--color-accent);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .nav-arrow:hover:not(:disabled) {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border-color: var(--color-accent);
+  }
+
+  .nav-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
   .preview-container {
     position: relative;
     width: 100%;
     aspect-ratio: 1;
     max-width: 200px;
-    margin: 0 auto 0.5rem;
     border: 2px dashed var(--color-dim);
     border-radius: 1rem;
     overflow: hidden;
@@ -329,43 +370,16 @@
     opacity: 1;
   }
 
-  .carousel-nav {
+  .image-counter {
     position: absolute;
     bottom: 0.5rem;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     background: rgba(0, 0, 0, 0.6);
-    padding: 0.25rem 0.5rem;
+    color: white;
+    padding: 0.25rem 0.75rem;
     border-radius: 1rem;
-  }
-
-  .nav-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0.25rem;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-  }
-
-  .nav-btn:hover:not(:disabled) {
-    opacity: 1;
-  }
-
-  .nav-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-
-  .image-count {
-    color: white;
     font-size: 0.7rem;
-    min-width: 3rem;
     text-align: center;
   }
 
