@@ -19,6 +19,7 @@ export interface ImageGenerationOptions {
   width?: number;
   height?: number;
   style?: string;
+  model?: string;
 }
 
 export interface ImageProvider {

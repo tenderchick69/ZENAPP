@@ -10,33 +10,32 @@
       etymology?: string;
       tags?: string;
     };
-    currentImageUrl?: string;
-    onImageGenerated?: (imageUrl: string, prompt: string) => void;
+    imageUrls?: string[];
+    selectedImageIndex?: number;
+    onImagesChanged?: (urls: string[], selectedIndex: number) => void;
   }
 
-  let { card, currentImageUrl = '', onImageGenerated }: Props = $props();
+  let { card, imageUrls = [], selectedImageIndex = 0, onImagesChanged }: Props = $props();
 
   // State
   let isGenerating = $state(false);
   let error = $state('');
-  let previewUrl = $state(currentImageUrl);
-  let generatedPrompt = $state('');
-  let usedProvider = $state('');
+  let currentIndex = $state(selectedImageIndex);
+  let images = $state<string[]>(imageUrls);
 
   // Modal state
   let showModal = $state(false);
-  let selectedProvider = $state('runware');
+  let selectedModel = $state('sd15');
   let selectedStyle = $state('photorealistic');
 
-  // Provider options with costs
-  const providers = [
-    { id: 'runware', name: 'Runware', cost: '~$0.001', desc: 'Cheapest' },
-    { id: 'replicate', name: 'Replicate', cost: '~$0.003', desc: 'Balanced' },
-    { id: 'laozhang', name: 'Laozhang', cost: '~$0.01', desc: 'Good Quality' },
-    { id: 'openai', name: 'OpenAI', cost: '~$0.04', desc: 'Best Quality' }
+  // Model options
+  const models = [
+    { id: 'sd15', name: 'SD 1.5', desc: 'Fastest' },
+    { id: 'sdxl', name: 'SDXL', desc: 'Better' },
+    { id: 'flux', name: 'FLUX', desc: 'Best' }
   ];
 
-  // Style options - photorealistic is default
+  // Style options
   const styles = [
     { id: 'photorealistic', name: 'Photorealistic' },
     { id: 'illustrative', name: 'Illustrative' },
@@ -45,11 +44,13 @@
     { id: 'watercolor', name: 'Watercolor' }
   ];
 
-  // Load saved preferences from localStorage
+  const MAX_IMAGES = 5;
+
+  // Load saved preferences
   onMount(() => {
-    const savedProvider = localStorage.getItem('vocapp_imagegen_provider');
+    const savedModel = localStorage.getItem('vocapp_imagegen_model');
     const savedStyle = localStorage.getItem('vocapp_imagegen_style');
-    if (savedProvider) selectedProvider = savedProvider;
+    if (savedModel) selectedModel = savedModel;
     if (savedStyle) selectedStyle = savedStyle;
   });
 
@@ -62,20 +63,17 @@
   }
 
   async function handleGenerate() {
-    // Save preferences
-    localStorage.setItem('vocapp_imagegen_provider', selectedProvider);
+    localStorage.setItem('vocapp_imagegen_model', selectedModel);
     localStorage.setItem('vocapp_imagegen_style', selectedStyle);
-
     closeModal();
     await generateImage();
   }
 
   async function generateImage() {
-    if (isGenerating) return;
+    if (isGenerating || images.length >= MAX_IMAGES) return;
 
     isGenerating = true;
     error = '';
-    usedProvider = '';
 
     try {
       const response = await fetch('/api/generate-image', {
@@ -83,7 +81,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           card,
-          provider: selectedProvider,
+          model: selectedModel,
           style: selectedStyle
         })
       });
@@ -91,7 +89,6 @@
       const data = await response.json();
 
       if (!response.ok) {
-        // Build detailed error message
         if (data.details && data.details.length > 0) {
           const detailStr = data.details
             .map((d: { provider: string; error: string }) => `${d.provider}: ${d.error}`)
@@ -103,13 +100,11 @@
         return;
       }
 
-      previewUrl = data.imageUrl;
-      generatedPrompt = data.prompt;
-      usedProvider = data.provider;
+      // Add new image to array
+      images = [...images, data.imageUrl];
+      currentIndex = images.length - 1;
 
-      if (onImageGenerated) {
-        onImageGenerated(data.imageUrl, data.prompt);
-      }
+      notifyChange();
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error';
     } finally {
@@ -117,27 +112,70 @@
     }
   }
 
-  function clearImage() {
-    previewUrl = '';
-    generatedPrompt = '';
-    usedProvider = '';
-    if (onImageGenerated) {
-      onImageGenerated('', '');
+  function prevImage() {
+    if (currentIndex > 0) {
+      currentIndex--;
+    }
+  }
+
+  function nextImage() {
+    if (currentIndex < images.length - 1) {
+      currentIndex++;
+    }
+  }
+
+  function deleteImage(index: number) {
+    if (images.length === 0) return;
+
+    images = images.filter((_, i) => i !== index);
+
+    // Adjust current index if needed
+    if (currentIndex >= images.length) {
+      currentIndex = Math.max(0, images.length - 1);
+    }
+
+    notifyChange();
+  }
+
+  function selectThisImage() {
+    notifyChange();
+  }
+
+  function notifyChange() {
+    if (onImagesChanged) {
+      onImagesChanged(images, currentIndex);
     }
   }
 </script>
 
 <div class="image-generator">
-  <!-- Preview Area -->
+  <!-- Carousel / Preview Area -->
   <div class="preview-container">
-    {#if previewUrl}
-      <img src={previewUrl} alt={card.headword} class="preview-image" />
+    {#if images.length > 0}
+      <img src={images[currentIndex]} alt={card.headword} class="preview-image" />
       <button
-        onclick={clearImage}
-        class="clear-btn"
-        title="Remove image">
+        onclick={() => deleteImage(currentIndex)}
+        class="delete-btn"
+        title="Delete this image">
         ✕
       </button>
+      {#if images.length > 1}
+        <div class="carousel-nav">
+          <button
+            onclick={prevImage}
+            disabled={currentIndex === 0}
+            class="nav-btn">
+            ←
+          </button>
+          <span class="image-count">{currentIndex + 1} / {images.length}</span>
+          <button
+            onclick={nextImage}
+            disabled={currentIndex === images.length - 1}
+            class="nav-btn">
+            →
+          </button>
+        </div>
+      {/if}
     {:else}
       <div class="placeholder">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -155,32 +193,31 @@
     {/if}
   </div>
 
-  <!-- Provider Info (shown after generation) -->
-  {#if usedProvider && previewUrl}
-    <div class="provider-info">
-      Generated by: {usedProvider}
-    </div>
+  <!-- Selection indicator -->
+  {#if images.length > 1}
+    <button
+      onclick={selectThisImage}
+      class="select-btn"
+      class:selected={currentIndex === selectedImageIndex}>
+      {currentIndex === selectedImageIndex ? '✓ Selected for study' : 'Use this image'}
+    </button>
   {/if}
 
   <!-- Controls -->
   <div class="controls">
     <button
       onclick={openModal}
-      disabled={isGenerating}
+      disabled={isGenerating || images.length >= MAX_IMAGES}
       class="generate-btn"
       class:generating={isGenerating}>
       {#if isGenerating}
         <span class="spinner"></span>
-        {$theme === 'ember' ? 'Growing...' :
-         $theme === 'frost' ? 'Forming...' :
-         $theme === 'syndicate' ? 'RENDERING...' :
-         'Generating...'}
+        Generating...
+      {:else if images.length >= MAX_IMAGES}
+        Max {MAX_IMAGES} images
       {:else}
         <span class="sparkle">✨</span>
-        {$theme === 'ember' ? 'Grow Image' :
-         $theme === 'frost' ? 'Form Image' :
-         $theme === 'syndicate' ? 'GENERATE' :
-         'Generate Image'}
+        {images.length > 0 ? 'Add Image' : 'Generate Image'}
       {/if}
     </button>
   </div>
@@ -191,21 +228,13 @@
       {error}
     </div>
   {/if}
-
-  <!-- Prompt Preview (collapsed by default) -->
-  {#if generatedPrompt}
-    <details class="prompt-details">
-      <summary class="prompt-summary">View prompt</summary>
-      <p class="prompt-text">{generatedPrompt}</p>
-    </details>
-  {/if}
 </div>
 
-<!-- Provider Selection Modal -->
+<!-- Model/Style Selection Modal -->
 {#if showModal}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="modal-backdrop" onclick={closeModal}>
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="modal" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
         <h3>Generate Image</h3>
@@ -213,21 +242,20 @@
       </div>
 
       <div class="modal-body">
-        <!-- Provider Selection -->
+        <!-- Model Selection -->
         <div class="section">
-          <label class="section-label">Select Provider:</label>
-          <div class="provider-list">
-            {#each providers as provider}
-              <label class="provider-option">
+          <label class="section-label">Model:</label>
+          <div class="option-list">
+            {#each models as model}
+              <label class="option-item">
                 <input
                   type="radio"
-                  name="provider"
-                  value={provider.id}
-                  bind:group={selectedProvider}
+                  name="model"
+                  value={model.id}
+                  bind:group={selectedModel}
                 />
-                <span class="provider-name">{provider.name}</span>
-                <span class="provider-desc">({provider.desc})</span>
-                <span class="provider-cost">{provider.cost}</span>
+                <span class="option-name">{model.name}</span>
+                <span class="option-desc">({model.desc})</span>
               </label>
             {/each}
           </div>
@@ -235,7 +263,7 @@
 
         <!-- Style Selection -->
         <div class="section">
-          <label class="section-label" for="style-select">Select Style:</label>
+          <label class="section-label" for="style-select">Style:</label>
           <select id="style-select" class="style-select" bind:value={selectedStyle}>
             {#each styles as style}
               <option value={style.id}>{style.name}</option>
@@ -278,7 +306,7 @@
     object-fit: cover;
   }
 
-  .clear-btn {
+  .delete-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
@@ -297,8 +325,48 @@
     transition: opacity 0.2s;
   }
 
-  .clear-btn:hover {
+  .delete-btn:hover {
     opacity: 1;
+  }
+
+  .carousel-nav {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .nav-btn:hover:not(:disabled) {
+    opacity: 1;
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .image-count {
+    color: white;
+    font-size: 0.7rem;
+    min-width: 3rem;
+    text-align: center;
   }
 
   .placeholder {
@@ -315,11 +383,29 @@
     letter-spacing: 0.1em;
   }
 
-  .provider-info {
-    text-align: center;
-    font-size: 0.7rem;
+  .select-btn {
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    margin: 0.5rem auto;
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--color-dim);
     color: var(--color-dim);
-    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .select-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .select-btn.selected {
+    border-color: var(--color-success);
+    color: var(--color-success);
   }
 
   .controls {
@@ -384,27 +470,6 @@
     border-radius: 0.5rem;
     white-space: pre-line;
     line-height: 1.5;
-  }
-
-  .prompt-details {
-    margin-top: 0.75rem;
-  }
-
-  .prompt-summary {
-    font-size: 0.75rem;
-    color: var(--color-dim);
-    cursor: pointer;
-    text-align: center;
-  }
-
-  .prompt-text {
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    background: rgba(128, 128, 128, 0.1);
-    border-radius: 0.5rem;
-    font-size: 0.7rem;
-    color: var(--color-dim);
-    line-height: 1.4;
   }
 
   /* Modal Styles */
@@ -477,13 +542,13 @@
     margin-bottom: 0.75rem;
   }
 
-  .provider-list {
+  .option-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .provider-option {
+  .option-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -495,34 +560,27 @@
     transition: all 0.2s;
   }
 
-  .provider-option:hover {
+  .option-item:hover {
     border-color: var(--color-accent);
   }
 
-  .provider-option:has(input:checked) {
+  .option-item:has(input:checked) {
     border-color: var(--color-accent);
     background: rgba(var(--color-accent-rgb), 0.1);
   }
 
-  .provider-option input[type="radio"] {
+  .option-item input[type="radio"] {
     accent-color: var(--color-accent);
   }
 
-  .provider-name {
+  .option-name {
     font-weight: 600;
     color: var(--color-main);
   }
 
-  .provider-desc {
+  .option-desc {
     color: var(--color-dim);
     font-size: 0.8rem;
-  }
-
-  .provider-cost {
-    margin-left: auto;
-    font-size: 0.75rem;
-    color: var(--color-success);
-    font-family: monospace;
   }
 
   .style-select {

@@ -38,7 +38,15 @@
 
   // Gardener (Edit Card) Modal
   let editingCard: Card | null = null;
-  let gardenerForm = { headword: '', definition: '', mnemonic: '', etymology: '', gloss_de: '', image_url: '', image_prompt: '' };
+  let gardenerForm = {
+    headword: '',
+    definition: '',
+    mnemonic: '',
+    etymology: '',
+    gloss_de: '',
+    image_urls: [] as string[],
+    selected_image_index: 0
+  };
 
   // Toast Notifications
   let toastMessage = '';
@@ -101,14 +109,23 @@
   // Gardener Modal Functions
   function openGardenerModal(card: Card) {
     editingCard = card;
+    // Handle both old (image_url) and new (image_urls) formats
+    const cardAny = card as any;
+    let urls: string[] = [];
+    if (cardAny.image_urls && Array.isArray(cardAny.image_urls)) {
+      urls = cardAny.image_urls;
+    } else if (cardAny.image_url) {
+      urls = [cardAny.image_url];
+    }
+
     gardenerForm = {
       headword: card.headword,
       definition: card.definition,
       mnemonic: card.mnemonic || '',
       etymology: card.etymology || '',
       gloss_de: card.gloss_de || '',
-      image_url: (card as any).image_url || '',
-      image_prompt: (card as any).image_prompt || ''
+      image_urls: urls,
+      selected_image_index: cardAny.selected_image_index || 0
     };
   }
 
@@ -127,14 +144,18 @@
 
     console.log('Saving card edits:', gardenerForm);
 
+    // Get the selected image for backward compatibility
+    const selectedUrl = gardenerForm.image_urls[gardenerForm.selected_image_index] || null;
+
     const { error: updateError } = await supabase.from('cards').update({
       headword: gardenerForm.headword,
       definition: gardenerForm.definition,
       mnemonic: gardenerForm.mnemonic || null,
       etymology: gardenerForm.etymology || null,
       gloss_de: gardenerForm.gloss_de || null,
-      image_url: gardenerForm.image_url || null,
-      image_prompt: gardenerForm.image_prompt || null
+      image_urls: gardenerForm.image_urls,
+      selected_image_index: gardenerForm.selected_image_index,
+      image_url: selectedUrl // backward compatibility
     }).eq('id', editingCard.id);
 
     if (updateError) {
@@ -734,10 +755,11 @@
                 mnemonic: gardenerForm.mnemonic,
                 etymology: gardenerForm.etymology
               }}
-              currentImageUrl={gardenerForm.image_url}
-              onImageGenerated={(url, prompt) => {
-                gardenerForm.image_url = url;
-                gardenerForm.image_prompt = prompt;
+              imageUrls={gardenerForm.image_urls}
+              selectedImageIndex={gardenerForm.selected_image_index}
+              onImagesChanged={(urls, selectedIndex) => {
+                gardenerForm.image_urls = urls;
+                gardenerForm.selected_image_index = selectedIndex;
               }}
             />
           </div>

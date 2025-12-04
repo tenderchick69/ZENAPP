@@ -36,12 +36,11 @@ export function shouldSkipImage(tags?: string): boolean {
 
 /**
  * Build a simple image prompt from card definition
- * Style is applied by the API endpoint, not here
+ * Just use the definition - style is applied by the API endpoint
  */
 export function buildImagePrompt(card: CardData): PromptResult {
   // Just use the definition - keep it simple
-  // Add "no text" to prevent random letters in images
-  const prompt = `${card.definition}, no text, no letters, no words`;
+  const prompt = card.definition;
 
   return {
     prompt,

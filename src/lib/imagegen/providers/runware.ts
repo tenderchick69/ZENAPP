@@ -1,9 +1,15 @@
 // src/lib/imagegen/providers/runware.ts - Runware image generation provider
-// Fast and cost-effective option for vocabulary images
 
 import type { ImageProvider, ImageGenerationOptions, ImageGenerationResult } from './types';
 
 const RUNWARE_API_URL = 'https://api.runware.ai/v1';
+
+// Model IDs for Runware
+export const RUNWARE_MODELS: Record<string, { id: string; name: string; desc: string }> = {
+  'sd15': { id: 'runware:100@1', name: 'SD 1.5', desc: 'Fastest, cheapest' },
+  'sdxl': { id: 'civitai:101055@128078', name: 'SDXL', desc: 'Better quality' },
+  'flux': { id: 'runware:101@1', name: 'FLUX Schnell', desc: 'Best quality' }
+};
 
 // Generate a UUIDv4
 function generateUUID(): string {
@@ -32,23 +38,27 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
       }
 
       try {
-        // Sanitize prompt - strip non-ASCII if needed for Runware
+        // Sanitize prompt - strip non-ASCII
         const sanitizedPrompt = options.prompt
-          .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII
+          .replace(/[^\x00-\x7F]/g, '')
           .trim()
-          .slice(0, 500); // Limit length
+          .slice(0, 500);
 
-        // Runware API expects an array of task objects with taskUUID
+        // Get model ID from options or default to SD 1.5
+        const modelKey = options.model || 'sd15';
+        const modelId = RUNWARE_MODELS[modelKey]?.id || RUNWARE_MODELS['sd15'].id;
+
+        // Runware API expects an array of task objects
         const requestBody = [{
           taskType: 'imageInference',
           taskUUID: generateUUID(),
           positivePrompt: sanitizedPrompt,
           width: options.width || 512,
           height: options.height || 512,
-          model: 'runware:100@1',
+          model: modelId,
           numberResults: 1,
           outputFormat: 'WEBP',
-          steps: 20
+          steps: modelKey === 'flux' ? 4 : 20 // FLUX needs fewer steps
         }];
 
         console.log('Runware request:', JSON.stringify(requestBody, null, 2));
@@ -63,11 +73,9 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
         });
 
         if (!response.ok) {
-          // Get full error body for debugging
           const errorText = await response.text();
           console.error('Runware error response:', response.status, errorText);
 
-          // Try to parse as JSON for structured error
           let errorMessage = `HTTP ${response.status}`;
           try {
             const errorJson = JSON.parse(errorText);
@@ -96,7 +104,7 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
             success: true,
             imageUrl: imageResult.imageURL,
             provider: 'runware',
-            cost: 0.001 // ~$0.001 per image
+            cost: modelKey === 'flux' ? 0.003 : 0.001
           };
         }
 
