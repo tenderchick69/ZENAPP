@@ -356,19 +356,27 @@
 
         <!-- German Gloss -->
         {#if revealedWord.gloss_de}
-          <div class="text-orange-500 text-lg font-serif mb-2">{revealedWord.gloss_de}</div>
+          <div class="text-orange-500 text-lg font-serif mb-2 text-center">{revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword (Click to hear) -->
-        <button
-          onclick={() => speak(revealedWord.headword)}
-          class="text-6xl text-orange-100 mb-3 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
-          {revealedWord.headword}
-        </button>
+        <!-- Headword with TTS icon (Click to hear) -->
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <button
+            onclick={() => speak(revealedWord.headword)}
+            class="text-5xl md:text-6xl text-orange-100 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
+            {revealedWord.headword}
+          </button>
+          <button
+            onclick={() => speak(revealedWord.headword)}
+            class="text-orange-500/50 hover:text-orange-400 text-xl cursor-pointer bg-transparent border-none transition-colors"
+            title="Speak">
+            🔊
+          </button>
+        </div>
 
         {#if revealedWord.ipa}
           <!-- Use font-sans for IPA legibility -->
-          <p class="text-orange-500/50 text-sm mb-8 font-sans tracking-widest">/{revealedWord.ipa}/</p>
+          <p class="text-orange-500/50 text-sm mb-8 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
         {/if}
 
         <p class="text-2xl text-gray-200 mb-10 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
@@ -380,7 +388,7 @@
         {/if}
 
         <!-- RICH DATA BLOCK -->
-        <div class="border-t border-orange-900/30 pt-6 mb-8 text-left space-y-5">
+        <div class="border-t border-orange-900/30 pt-6 mb-8 text-center space-y-5">
 
            {#if revealedWord.mnemonic}
              <div class="bg-orange-900/10 p-4 rounded border border-orange-900/20">
@@ -390,20 +398,20 @@
            {/if}
 
            {#if revealedWord.etymology}
-              <div>
-                 <span class="text-[10px] uppercase text-gray-600 tracking-widest block mb-1">Etymology</span>
+              <div class="pt-2">
+                 <span class="text-[10px] uppercase text-gray-500 tracking-widest block mb-1">Etymology</span>
                  <p class="text-base text-gray-400 italic">{revealedWord.etymology}</p>
               </div>
            {/if}
 
            {#if revealedWord.example}
-              <div class="text-center pt-4">
-                 <span class="text-[10px] uppercase text-orange-900/60 tracking-[0.2em]">USAGE</span>
+              <div class="pt-4">
+                 <span class="text-[10px] uppercase text-orange-500/60 tracking-[0.2em]">USAGE</span>
                  <div class="text-lg text-orange-200/80 italic mt-2">
                     "{revealedWord.example}"
                  </div>
                  {#if revealedWord.example_gloss}
-                   <div class="text-sm text-gray-400 mt-1">
+                   <div class="text-base text-gray-300 mt-1">
                       "{revealedWord.example_gloss}"
                    </div>
                  {/if}

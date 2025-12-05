@@ -470,19 +470,27 @@
 
         <!-- German Gloss -->
         {#if revealedWord.gloss_de}
-          <div class="text-[#a8d8ea] text-lg font-hand mb-2">{revealedWord.gloss_de}</div>
+          <div class="text-[#a8d8ea] text-lg font-hand mb-2 text-center">{revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword (Click to hear) -->
-        <button
-          onclick={() => revealedWord && speak(revealedWord.headword)}
-          class="text-5xl text-[#a8d8ea] mb-3 font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
-          {revealedWord.headword}
-        </button>
+        <!-- Headword with TTS icon (Click to hear) -->
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <button
+            onclick={() => revealedWord && speak(revealedWord.headword)}
+            class="text-5xl text-[#a8d8ea] font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
+            {revealedWord.headword}
+          </button>
+          <button
+            onclick={() => revealedWord && speak(revealedWord.headword)}
+            class="text-[#a8d8ea]/50 hover:text-[#a8d8ea] text-xl cursor-pointer bg-transparent border-none transition-colors"
+            title="Speak">
+            🔊
+          </button>
+        </div>
 
         <!-- IPA -->
         {#if revealedWord.ipa}
-          <p class="text-[#a8d8ea]/50 text-sm mb-8 font-sans tracking-widest">/{revealedWord.ipa}/</p>
+          <p class="text-[#a8d8ea]/50 text-sm mb-8 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
         {/if}
 
         <!-- Definition -->
@@ -502,20 +510,20 @@
             {/if}
 
             {#if revealedWord.etymology}
-              <div>
-                <span class="text-[10px] uppercase text-gray-600 tracking-widest block mb-1 font-hand">Etymology</span>
+              <div class="pt-2">
+                <span class="text-[10px] uppercase text-gray-500 tracking-widest block mb-1 font-hand">Etymology</span>
                 <p class="text-base text-gray-400 italic font-hand">{revealedWord.etymology}</p>
               </div>
             {/if}
 
             {#if revealedWord.example}
               <div class="pt-4">
-                <span class="text-[10px] uppercase text-[#a8d8ea]/40 tracking-[0.2em] font-hand">USAGE</span>
-                <div class="text-lg text-[#a8d8ea]/60 italic mt-2 font-hand">
+                <span class="text-[10px] uppercase text-[#a8d8ea]/50 tracking-[0.2em] font-hand">USAGE</span>
+                <div class="text-lg text-[#a8d8ea]/70 italic mt-2 font-hand">
                   "{revealedWord.example}"
                 </div>
                 {#if revealedWord.example_gloss}
-                  <div class="text-sm text-gray-400 mt-1 font-hand">
+                  <div class="text-base text-gray-300 mt-1 font-hand">
                     "{revealedWord.example_gloss}"
                   </div>
                 {/if}

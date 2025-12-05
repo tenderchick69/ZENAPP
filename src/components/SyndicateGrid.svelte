@@ -28,6 +28,7 @@
     mnemonic?: string;
     etymology?: string;
     example?: string;
+    example_gloss?: string;
     gloss_de?: string;
     image_url?: string;
     image_urls?: string[];
@@ -439,59 +440,62 @@
           [X]
         </button>
 
-        <!-- Terminal Header -->
-        <div class="text-[10px] text-[#39ff14]/70 mb-4 tracking-widest">
-          > DECRYPTING DATA PACKET...
-        </div>
-
         <!-- German Gloss -->
         {#if revealedWord.gloss_de}
-          <div class="text-[#ff0040]/70 text-sm mb-2"># {revealedWord.gloss_de}</div>
+          <div class="text-[#ff0040]/70 text-sm mb-2 text-center"># {revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword (Click to hear) -->
-        <button
-          onclick={() => revealedWord && speak(revealedWord.headword)}
-          class="text-4xl md:text-5xl text-[#00fff2] mb-3 tracking-wider syndicate-pulse cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
-          [{revealedWord.headword}]
-        </button>
+        <!-- Headword with TTS icon (Click to hear) -->
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <button
+            onclick={() => revealedWord && speak(revealedWord.headword)}
+            class="text-4xl md:text-5xl text-[#00fff2] tracking-wider syndicate-pulse cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
+            [{revealedWord.headword}]
+          </button>
+          <button
+            onclick={() => revealedWord && speak(revealedWord.headword)}
+            class="text-[#00fff2]/50 hover:text-[#00fff2] text-xl cursor-pointer bg-transparent border-none transition-colors"
+            title="Speak">
+            🔊
+          </button>
+        </div>
 
         <!-- IPA -->
         {#if revealedWord.ipa}
-          <p class="text-[#39ff14]/50 text-sm mb-6 tracking-widest">/{revealedWord.ipa}/</p>
+          <p class="text-[#39ff14]/50 text-sm mb-6 tracking-widest text-center">/{revealedWord.ipa}/</p>
         {/if}
 
         <!-- Definition -->
-        <p class="text-xl text-gray-300 mb-8 leading-relaxed">
-          <span class="text-[#39ff14]">></span> {revealedWord.definition}
+        <p class="text-xl text-gray-300 mb-8 leading-relaxed text-center">
+          {revealedWord.definition}
         </p>
 
         <!-- Rich Data Block -->
         {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
-          <div class="border-t border-[#00fff2]/20 pt-6 mb-6 space-y-4">
+          <div class="border-t border-[#00fff2]/20 pt-6 mb-6 space-y-4 text-center">
 
             {#if revealedWord.mnemonic}
-              <div class="bg-[#0f0f0f] p-4 border-l-2 border-[#ff0040]">
+              <div class="bg-[#0f0f0f] p-4 border border-[#ff0040]/30 rounded">
                 <span class="text-[10px] uppercase text-[#ff0040]/70 tracking-widest block mb-2">// MEMORY_HOOK</span>
-                <p class="text-sm text-gray-400 leading-relaxed">{revealedWord.mnemonic}</p>
+                <p class="text-base text-gray-400 leading-relaxed">{revealedWord.mnemonic}</p>
               </div>
             {/if}
 
             {#if revealedWord.etymology}
-              <div>
+              <div class="pt-2">
                 <span class="text-[10px] uppercase text-[#00fff2]/50 tracking-widest block mb-1">// ORIGIN</span>
                 <p class="text-base text-gray-500 italic">{revealedWord.etymology}</p>
               </div>
             {/if}
 
             {#if revealedWord.example}
-              <div class="text-center pt-4">
+              <div class="pt-4">
                 <span class="text-[10px] uppercase text-[#39ff14]/50 tracking-widest">// USAGE</span>
-                <div class="text-base text-[#39ff14]/70 italic mt-2">
+                <div class="text-lg text-[#39ff14]/70 italic mt-2">
                   "{revealedWord.example}"
                 </div>
                 {#if revealedWord.example_gloss}
-                  <div class="text-sm text-gray-500 mt-1">
+                  <div class="text-base text-gray-400 mt-1">
                     "{revealedWord.example_gloss}"
                   </div>
                 {/if}

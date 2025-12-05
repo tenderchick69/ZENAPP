@@ -16,6 +16,52 @@ const LANGUAGE_CODES: Record<string, string> = {
   'Cebuano (Bisaya)': 'ceb-PH', // May fall back to fil-PH
 };
 
+// Cache for loaded voices
+let cachedVoices: SpeechSynthesisVoice[] = [];
+let voicesLoaded = false;
+
+// Initialize voices - call this early to ensure voices are loaded
+function initVoices(): Promise<SpeechSynthesisVoice[]> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      resolve([]);
+      return;
+    }
+
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      cachedVoices = voices;
+      voicesLoaded = true;
+      resolve(voices);
+      return;
+    }
+
+    // Voices not loaded yet, wait for the event
+    const handleVoicesChanged = () => {
+      cachedVoices = window.speechSynthesis.getVoices();
+      voicesLoaded = true;
+      window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+      resolve(cachedVoices);
+    };
+
+    window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+
+    // Fallback timeout in case voiceschanged never fires
+    setTimeout(() => {
+      if (!voicesLoaded) {
+        cachedVoices = window.speechSynthesis.getVoices();
+        voicesLoaded = true;
+        resolve(cachedVoices);
+      }
+    }, 1000);
+  });
+}
+
+// Ensure voices are loaded on module init
+if (typeof window !== 'undefined') {
+  initVoices();
+}
+
 /**
  * Auto-detect language from text based on Unicode character ranges
  */
@@ -61,18 +107,52 @@ export function speak(text: string, language: string = 'English'): void {
   const targetLang = detectedLang || LANGUAGE_CODES[language] || 'en-US';
   utterance.lang = targetLang;
 
-  // Try to find a matching voice for better pronunciation
-  const voices = window.speechSynthesis.getVoices();
+  // Use cached voices if available, otherwise try to get them
+  let voices = cachedVoices;
+  if (voices.length === 0) {
+    voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      cachedVoices = voices;
+      voicesLoaded = true;
+    }
+  }
+
+  // Find matching voice - try exact match first, then language prefix
   if (voices.length > 0) {
-    const matchingVoice = voices.find(v => v.lang.startsWith(targetLang.split('-')[0]));
+    const langPrefix = targetLang.split('-')[0];
+
+    // Try exact match first (e.g., ko-KR)
+    let matchingVoice = voices.find(v => v.lang === targetLang);
+
+    // Try prefix match (e.g., ko)
+    if (!matchingVoice) {
+      matchingVoice = voices.find(v => v.lang.startsWith(langPrefix));
+    }
+
+    // Try any voice that contains the language code
+    if (!matchingVoice) {
+      matchingVoice = voices.find(v => v.lang.toLowerCase().includes(langPrefix.toLowerCase()));
+    }
+
     if (matchingVoice) {
       utterance.voice = matchingVoice;
+      console.log(`TTS: Using voice "${matchingVoice.name}" for language ${targetLang}`);
+    } else {
+      console.warn(`TTS: No voice found for ${targetLang}, using default. Available voices:`,
+        voices.map(v => `${v.name} (${v.lang})`).join(', '));
     }
+  } else {
+    console.warn('TTS: No voices available yet');
   }
 
   utterance.rate = 0.8; // Slower for learning
   utterance.pitch = 1;
   utterance.volume = 1;
+
+  // Add error handling
+  utterance.onerror = (event) => {
+    console.error('TTS error:', event.error);
+  };
 
   window.speechSynthesis.speak(utterance);
 }
