@@ -21,6 +21,11 @@
   $: remainingCount = cards.length - 10;
 
   async function handleImport() {
+    console.log('=== IMPORT START ===');
+    console.log('Deck name:', deckName);
+    console.log('Cards count:', cards.length);
+    console.log('First card:', cards[0]);
+
     isImporting = true;
     error = null;
 
@@ -31,13 +36,26 @@
 
     try {
       // Get current user
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      console.log('Step 1: Getting current user...');
+      const authResult = await supabase.auth.getUser();
+      console.log('Auth result:', authResult);
+
+      if (authResult.error) {
+        console.error('Auth error:', authResult.error);
+        throw new Error(`Authentication error: ${authResult.error.message}`);
+      }
+
+      const currentUser = authResult.data?.user;
       if (!currentUser) {
+        console.error('No user found');
         throw new Error('You must be logged in to create decks');
       }
 
-      // 1. Create deck in Supabase (linked to user)
-      const { data: deck, error: deckError } = await supabase
+      console.log('User authenticated:', currentUser.id);
+
+      // 1. Create deck in Supabase
+      console.log('Step 2: Creating deck...');
+      const deckResult = await supabase
         .from('decks')
         .insert({
           name: deckName,
@@ -46,26 +64,59 @@
         .select()
         .single();
 
-      if (deckError) throw deckError;
+      console.log('Deck creation result:', deckResult);
+
+      if (deckResult.error) {
+        console.error('Deck creation error:', deckResult.error);
+        throw new Error(`Failed to create deck: ${deckResult.error.message}`);
+      }
+
+      const deck = deckResult.data;
+      console.log('Deck created successfully! ID:', deck.id);
 
       // 2. Prepare and insert cards
+      console.log('Step 3: Preparing cards for DB...');
       const cardsToInsert = prepareCardsForDb(cards, deck.id);
+      console.log('Cards prepared:', cardsToInsert.length);
+      if (cardsToInsert.length > 0) {
+        console.log('Sample prepared card:', cardsToInsert[0]);
+      }
 
-      const { error: cardsError } = await supabase
+      // 3. Insert cards
+      console.log('Step 4: Inserting cards...');
+      const cardsResult = await supabase
         .from('cards')
         .insert(cardsToInsert);
 
-      if (cardsError) throw cardsError;
+      console.log('Cards insert result:', cardsResult);
 
-      // 3. Clear saved deck from sessionStorage
+      if (cardsResult.error) {
+        console.error('Cards insert error:', cardsResult.error);
+        // Try to clean up the deck we just created
+        console.log('Cleaning up deck after cards insert failure...');
+        await supabase.from('decks').delete().eq('id', deck.id);
+        throw new Error(`Failed to insert cards: ${cardsResult.error.message}`);
+      }
+
+      console.log('Cards inserted successfully!');
+
+      // 4. Clear saved deck from sessionStorage
       if (typeof sessionStorage !== 'undefined') {
         sessionStorage.removeItem('unsavedDeck');
       }
 
-      // 4. Success! Redirect to home
-      goto('/');
+      console.log('=== IMPORT SUCCESS ===');
+      console.log('Step 5: Redirecting to home...');
+
+      // 5. Success! Redirect to home
+      isImporting = false; // Reset before redirect
+      goto('/'); // Don't await - let navigation happen
+
+      console.log('Redirect initiated');
     } catch (e: any) {
-      console.error('Import failed:', e);
+      console.error('=== IMPORT FAILED ===');
+      console.error('Error:', e);
+      console.error('Error stack:', e.stack);
       error = e.message || 'Failed to import deck';
       isImporting = false;
     }

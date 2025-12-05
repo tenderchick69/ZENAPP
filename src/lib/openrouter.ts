@@ -220,24 +220,36 @@ export function validateCard(card: CardData): boolean {
 
 // Clean and prepare cards for Supabase insertion
 export function prepareCardsForDb(cards: CardData[], deckId: number) {
-  return cards
+  console.log('prepareCardsForDb called with', cards.length, 'cards for deck', deckId);
+
+  const prepared = cards
     .filter(validateCard)
-    .map(card => ({
-      deck_id: deckId,
-      headword: card.headword.trim(),
-      definition: card.definition.trim(),
-      synonyms: card.synonyms?.trim() || '',
-      pos: card.pos.trim(),
-      ipa: card.ipa.trim(),
-      example: card.example.trim(),
-      example_gloss: card.exampleGloss?.trim() || '',
-      mnemonic: card.mnemonic.trim(),
-      etymology: card.etymology.trim(),
-      tags: card.tags.trim(),
-      // SRS defaults
-      state: 0,
-      interval: 0,
-      due: new Date().toISOString(),
-      freq: 0,
-    }));
+    .map((card, index) => {
+      try {
+        return {
+          deck_id: deckId,
+          headword: (card.headword || '').trim(),
+          definition: (card.definition || '').trim(),
+          synonyms: (card.synonyms || '').trim(),
+          pos: (card.pos || '').trim(),
+          ipa: (card.ipa || '').trim(),
+          example: (card.example || '').trim(),
+          example_gloss: (card.exampleGloss || '').trim(),
+          mnemonic: (card.mnemonic || '').trim(),
+          etymology: (card.etymology || '').trim(),
+          tags: (card.tags || '').trim(),
+          // SRS defaults
+          state: 0,
+          interval: 0,
+          due: new Date().toISOString(),
+          freq: 0,
+        };
+      } catch (e) {
+        console.error(`Error preparing card ${index}:`, card, e);
+        throw e;
+      }
+    });
+
+  console.log('Prepared', prepared.length, 'valid cards');
+  return prepared;
 }
