@@ -7,6 +7,7 @@
   import { t, theme } from '$lib/theme';
   import { helpMode } from '$lib/tooltip';
   import { speak as ttsSpeak } from '$lib/tts';
+  import { exportDeckToCSV } from '$lib/export';
   import EmberGarden from '../../components/EmberGarden.svelte';
   import FrostGlass from '../../components/FrostGlass.svelte';
   import ZenVoid from '../../components/ZenVoid.svelte';
@@ -121,6 +122,23 @@
     await supabase.from('decks').delete().eq('id', deckId);
     // Redirect to home
     goto('/');
+  }
+
+  // Export deck
+  let isExporting = $state(false);
+
+  async function handleExportDeck() {
+    if (!deckId || isExporting) return;
+    isExporting = true;
+    try {
+      await exportDeckToCSV(parseInt(deckId), deckName);
+      showToastMessage($theme === 'ember' ? 'Seeds exported.' : 'Deck exported.');
+    } catch (err) {
+      console.error('Export failed:', err);
+      showToastMessage('Export failed.');
+    } finally {
+      isExporting = false;
+    }
   }
 
   // Toast Notification System
@@ -387,39 +405,69 @@
       {/if}
 
       <!-- Header / Renamer -->
-      <div class="mb-6 md:mb-12 text-center relative group">
+      <div class="mb-6 md:mb-12 text-center relative">
         {#if isRenaming}
           <!-- svelte-ignore a11y_autofocus -->
           <input
             bind:value={deckName}
             onkeydown={(e) => e.key === 'Enter' && renameDeck()}
-            class="text-3xl md:text-7xl font-heading text-main bg-transparent border-b-2 border-accent text-center outline-none w-full"
+            onblur={() => renameDeck()}
+            class="text-3xl md:text-7xl font-heading text-main bg-transparent border-b-2 border-accent text-center outline-none w-full max-w-[70%] mx-auto"
             autofocus
           />
-          <div class="text-xs text-dim mt-2">Press Enter to Save</div>
         {:else}
-          <h1 class="text-3xl md:text-7xl font-heading text-main tracking-tight flex items-center justify-center gap-2 md:gap-4">
+          <h1 class="text-3xl md:text-7xl font-heading text-main tracking-tight">
             {deckName || 'Loading...'}
-            <!-- Rename button - only clickable element -->
-            <button
-              onclick={() => isRenaming = true}
-              class="opacity-30 hover:opacity-70 text-lg md:text-2xl cursor-pointer transition-opacity"
-              title="Rename deck">
-              ✎
-            </button>
           </h1>
         {/if}
 
-        <!-- Delete Button (Top Right) -->
-        <button
-          onclick={deleteDeck}
-          class="absolute top-0 right-0 text-dim hover:text-danger transition-colors p-2 cursor-pointer"
-          title="Delete deck">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-        </button>
+        <!-- Action Buttons Trinity (Top Right) -->
+        <div class="absolute top-0 right-0 flex items-center gap-1 md:gap-2">
+          <!-- Download Button -->
+          <Tooltip text="Download Deck">
+            <button
+              onclick={handleExportDeck}
+              disabled={isExporting}
+              class="text-dim hover:text-accent transition-colors p-2 cursor-pointer disabled:opacity-50"
+              title="Download deck">
+              {#if isExporting}
+                <span class="animate-spin text-sm">⏳</span>
+              {:else}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              {/if}
+            </button>
+          </Tooltip>
+
+          <!-- Rename Button -->
+          <Tooltip text="Rename Deck">
+            <button
+              onclick={() => isRenaming = true}
+              class="text-dim hover:text-accent transition-colors p-2 cursor-pointer"
+              title="Rename deck">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </Tooltip>
+
+          <!-- Delete Button -->
+          <Tooltip text="Delete Deck">
+            <button
+              onclick={deleteDeck}
+              class="text-dim hover:text-danger transition-colors p-2 cursor-pointer"
+              title="Delete deck">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </Tooltip>
+        </div>
       </div>
 
       <!-- Stats Grid with Cubic Buttons -->

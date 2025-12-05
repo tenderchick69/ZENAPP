@@ -2,25 +2,10 @@
   import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase';
   import { t, theme } from '$lib/theme';
-  import { exportDeckToCSV } from '$lib/export';
 
   let decks: any[] = [];
   let loading = true;
   let totalMastered = 0;
-  let exportingDeckId: number | null = null;
-
-  async function handleExport(e: MouseEvent, deckId: number, deckName: string) {
-    e.preventDefault();
-    e.stopPropagation();
-    exportingDeckId = deckId;
-    try {
-      await exportDeckToCSV(deckId, deckName);
-    } catch (err) {
-      console.error('Export failed:', err);
-    } finally {
-      exportingDeckId = null;
-    }
-  }
 
   async function loadDecks() {
     const { data } = await supabase.from('decks').select('*').order('created_at', { ascending: false });
@@ -154,21 +139,6 @@
             <!-- Internal Ambient Glow -->
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,69,0,0.05),transparent_70%)] opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-            <!-- Export Button (Top Left) -->
-            <button
-              onclick={(e) => handleExport(e, deck.id, deck.name)}
-              class="absolute top-3 left-3 z-20 p-2 text-orange-500/40 hover:text-golden transition-colors cursor-pointer"
-              title={$t.btn_export}
-            >
-              {#if exportingDeckId === deck.id}
-                <span class="animate-spin">⏳</span>
-              {:else}
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              {/if}
-            </button>
-
             <!-- Title -->
             <h3 class="text-5xl font-ember text-orange-100/90 group-hover:text-golden transition-colors duration-500 drop-shadow-lg relative z-10 tracking-wide">
                {deck.name}
@@ -181,52 +151,23 @@
                   {deck.dueCount}
                 </span>
               </div>
-            {:else}
-              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-emerald-500/50 text-2xl">
-                ✓
-              </div>
             {/if}
 
           <!-- SYNDICATE / ZEN / FROST MODE STYLING -->
           {:else}
-            <!-- Export Button (Top Left) -->
-            <button
-              onclick={(e) => handleExport(e, deck.id, deck.name)}
-              class="absolute top-4 left-4 z-20 p-1 text-dim/40 hover:text-accent transition-colors cursor-pointer"
-              title={$t.btn_export}
-            >
-              {#if exportingDeckId === deck.id}
-                <span class="animate-spin text-xs">⏳</span>
-              {:else}
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              {/if}
-            </button>
+            <!-- Deck Name (Centered, Prominent) -->
+            <h3 class="text-4xl font-heading text-main group-hover:text-accent transition-colors duration-300 text-center relative z-10">
+              {deck.name}
+            </h3>
 
-            <!-- Status Indicator (Top Right) -->
-            <div class="absolute top-4 right-4 flex gap-3">
-               <div class="w-2 h-2 bg-success rounded-full shadow-[0_0_10px_currentColor]"></div>
-            </div>
-
-            <div class="w-full">
-              <div class="flex justify-between items-start mb-6">
-                <span class="font-body text-xs text-dim uppercase tracking-widest">{$t.deck_sub}</span>
-              </div>
-              <h3 class="text-3xl font-heading text-main group-hover:text-accent transition-colors mb-4">{deck.name}</h3>
-              <div class="flex justify-between items-center pt-6 border-t border-dim group-hover:border-accent/30 transition-colors">
-                <span class="font-body text-xs text-dim group-hover:text-accent group-hover:translate-x-2 transition-transform uppercase tracking-widest">
-                  {$t.action_open}
+            <!-- Due Count (Bottom Center) -->
+            {#if deck.dueCount > 0}
+              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+                <span class="text-accent font-heading text-xl font-bold drop-shadow-[0_0_8px_currentColor]">
+                  {deck.dueCount}
                 </span>
-                {#if deck.dueCount > 0}
-                  <span class="text-accent font-heading text-lg font-bold drop-shadow-[0_0_8px_currentColor]">
-                    {deck.dueCount}
-                  </span>
-                {:else}
-                  <span class="text-success text-lg">✓</span>
-                {/if}
               </div>
-            </div>
+            {/if}
           {/if}
         </a>
       {/each}

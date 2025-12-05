@@ -72,25 +72,110 @@ export async function generateDeckContent(
     throw new Error('No content in OpenRouter response');
   }
 
+  // Log raw AI response for debugging
+  console.log('=== RAW AI RESPONSE START ===');
+  console.log('Length:', content.length);
+  console.log('First 1000 chars:', content.substring(0, 1000));
+  console.log('Last 200 chars:', content.substring(content.length - 200));
+  console.log('=== RAW AI RESPONSE END ===');
+
   // Clean up JSON response - strip markdown blocks and extra text
-  content = content.trim();
+  let cleanedContent = content.trim();
 
-  // Remove markdown code blocks if AI added them
-  content = content.replace(/^```json\n?/i, '').replace(/\n?```$/i, '');
+  // Remove ALL variations of markdown code blocks (multiple passes to be safe)
+  cleanedContent = cleanedContent
+    .replace(/^```json\s*/gim, '')
+    .replace(/^```\s*/gim, '')
+    .replace(/\s*```\s*$/gim, '')
+    .replace(/```json\n?/gi, '')
+    .replace(/```\n?/gi, '')
+    .replace(/^json\s*/gi, ''); // Sometimes AI just writes "json" before the object
 
-  // Try to extract JSON object if there's extra text
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    content = jsonMatch[0];
+  // Remove any leading/trailing whitespace again after stripping
+  cleanedContent = cleanedContent.trim();
+
+  // Find the actual JSON object using balanced brace matching
+  const startIndex = cleanedContent.indexOf('{');
+
+  if (startIndex === -1) {
+    console.error('No opening brace found. Cleaned content:', cleanedContent.substring(0, 500));
+    throw new Error('AI response does not contain a JSON object (no opening brace)');
   }
+
+  // Find matching closing brace using balanced counting
+  let braceCount = 0;
+  let endIndex = -1;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = startIndex; i < cleanedContent.length; i++) {
+    const char = cleanedContent[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === '\\' && inString) {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"' && !escapeNext) {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString) {
+      if (char === '{') braceCount++;
+      if (char === '}') {
+        braceCount--;
+        if (braceCount === 0) {
+          endIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
+  if (endIndex === -1) {
+    console.error('No matching closing brace found. Content from start:', cleanedContent.substring(startIndex, startIndex + 500));
+    throw new Error('AI response JSON is malformed (unbalanced braces)');
+  }
+
+  // Extract just the JSON portion
+  cleanedContent = cleanedContent.slice(startIndex, endIndex + 1);
+
+  console.log('=== CLEANED JSON ===');
+  console.log('Length:', cleanedContent.length);
+  console.log('First 500 chars:', cleanedContent.substring(0, 500));
 
   // Parse JSON response
   let parsed: any;
   try {
-    parsed = JSON.parse(content);
-  } catch (e) {
-    console.error('Failed to parse JSON:', content);
-    throw new Error('AI returned invalid JSON format');
+    parsed = JSON.parse(cleanedContent);
+  } catch (e: any) {
+    console.error('=== JSON PARSE ERROR ===');
+    console.error('Error message:', e.message);
+    console.error('Content that failed (first 1000 chars):', cleanedContent.substring(0, 1000));
+
+    // Try to fix common JSON issues
+    let fixedContent = cleanedContent
+      // Fix trailing commas before } or ]
+      .replace(/,\s*}/g, '}')
+      .replace(/,\s*]/g, ']')
+      // Fix single quotes to double quotes (risky but sometimes works)
+      .replace(/'/g, '"')
+      // Remove control characters
+      .replace(/[\x00-\x1F\x7F]/g, (char: string) => char === '\n' || char === '\r' || char === '\t' ? char : '');
+
+    try {
+      parsed = JSON.parse(fixedContent);
+      console.log('JSON parsed successfully after fixes');
+    } catch (e2) {
+      console.error('Still failed after fixes. Final attempt content:', fixedContent.substring(0, 500));
+      throw new Error(`AI returned invalid JSON format: ${e.message}`);
+    }
   }
 
   // Validate response structure
