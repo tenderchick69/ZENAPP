@@ -405,7 +405,7 @@
       {/if}
 
       <!-- Header / Renamer -->
-      <div class="mb-6 md:mb-12 text-center relative">
+      <div class="mb-6 md:mb-12 text-center">
         {#if isRenaming}
           <!-- svelte-ignore a11y_autofocus -->
           <input
@@ -421,8 +421,8 @@
           </h1>
         {/if}
 
-        <!-- Action Buttons Trinity (Top Right) -->
-        <div class="absolute top-0 right-0 flex items-center gap-1 md:gap-2">
+        <!-- Action Buttons (Below Title) -->
+        <div class="flex items-center justify-center gap-1 md:gap-2 mt-4">
           <!-- Download Button -->
           <Tooltip text="Download Deck">
             <button
