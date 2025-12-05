@@ -134,15 +134,19 @@
 
   // Gardener Modal Functions
   function openGardenerModal(card: Card) {
+    console.log('openGardenerModal called with card:', card);
     editingCard = card;
     // Handle both old (image_url) and new (image_urls) formats
     const cardAny = card as any;
     let urls: string[] = [];
     if (cardAny.image_urls && Array.isArray(cardAny.image_urls)) {
-      urls = cardAny.image_urls;
+      urls = [...cardAny.image_urls]; // Create a copy to avoid mutation issues
     } else if (cardAny.image_url) {
       urls = [cardAny.image_url];
     }
+
+    console.log('Image URLs found:', urls);
+    console.log('Selected index:', cardAny.selected_image_index || 0);
 
     gardenerForm = {
       headword: card.headword,
@@ -153,6 +157,8 @@
       image_urls: urls,
       selected_image_index: cardAny.selected_image_index || 0
     };
+
+    console.log('gardenerForm after set:', gardenerForm);
   }
 
   function closeGardenerModal() {
@@ -160,12 +166,20 @@
   }
 
   async function saveCardEdits() {
-    if (!editingCard) return;
+    console.log('saveCardEdits called');
+    console.log('editingCard:', editingCard);
+    console.log('gardenerForm:', JSON.stringify(gardenerForm, null, 2));
+
+    if (!editingCard) {
+      console.error('No editingCard!');
+      return;
+    }
 
     // Get the selected image for backward compatibility
     const selectedUrl = gardenerForm.image_urls[gardenerForm.selected_image_index] || null;
+    console.log('selectedUrl:', selectedUrl);
 
-    const { error: updateError } = await supabase.from('cards').update({
+    const updateData = {
       headword: gardenerForm.headword,
       definition: gardenerForm.definition,
       mnemonic: gardenerForm.mnemonic || null,
@@ -174,7 +188,10 @@
       image_urls: gardenerForm.image_urls,
       selected_image_index: gardenerForm.selected_image_index,
       image_url: selectedUrl // backward compatibility
-    }).eq('id', editingCard.id);
+    };
+    console.log('Sending to Supabase:', JSON.stringify(updateData, null, 2));
+
+    const { error: updateError } = await supabase.from('cards').update(updateData).eq('id', editingCard.id);
 
     if (updateError) {
       console.error('Save failed:', updateError);
@@ -182,6 +199,7 @@
       return;
     }
 
+    console.log('Save successful!');
     await loadStats(); // Reload all cards
     closeGardenerModal();
     showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');

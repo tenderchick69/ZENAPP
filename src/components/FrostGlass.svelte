@@ -514,6 +514,11 @@
                 <div class="text-lg text-[#a8d8ea]/60 italic mt-2 font-hand">
                   "{revealedWord.example}"
                 </div>
+                {#if revealedWord.example_gloss}
+                  <div class="text-sm text-gray-400 mt-1 font-hand">
+                    "{revealedWord.example_gloss}"
+                  </div>
+                {/if}
               </div>
             {/if}
           </div>

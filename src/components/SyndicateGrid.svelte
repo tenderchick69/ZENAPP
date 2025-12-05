@@ -480,7 +480,7 @@
             {#if revealedWord.etymology}
               <div>
                 <span class="text-[10px] uppercase text-[#00fff2]/50 tracking-widest block mb-1">// ORIGIN</span>
-                <p class="text-sm text-gray-500 italic">{revealedWord.etymology}</p>
+                <p class="text-base text-gray-500 italic">{revealedWord.etymology}</p>
               </div>
             {/if}
 
@@ -490,6 +490,11 @@
                 <div class="text-base text-[#39ff14]/70 italic mt-2">
                   "{revealedWord.example}"
                 </div>
+                {#if revealedWord.example_gloss}
+                  <div class="text-sm text-gray-500 mt-1">
+                    "{revealedWord.example_gloss}"
+                  </div>
+                {/if}
               </div>
             {/if}
           </div>

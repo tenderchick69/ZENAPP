@@ -374,13 +374,13 @@
         <p class="text-2xl text-gray-200 mb-10 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
 
         {#if getCardImageUrl(revealedWord)}
-          <div class="mb-8 flex justify-center">
-            <img src={getCardImageUrl(revealedWord)} alt={revealedWord.headword} class="max-w-[200px] max-h-[200px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity" />
+          <div class="mb-6 flex justify-center">
+            <img src={getCardImageUrl(revealedWord)} alt={revealedWord.headword} class="max-w-[160px] max-h-[160px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity" />
           </div>
         {/if}
 
         <!-- RICH DATA BLOCK -->
-        <div class="border-t border-orange-900/30 pt-6 mb-8 text-left space-y-6">
+        <div class="border-t border-orange-900/30 pt-6 mb-8 text-left space-y-5">
 
            {#if revealedWord.mnemonic}
              <div class="bg-orange-900/10 p-4 rounded border border-orange-900/20">
@@ -392,7 +392,7 @@
            {#if revealedWord.etymology}
               <div>
                  <span class="text-[10px] uppercase text-gray-600 tracking-widest block mb-1">Etymology</span>
-                 <p class="text-sm text-gray-400 italic">{revealedWord.etymology}</p>
+                 <p class="text-base text-gray-400 italic">{revealedWord.etymology}</p>
               </div>
            {/if}
 
@@ -402,6 +402,11 @@
                  <div class="text-lg text-orange-200/80 italic mt-2">
                     "{revealedWord.example}"
                  </div>
+                 {#if revealedWord.example_gloss}
+                   <div class="text-sm text-gray-400 mt-1">
+                      "{revealedWord.example_gloss}"
+                   </div>
+                 {/if}
               </div>
            {/if}
         </div>

@@ -23,10 +23,21 @@
   let currentIndex = $state(selectedImageIndex);
   let images = $state<string[]>([...imageUrls]);
 
-  // Sync with props when they change (for legacy image_url migration)
+  // Track which card we're initialized for (using headword as identifier)
+  let initializedFor = $state('');
+
+  // Sync with props when a NEW card is opened (detected by headword change)
   $effect(() => {
-    images = [...imageUrls];
-    currentIndex = selectedImageIndex;
+    if (card.headword !== initializedFor) {
+      console.log('ImageGenerator: NEW card detected, syncing from props', {
+        cardHeadword: card.headword,
+        imageUrls,
+        selectedImageIndex
+      });
+      images = [...imageUrls];
+      currentIndex = selectedImageIndex;
+      initializedFor = card.headword;
+    }
   });
 
   // Modal state
@@ -148,8 +159,9 @@
   }
 
   function notifyChange() {
+    console.log('ImageGenerator: notifyChange called', { images, currentIndex });
     if (onImagesChanged) {
-      onImagesChanged(images, currentIndex);
+      onImagesChanged([...images], currentIndex);
     }
   }
 </script>

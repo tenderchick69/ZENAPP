@@ -432,7 +432,7 @@
             <img
               src={getCardImageUrl(revealedWord)}
               alt={revealedWord.headword}
-              class="max-w-[200px] max-h-[200px] rounded-lg border border-[#222] opacity-80 hover:opacity-100 transition-opacity"
+              class="max-w-[160px] max-h-[160px] rounded-lg border border-[#222] opacity-80 hover:opacity-100 transition-opacity"
             />
           </div>
         {/if}
@@ -451,7 +451,7 @@
             {#if revealedWord.etymology}
               <div>
                 <span class="text-[10px] uppercase text-[#333] tracking-[0.2em] block mb-1">Etymology</span>
-                <p class="text-sm text-[#444] italic">{revealedWord.etymology}</p>
+                <p class="text-base text-[#444] italic">{revealedWord.etymology}</p>
               </div>
             {/if}
 
@@ -461,6 +461,11 @@
                 <div class="text-base text-[#444] italic mt-2">
                   "{revealedWord.example}"
                 </div>
+                {#if revealedWord.example_gloss}
+                  <div class="text-sm text-[#555] mt-1">
+                    "{revealedWord.example_gloss}"
+                  </div>
+                {/if}
               </div>
             {/if}
           </div>
