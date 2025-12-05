@@ -15,7 +15,9 @@
   import Tooltip from '../../components/Tooltip.svelte';
   import ImageGenerator from '../../components/ImageGenerator.svelte';
 
-  let deckId = page.url.searchParams.get('id');
+  // Make deckId reactive to URL changes
+  let deckId = $derived(page.url.searchParams.get('id'));
+
   let view = $state<'lobby' | 'study' | 'summary' | 'inspect'>('lobby');
   let cramAmount = $state(20);
   let sessionMode = $state<'standard' | 'all' | 'souls' | 'overclock'>('standard');
@@ -56,12 +58,55 @@
   // Image Mode Toggle
   let showImages = $state(false);
 
+  // Track previous deckId to detect changes
+  let prevDeckId = $state<string | null>(null);
+
   onMount(async () => {
     if (!deckId) return goto('/');
     // Load image preference from localStorage
     showImages = localStorage.getItem('study_show_images') === 'true';
+    prevDeckId = deckId;
     await loadStats();
   });
+
+  // React to deckId changes (when switching decks without full page reload)
+  $effect(() => {
+    if (deckId && deckId !== prevDeckId && prevDeckId !== null) {
+      console.log('Deck ID changed from', prevDeckId, 'to', deckId);
+      prevDeckId = deckId;
+      // Reset view and reload data
+      view = 'lobby';
+      queue = [];
+      currentCard = null;
+      sessionStats = { correct: 0, wrong: 0 };
+      loadStats();
+    }
+  });
+
+  // Track previous theme to reload when theme changes during study
+  let prevTheme = $state<string | null>(null);
+
+  $effect(() => {
+    const currentTheme = $theme;
+    if (prevTheme !== null && currentTheme !== prevTheme && view === 'study') {
+      console.log('Theme changed during study, reloading queue');
+      // Theme changed during study - restart the session with same mode
+      const mode = sessionMode;
+      exitToLobby();
+      // Small delay to let the view reset, then restart
+      setTimeout(() => startSession(mode), 100);
+    }
+    prevTheme = currentTheme;
+  });
+
+  // Handler for exiting study mode back to lobby
+  async function exitToLobby() {
+    view = 'lobby';
+    queue = [];
+    currentCard = null;
+    // Reload stats to reflect any changes made during study
+    await loadStats();
+  }
 
   function toggleImageMode() {
     showImages = !showImages;
@@ -562,7 +607,7 @@
     <div class="w-full h-[80vh] border border-dim bg-panel p-8 flex flex-col relative overflow-hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="font-heading text-2xl text-main">{$t.inspect_title}</h2>
-        <button type="button" onclick={() => view = 'lobby'} class="text-dim hover:text-accent font-body text-xs cursor-pointer">[ {$t.btn_back} ]</button>
+        <button type="button" onclick={exitToLobby} class="text-dim hover:text-accent font-body text-xs cursor-pointer">[ {$t.btn_back} ]</button>
       </div>
 
       <!-- Scrollable List -->
@@ -590,16 +635,16 @@
   {:else if view === 'study'}
     {#if $theme === 'ember'}
       <!-- EMBER GARDEN VIEW -->
-      <EmberGarden {queue} {showImages} on:grade={handleEmberGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
+      <EmberGarden {queue} {showImages} on:grade={handleEmberGrade} on:exit={exitToLobby} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if $theme === 'frost'}
       <!-- FROST GLASS VIEW -->
-      <FrostGlass {queue} {showImages} on:grade={handleFrostGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
+      <FrostGlass {queue} {showImages} on:grade={handleFrostGrade} on:exit={exitToLobby} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if $theme === 'zen'}
       <!-- ZEN VOID VIEW -->
-      <ZenVoid {queue} {showImages} on:grade={handleZenGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
+      <ZenVoid {queue} {showImages} on:grade={handleZenGrade} on:exit={exitToLobby} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if $theme === 'syndicate'}
       <!-- SYNDICATE GRID VIEW -->
-      <SyndicateGrid {queue} {showImages} on:grade={handleSyndicateGrade} on:exit={() => view = 'lobby'} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
+      <SyndicateGrid {queue} {showImages} on:grade={handleSyndicateGrade} on:exit={exitToLobby} on:complete={() => goto('/')} on:toggleImages={toggleImageMode} />
     {:else if currentCard}
       <!-- STANDARD CARD VIEW -->
       <div class="w-full max-w-3xl mx-auto relative perspective-1000">
