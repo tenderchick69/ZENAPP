@@ -444,7 +444,7 @@
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
-    <div class="w-full border border-dim bg-panel p-6 md:p-12 shadow-lg relative overflow-hidden transition-colors min-h-[auto] md:min-h-[600px] flex flex-col justify-center rounded-3xl">
+    <div class="w-full border border-dim bg-panel p-6 md:p-12 shadow-lg relative overflow-hidden transition-colors h-auto md:h-[680px] flex flex-col justify-center rounded-3xl">
       {#if $theme === 'syndicate'}
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
@@ -519,9 +519,9 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-12 w-full max-w-2xl mx-auto">
         <!-- Column 1: Wilting / Due -->
         <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim p-4 md:p-6 text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full">
-            <div class="text-3xl md:text-6xl font-heading text-danger mb-1 md:mb-2">{stats.due}</div>
-            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-danger">{$t.stat_due}</div>
+          <div class="bg-bg/50 border border-dim h-[90px] md:h-[130px] text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
+            <div class="text-3xl md:text-6xl font-heading text-danger leading-none">{stats.due}</div>
+            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-danger mt-2 md:mt-3">{$t.stat_due}</div>
           </div>
           <Tooltip text="Study cards that are due for review.">
             <button
@@ -539,9 +539,9 @@
 
         <!-- Column 2: Garden Size / Total -->
         <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim p-4 md:p-6 text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full">
-            <div class="text-3xl md:text-6xl font-heading text-success mb-1 md:mb-2">{stats.total}</div>
-            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-success">{$t.stat_learn}</div>
+          <div class="bg-bg/50 border border-dim h-[90px] md:h-[130px] text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
+            <div class="text-3xl md:text-6xl font-heading text-success leading-none">{stats.total}</div>
+            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-success mt-2 md:mt-3">{$t.stat_learn}</div>
           </div>
           <Tooltip text="Review all cards in random order.">
             <button
@@ -559,9 +559,9 @@
 
         <!-- Column 3: Eternal / Mastered -->
         <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim p-4 md:p-6 text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full">
-            <div class="text-3xl md:text-6xl font-heading text-accent mb-1 md:mb-2">{stats.mastered}</div>
-            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-accent">{$t.stat_master}</div>
+          <div class="bg-bg/50 border border-dim h-[90px] md:h-[130px] text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
+            <div class="text-3xl md:text-6xl font-heading text-accent leading-none">{stats.mastered}</div>
+            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-accent mt-2 md:mt-3">{$t.stat_master}</div>
           </div>
           <Tooltip text="Test your knowledge of mastered cards.">
             <button

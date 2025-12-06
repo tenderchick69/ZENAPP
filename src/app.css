@@ -434,7 +434,8 @@ body[data-theme='zen'] .animate-glitch {
   animation: zen-fade 0.6s ease-out !important;
 }
 
-body[data-theme='zen'] .text-accent {
+/* Only apply float animation to specific decorative elements, not all .text-accent */
+body[data-theme='zen'] .zen-float {
   animation: float 6s ease-in-out infinite;
 }
 
