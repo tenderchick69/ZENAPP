@@ -440,11 +440,11 @@
   }
 </script>
 
-<div class="min-h-[80vh] flex flex-col items-center justify-center max-w-2xl mx-auto px-6">
+<div class="min-h-[80vh] flex flex-col items-center justify-center max-w-3xl mx-auto px-6">
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
-    <div class="w-full border border-dim bg-panel p-6 md:p-12 shadow-lg relative overflow-hidden transition-colors h-auto md:h-[680px] flex flex-col justify-center rounded-3xl">
+    <div class="w-full border border-dim bg-panel p-6 md:p-14 shadow-lg relative overflow-hidden transition-colors h-auto md:h-[780px] flex flex-col justify-center rounded-3xl">
       {#if $theme === 'syndicate'}
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
@@ -516,18 +516,18 @@
       </div>
 
       <!-- Stats Grid with Cubic Buttons -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-12 w-full max-w-2xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10 mb-8 md:mb-14 w-full max-w-3xl mx-auto">
         <!-- Column 1: Wilting / Due -->
         <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim h-[90px] md:h-[130px] text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
-            <div class="text-3xl md:text-6xl font-heading text-danger leading-none">{stats.due}</div>
-            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-danger mt-2 md:mt-3">{$t.stat_due}</div>
+          <div class="bg-bg/50 border border-dim h-[100px] md:h-[160px] text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
+            <div class="text-3xl md:text-7xl font-heading text-danger leading-none">{stats.due}</div>
+            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-danger mt-2 md:mt-4">{$t.stat_due}</div>
           </div>
           <Tooltip text="Study cards that are due for review.">
             <button
               onclick={() => startSession('standard')}
               disabled={stats.due === 0}
-              class="w-16 h-16 md:w-24 md:h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-sm md:text-lg cursor-pointer flex-shrink-0
+              class="w-18 h-18 md:w-28 md:h-28 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-base md:text-xl cursor-pointer flex-shrink-0
                 {$theme === 'ember' ? 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black' :
                  $theme === 'frost' ? 'border-slate-400 text-slate-300 hover:bg-slate-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
@@ -539,15 +539,15 @@
 
         <!-- Column 2: Garden Size / Total -->
         <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim h-[90px] md:h-[130px] text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
-            <div class="text-3xl md:text-6xl font-heading text-success leading-none">{stats.total}</div>
-            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-success mt-2 md:mt-3">{$t.stat_learn}</div>
+          <div class="bg-bg/50 border border-dim h-[100px] md:h-[160px] text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
+            <div class="text-3xl md:text-7xl font-heading text-success leading-none">{stats.total}</div>
+            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-success mt-2 md:mt-4">{$t.stat_learn}</div>
           </div>
           <Tooltip text="Review all cards in random order.">
             <button
               onclick={() => startSession('all')}
               disabled={stats.total - stats.mastered === 0}
-              class="w-16 h-16 md:w-24 md:h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-sm md:text-lg cursor-pointer flex-shrink-0
+              class="w-18 h-18 md:w-28 md:h-28 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-base md:text-xl cursor-pointer flex-shrink-0
                 {$theme === 'ember' ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black' :
                  $theme === 'frost' ? 'border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-lime-400 text-lime-400 hover:bg-lime-400 hover:text-black' :
@@ -559,15 +559,15 @@
 
         <!-- Column 3: Eternal / Mastered -->
         <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim h-[90px] md:h-[130px] text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
-            <div class="text-3xl md:text-6xl font-heading text-accent leading-none">{stats.mastered}</div>
-            <div class="text-[10px] md:text-xs tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-accent mt-2 md:mt-3">{$t.stat_master}</div>
+          <div class="bg-bg/50 border border-dim h-[100px] md:h-[160px] text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
+            <div class="text-3xl md:text-7xl font-heading text-accent leading-none">{stats.mastered}</div>
+            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-accent mt-2 md:mt-4">{$t.stat_master}</div>
           </div>
           <Tooltip text="Test your knowledge of mastered cards.">
             <button
               onclick={() => startSession('souls')}
               disabled={stats.mastered === 0}
-              class="w-16 h-16 md:w-24 md:h-24 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-sm md:text-lg cursor-pointer flex-shrink-0
+              class="w-18 h-18 md:w-28 md:h-28 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-base md:text-xl cursor-pointer flex-shrink-0
                 {$theme === 'ember' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
                  $theme === 'frost' ? 'border-sky-400 text-sky-300 hover:bg-sky-400 hover:text-[#1a2a3a]' :
                  $theme === 'syndicate' ? 'border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black' :
@@ -615,15 +615,27 @@
         {#each [...allCards].sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
           <button
             onclick={() => openGardenerModal(card)}
-            class="w-full grid grid-cols-12 gap-4 p-3 border-b border-dim/30 hover:bg-accent/10 hover:border-accent/50 text-xs font-body items-center group cursor-pointer transition-all hover:shadow-[0_0_15px_rgba(var(--color-accent-rgb),0.2)] rounded-lg">
-             <div class="col-span-1 flex gap-0.5">
+            class="w-full flex items-center gap-3 p-3 border-b border-dim/30 hover:bg-accent/10 hover:border-accent/50 text-xs font-body group cursor-pointer transition-all hover:shadow-[0_0_15px_rgba(var(--color-accent-rgb),0.2)] rounded-lg">
+             <!-- Image thumbnail -->
+             <div class="w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-dim/20">
+               {#if getCardImageUrl(card)}
+                 <img src={getCardImageUrl(card)} alt="" class="w-full h-full object-cover" />
+               {:else}
+                 <div class="w-full h-full flex items-center justify-center text-dim/50 text-lg">📷</div>
+               {/if}
+             </div>
+             <!-- Level pips -->
+             <div class="flex gap-0.5 flex-shrink-0">
                {#each [1,2,3,4,5] as l}
                  <div class="w-1 h-3 {card.state >= l ? 'bg-accent' : 'bg-dim/30'}"></div>
                {/each}
              </div>
-             <div class="col-span-5 font-bold text-main group-hover:text-accent transition-colors truncate text-left">{card.headword}</div>
-             <div class="col-span-3 text-dim truncate text-left">{card.definition}</div>
-             <div class="col-span-3 text-right {new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
+             <!-- Headword -->
+             <div class="flex-1 font-bold text-main group-hover:text-accent transition-colors truncate text-left">{card.headword}</div>
+             <!-- Definition -->
+             <div class="flex-1 text-dim truncate text-left">{card.definition}</div>
+             <!-- Due date -->
+             <div class="flex-shrink-0 text-right {new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
                {formatDate(card.due)}
              </div>
           </button>
