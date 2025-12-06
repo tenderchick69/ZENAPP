@@ -7,6 +7,24 @@
   let loading = true;
   let totalMastered = 0;
 
+  // Dynamic font sizing for deck names based on length
+  function getDeckNameSize(name: string, isEmber: boolean): string {
+    const len = name.length;
+    if (isEmber) {
+      // Ember theme sizes
+      if (len <= 12) return 'text-4xl md:text-5xl';
+      if (len <= 20) return 'text-3xl md:text-4xl';
+      if (len <= 30) return 'text-2xl md:text-3xl';
+      return 'text-xl md:text-2xl';
+    } else {
+      // Other themes sizes
+      if (len <= 12) return 'text-3xl md:text-4xl';
+      if (len <= 20) return 'text-2xl md:text-3xl';
+      if (len <= 30) return 'text-xl md:text-2xl';
+      return 'text-lg md:text-xl';
+    }
+  }
+
   async function loadDecks() {
     const { data } = await supabase.from('decks').select('*').order('created_at', { ascending: false });
 
@@ -140,7 +158,7 @@
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,69,0,0.05),transparent_70%)] opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
 
             <!-- Title -->
-            <h3 class="text-5xl font-ember text-orange-100/90 group-hover:text-golden transition-colors duration-500 drop-shadow-lg relative z-10 tracking-wide">
+            <h3 class="{getDeckNameSize(deck.name, true)} font-ember text-orange-100/90 group-hover:text-golden transition-colors duration-500 drop-shadow-lg relative z-10 tracking-wide text-center px-4">
                {deck.name}
             </h3>
 
@@ -156,7 +174,7 @@
           <!-- SYNDICATE / ZEN / FROST MODE STYLING -->
           {:else}
             <!-- Deck Name (Centered, Prominent) -->
-            <h3 class="text-4xl font-heading text-main group-hover:text-accent transition-colors duration-300 text-center relative z-10">
+            <h3 class="{getDeckNameSize(deck.name, false)} font-heading text-main group-hover:text-accent transition-colors duration-300 text-center relative z-10 px-4">
               {deck.name}
             </h3>
 

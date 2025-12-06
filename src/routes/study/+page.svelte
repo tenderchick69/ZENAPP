@@ -942,16 +942,16 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex gap-4 mt-8">
+        <div class="flex justify-center items-center gap-4 mt-8">
           <button
             type="button"
             onclick={saveCardEdits}
-            class="flex-1 py-4 bg-accent text-bg font-heading text-lg font-bold hover:shadow-[0_0_30px_currentColor/40] transition-all rounded-full cursor-pointer">
+            class="px-8 py-3 bg-accent text-bg font-heading text-base font-bold hover:shadow-[0_0_20px_var(--color-accent)] hover:scale-105 transition-all rounded-xl cursor-pointer">
             Save Changes
           </button>
           <button
             onclick={() => deleteCard(editingCard!.id)}
-            class="px-6 py-4 border-2 border-danger text-danger hover:bg-danger hover:text-bg font-heading text-lg transition-all rounded-full cursor-pointer"
+            class="px-4 py-3 border-2 border-danger text-danger hover:bg-danger hover:text-bg font-heading text-base transition-all rounded-xl cursor-pointer"
             title={$theme === 'ember' ? 'Compost' : 'Delete'}>
             {$theme === 'ember' ? '🍂' : '🗑️'}
           </button>
