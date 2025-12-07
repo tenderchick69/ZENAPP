@@ -76,9 +76,11 @@
   onMount(() => {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-    // Initialize words with positions
+    // Initialize words with positions - accumulate to prevent overlap
+    const placedWords: { x: number; y: number; headword: string }[] = [];
     words = queue.map((card, i) => {
-      const pos = findSafeSpot([]);
+      const pos = findSafeSpot(placedWords, card.headword);
+      placedWords.push({ x: pos.x, y: pos.y, headword: card.headword });
       return {
         ...card,
         x: pos.x,
@@ -104,25 +106,60 @@
     };
   });
 
-  function findSafeSpot(currentWords: { x: number; y: number }[], avoidX?: number, avoidY?: number) {
+  function findSafeSpot(
+    currentWords: { x: number; y: number; headword?: string }[],
+    newHeadword?: string,
+    avoidX?: number,
+    avoidY?: number
+  ) {
     let safe = false;
     let x = 0, y = 0;
     let attempts = 0;
-    while (!safe && attempts < 100) {
-      x = 15 + Math.random() * 70;
-      y = 20 + Math.random() * 60;
 
-      const crowdCheck = currentWords.some(w => Math.abs(w.x - x) < 15 && Math.abs(w.y - y) < 10);
+    // Calculate spacing based on word length
+    const newWordLen = newHeadword?.length || 8;
+    const baseHorizontalSpacing = 12;
+    const charWidth = 1.2;
 
-      let selfCheck = false;
+    while (!safe && attempts < 200) {
+      x = 12 + Math.random() * 76;
+      y = 15 + Math.random() * 70;
+
+      // Check collision with all existing words
+      const hasCollision = currentWords.some(w => {
+        const existingWordLen = w.headword?.length || 8;
+        const requiredHSpacing = baseHorizontalSpacing + ((newWordLen + existingWordLen) / 2) * charWidth;
+        const requiredVSpacing = 8;
+
+        const hDist = Math.abs(w.x - x);
+        const vDist = Math.abs(w.y - y);
+
+        return hDist < requiredHSpacing && vDist < requiredVSpacing;
+      });
+
+      let tooCloseToAvoid = false;
       if (avoidX !== undefined && avoidY !== undefined) {
         const dist = Math.sqrt(Math.pow(x - avoidX, 2) + Math.pow(y - avoidY, 2));
-        if (dist < 25) selfCheck = true;
+        if (dist < 25) tooCloseToAvoid = true;
       }
 
-      if (!crowdCheck && !selfCheck) safe = true;
+      if (!hasCollision && !tooCloseToAvoid) safe = true;
       attempts++;
     }
+
+    // Grid fallback if no safe spot found
+    if (!safe) {
+      const gridCols = 4;
+      const gridRows = 5;
+      const cellWidth = 76 / gridCols;
+      const cellHeight = 65 / gridRows;
+      const index = currentWords.length % (gridCols * gridRows);
+      const col = index % gridCols;
+      const row = Math.floor(index / gridCols);
+      x = 12 + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 5;
+      y = 15 + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 5;
+    }
+
     return { x, y };
   }
 
@@ -275,13 +312,14 @@
       playSound('fog');
       const oldX = targetWord?.x;
       const oldY = targetWord?.y;
+      const headword = targetWord?.headword;
 
       // Mark as dissolving temporarily
       words = words.map(w => w.id === targetId ? { ...w, dissolving: true } : w);
 
       setTimeout(() => {
-        const others = words.filter(w => w.id !== targetId);
-        const newPos = findSafeSpot(others, oldX, oldY);
+        const others = words.filter(w => w.id !== targetId).map(w => ({ x: w.x, y: w.y, headword: w.headword }));
+        const newPos = findSafeSpot(others, headword, oldX, oldY);
         words = words.map(w => w.id === targetId ? {
           ...w,
           dissolving: false,

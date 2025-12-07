@@ -43,8 +43,11 @@
   onMount(() => {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
+    // Accumulate placed words to prevent overlap
+    const placedWords: { x: number; y: number; headword: string }[] = [];
     words = queue.map((card) => {
-      const pos = findSafeSpot([]);
+      const pos = findSafeSpot(placedWords, card.headword);
+      placedWords.push({ x: pos.x, y: pos.y, headword: card.headword });
       return {
         ...card,
         x: pos.x,
@@ -64,27 +67,61 @@
     };
   });
 
-  function findSafeSpot(currentWords: any[], avoidX?: number, avoidY?: number) {
+  function findSafeSpot(
+    currentWords: { x: number; y: number; headword?: string }[],
+    newHeadword?: string,
+    avoidX?: number,
+    avoidY?: number
+  ) {
     let safe = false;
     let x = 0, y = 0;
     let attempts = 0;
-    while (!safe && attempts < 100) {
-      x = 10 + Math.random() * 80;
-      y = 15 + Math.random() * 70;
 
-      // 1. Check distance from other words
-      const crowdCheck = currentWords.some(w => Math.abs(w.x - x) < 12 && Math.abs(w.y - y) < 8);
+    // Calculate spacing based on word length
+    const newWordLen = newHeadword?.length || 8;
+    const baseHorizontalSpacing = 12;
+    const charWidth = 1.2;
 
-      // 2. Check distance from Old Spot (Teleport range > 30%)
-      let selfCheck = false;
+    while (!safe && attempts < 200) {
+      x = 8 + Math.random() * 84;
+      y = 12 + Math.random() * 76;
+
+      // Check collision with all existing words
+      const hasCollision = currentWords.some(w => {
+        const existingWordLen = w.headword?.length || 8;
+        const requiredHSpacing = baseHorizontalSpacing + ((newWordLen + existingWordLen) / 2) * charWidth;
+        const requiredVSpacing = 8;
+
+        const hDist = Math.abs(w.x - x);
+        const vDist = Math.abs(w.y - y);
+
+        return hDist < requiredHSpacing && vDist < requiredVSpacing;
+      });
+
+      // Check distance from Old Spot (for teleporting on fail)
+      let tooCloseToAvoid = false;
       if (avoidX !== undefined && avoidY !== undefined) {
         const dist = Math.sqrt(Math.pow(x - avoidX, 2) + Math.pow(y - avoidY, 2));
-        if (dist < 30) selfCheck = true; // Too close to old spot
+        if (dist < 25) tooCloseToAvoid = true;
       }
 
-      if (!crowdCheck && !selfCheck) safe = true;
+      if (!hasCollision && !tooCloseToAvoid) safe = true;
       attempts++;
     }
+
+    // Grid fallback if no safe spot found
+    if (!safe) {
+      const gridCols = 4;
+      const gridRows = 5;
+      const cellWidth = 80 / gridCols;
+      const cellHeight = 70 / gridRows;
+      const index = currentWords.length % (gridCols * gridRows);
+      const col = index % gridCols;
+      const row = Math.floor(index / gridCols);
+      x = 10 + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 5;
+      y = 15 + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 5;
+    }
+
     return { x, y };
   }
 
@@ -228,15 +265,17 @@
       for (let i = 0; i < 15; i++) spawnEmber(true, revealedWord.x, revealedWord.y);
     } else {
       playSound('burn');
-      // Capture old position before burning
-      const oldX = words.find(w => w.id === targetId)?.x;
-      const oldY = words.find(w => w.id === targetId)?.y;
+      // Capture old position and headword before burning
+      const targetWord = words.find(w => w.id === targetId);
+      const oldX = targetWord?.x;
+      const oldY = targetWord?.y;
+      const headword = targetWord?.headword;
 
       words = words.map(w => w.id === targetId ? { ...w, burning: true } : w);
       setTimeout(() => {
-        const others = words.filter(w => w.id !== targetId);
+        const others = words.filter(w => w.id !== targetId).map(w => ({ x: w.x, y: w.y, headword: w.headword }));
         // Pass old coordinates to force significant teleport distance
-        const newPos = findSafeSpot(others, oldX, oldY);
+        const newPos = findSafeSpot(others, headword, oldX, oldY);
         words = words.map(w => w.id === targetId ? {
           ...w,
           burning: false,
