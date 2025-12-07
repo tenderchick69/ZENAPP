@@ -41,6 +41,8 @@
 
   // Gardener (Edit Card) Modal
   let editingCard = $state<Card | null>(null);
+  let isSaving = $state(false);
+  let saveButtonText = $state('Save Changes');
   let gardenerForm = $state({
     headword: '',
     definition: '',
@@ -199,6 +201,8 @@
   function openGardenerModal(card: Card) {
     console.log('openGardenerModal called with card:', card);
     editingCard = card;
+    isSaving = false;
+    saveButtonText = 'Save Changes';
     // Handle both old (image_url) and new (image_urls) formats
     const cardAny = card as any;
     let urls: string[] = [];
@@ -229,43 +233,74 @@
   }
 
   async function saveCardEdits() {
-    console.log('saveCardEdits called');
+    console.log('=== SAVE STARTED ===');
+    console.log('Button clicked, isSaving:', isSaving);
+
+    // Prevent double-clicks
+    if (isSaving) {
+      console.log('Already saving, ignoring click');
+      return;
+    }
+
+    isSaving = true;
+    saveButtonText = 'Saving...';
+
     console.log('editingCard:', editingCard);
-    console.log('gardenerForm:', JSON.stringify(gardenerForm, null, 2));
+    console.log('gardenerForm.image_urls:', gardenerForm.image_urls);
+    console.log('gardenerForm.selected_image_index:', gardenerForm.selected_image_index);
+    console.log('Full gardenerForm:', JSON.stringify(gardenerForm, null, 2));
 
     if (!editingCard) {
       console.error('No editingCard!');
+      isSaving = false;
+      saveButtonText = 'Error: No card!';
+      alert('Save failed: No card selected');
       return;
     }
 
-    // Get the selected image for backward compatibility
-    const selectedUrl = gardenerForm.image_urls[gardenerForm.selected_image_index] || null;
-    console.log('selectedUrl:', selectedUrl);
+    try {
+      // Get the selected image for backward compatibility
+      const selectedUrl = gardenerForm.image_urls[gardenerForm.selected_image_index] || null;
+      console.log('selectedUrl:', selectedUrl);
 
-    const updateData = {
-      headword: gardenerForm.headword,
-      definition: gardenerForm.definition,
-      mnemonic: gardenerForm.mnemonic || null,
-      etymology: gardenerForm.etymology || null,
-      gloss_de: gardenerForm.gloss_de || null,
-      image_urls: gardenerForm.image_urls,
-      selected_image_index: gardenerForm.selected_image_index,
-      image_url: selectedUrl // backward compatibility
-    };
-    console.log('Sending to Supabase:', JSON.stringify(updateData, null, 2));
+      const updateData = {
+        headword: gardenerForm.headword,
+        definition: gardenerForm.definition,
+        mnemonic: gardenerForm.mnemonic || null,
+        etymology: gardenerForm.etymology || null,
+        gloss_de: gardenerForm.gloss_de || null,
+        image_urls: gardenerForm.image_urls,
+        selected_image_index: gardenerForm.selected_image_index,
+        image_url: selectedUrl // backward compatibility
+      };
+      console.log('Sending to Supabase:', JSON.stringify(updateData, null, 2));
 
-    const { error: updateError } = await supabase.from('cards').update(updateData).eq('id', editingCard.id);
+      const { error: updateError } = await supabase.from('cards').update(updateData).eq('id', editingCard.id);
 
-    if (updateError) {
-      console.error('Save failed:', updateError);
-      showToastMessage('Save failed: ' + updateError.message);
-      return;
+      if (updateError) {
+        console.error('=== SAVE FAILED ===', updateError);
+        isSaving = false;
+        saveButtonText = 'Save Failed!';
+        alert('Save failed: ' + updateError.message);
+        showToastMessage('Save failed: ' + updateError.message);
+        return;
+      }
+
+      console.log('=== SAVE SUCCESS ===');
+      saveButtonText = 'Saved ✓';
+
+      await loadStats(); // Reload all cards
+      closeGardenerModal();
+      showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');
+    } catch (error: any) {
+      console.error('=== SAVE EXCEPTION ===', error);
+      isSaving = false;
+      saveButtonText = 'Error!';
+      alert('Save error: ' + (error.message || 'Unknown error'));
+    } finally {
+      isSaving = false;
+      saveButtonText = 'Save Changes';
     }
-
-    console.log('Save successful!');
-    await loadStats(); // Reload all cards
-    closeGardenerModal();
-    showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');
   }
 
   async function deleteCard(cardId: number) {
@@ -934,8 +969,14 @@
               imageUrls={gardenerForm.image_urls}
               selectedImageIndex={gardenerForm.selected_image_index}
               onImagesChanged={(urls, selectedIndex) => {
-                gardenerForm.image_urls = urls;
-                gardenerForm.selected_image_index = selectedIndex;
+                console.log('onImagesChanged called:', { urls, selectedIndex });
+                // Use object spread to ensure Svelte 5 reactivity triggers
+                gardenerForm = {
+                  ...gardenerForm,
+                  image_urls: [...urls],
+                  selected_image_index: selectedIndex
+                };
+                console.log('gardenerForm updated:', gardenerForm.image_urls);
               }}
             />
           </div>
@@ -945,9 +986,15 @@
         <div class="flex justify-center items-center gap-4 mt-8">
           <button
             type="button"
-            onclick={saveCardEdits}
-            class="px-8 py-3 bg-accent text-bg font-heading text-base font-bold hover:shadow-[0_0_20px_var(--color-accent)] hover:scale-105 transition-all rounded-xl cursor-pointer">
-            Save Changes
+            onclick={(e) => {
+              e.preventDefault();
+              console.log('Save button clicked!');
+              saveCardEdits();
+            }}
+            disabled={isSaving}
+            class="px-8 py-3 bg-accent text-bg font-heading text-base font-bold hover:shadow-[0_0_20px_var(--color-accent)] hover:scale-105 transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            class:cursor-pointer={!isSaving}>
+            {saveButtonText}
           </button>
           <button
             onclick={() => deleteCard(editingCard!.id)}

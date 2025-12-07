@@ -12,10 +12,11 @@ import { env } from '$env/dynamic/private';
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.json();
-    const { card, model, style } = body as {
+    const { card, model, style, customPrompt } = body as {
       card: CardData;
       model?: string;
       style?: string;
+      customPrompt?: string;
     };
 
     // Validate card data
@@ -34,9 +35,16 @@ export const POST: RequestHandler = async ({ request }) => {
       throw error(500, 'Runware API key not configured');
     }
 
-    // Build the prompt
-    const promptResult = buildImagePrompt(card);
-    let finalPrompt = promptResult.prompt;
+    // Use custom prompt if provided, otherwise build from card
+    let finalPrompt: string;
+    if (customPrompt && customPrompt.trim()) {
+      finalPrompt = customPrompt.trim();
+      console.log('Using custom prompt');
+    } else {
+      const promptResult = buildImagePrompt(card);
+      finalPrompt = promptResult.prompt;
+      console.log('Using auto-generated prompt');
+    }
 
     // Apply style modifier if provided (photorealistic = no modifier)
     if (style && style !== 'photorealistic') {
@@ -47,7 +55,7 @@ export const POST: RequestHandler = async ({ request }) => {
         watercolor: ', watercolor painting style'
       };
       if (styleModifiers[style]) {
-        finalPrompt = `${promptResult.prompt}${styleModifiers[style]}`;
+        finalPrompt = `${finalPrompt}${styleModifiers[style]}`;
       }
     }
 

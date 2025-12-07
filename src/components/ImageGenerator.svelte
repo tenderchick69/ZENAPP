@@ -44,6 +44,7 @@
   let showModal = $state(false);
   let selectedModel = $state('sd15');
   let selectedStyle = $state('photorealistic');
+  let customPrompt = $state('');
 
   // Model options
   const models = [
@@ -63,6 +64,46 @@
 
   const MAX_IMAGES = 5;
 
+  /**
+   * Build a smart default prompt based on the card data.
+   * For abstract verbs/concepts, adds context to help AI visualize.
+   */
+  function buildSmartPrompt(): string {
+    const { headword, definition, mnemonic } = card;
+
+    // Check if it's a verb (starts with "to " in definition or headword)
+    const isVerb = definition.toLowerCase().startsWith('to ') ||
+                   headword.toLowerCase().startsWith('to ');
+
+    // Check if it's abstract (short definition, common abstract words)
+    const abstractIndicators = ['to go', 'to be', 'to have', 'to do', 'to make', 'to get', 'to know', 'to think', 'to want', 'to see', 'to come', 'to give', 'to take'];
+    const isAbstract = abstractIndicators.some(a => definition.toLowerCase().includes(a)) ||
+                       definition.split(' ').length <= 3;
+
+    let prompt = definition;
+
+    if (isVerb && isAbstract) {
+      // For abstract verbs, create a scene description
+      const action = definition.replace(/^to /i, '');
+      prompt = `A person ${action}, realistic scene, clear action`;
+    } else if (isVerb) {
+      // For other verbs, show the action
+      const action = definition.replace(/^to /i, '');
+      prompt = `Someone ${action}`;
+    }
+
+    // If we have a mnemonic with imagery, use it
+    if (mnemonic && mnemonic.length > 10) {
+      // Check if mnemonic contains visual imagery
+      const visualWords = ['imagine', 'picture', 'visualize', 'looks like', 'like a', 'resembles'];
+      if (visualWords.some(w => mnemonic.toLowerCase().includes(w))) {
+        prompt = `${prompt}. ${mnemonic}`;
+      }
+    }
+
+    return prompt;
+  }
+
   // Load saved preferences
   onMount(() => {
     const savedModel = localStorage.getItem('vocapp_imagegen_model');
@@ -72,6 +113,8 @@
   });
 
   function openModal() {
+    // Initialize custom prompt with smart default
+    customPrompt = buildSmartPrompt();
     showModal = true;
   }
 
@@ -99,7 +142,8 @@
         body: JSON.stringify({
           card,
           model: selectedModel,
-          style: selectedStyle
+          style: selectedStyle,
+          customPrompt: customPrompt.trim() || undefined
         })
       });
 
@@ -293,6 +337,28 @@
               <option value={style.id}>{style.name}</option>
             {/each}
           </select>
+        </div>
+
+        <!-- Custom Prompt -->
+        <div class="section">
+          <label class="section-label" for="custom-prompt">
+            Image Prompt:
+            <span class="label-hint">(edit to customize what the AI visualizes)</span>
+          </label>
+          <textarea
+            id="custom-prompt"
+            class="prompt-textarea"
+            bind:value={customPrompt}
+            placeholder="Describe what the image should show..."
+            rows="3"
+          ></textarea>
+          <button
+            type="button"
+            class="reset-prompt-btn"
+            onclick={() => customPrompt = buildSmartPrompt()}
+          >
+            ↺ Reset to default
+          </button>
         </div>
       </div>
 
@@ -629,6 +695,55 @@
   .style-select:focus {
     outline: none;
     border-color: var(--color-accent);
+  }
+
+  .label-hint {
+    font-weight: normal;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .prompt-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-dim);
+    border-radius: 0.5rem;
+    color: var(--color-main);
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+    line-height: 1.4;
+  }
+
+  .prompt-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  .prompt-textarea::placeholder {
+    color: var(--color-dim);
+    opacity: 0.7;
+  }
+
+  .reset-prompt-btn {
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--color-dim);
+    border-radius: 0.25rem;
+    color: var(--color-dim);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-prompt-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
   }
 
   .modal-footer {
