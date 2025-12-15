@@ -405,18 +405,19 @@
         class="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
                transition-all duration-300
                {w.decrypting ? 'syndicate-decrypt' : ''}
-               {w.glitching ? 'syndicate-glitch' : ''}"
-        style="left: {w.x}%; top: {w.y}%;"
+               {w.glitching ? 'syndicate-glitch' : ''}
+               {!w.decrypting && !w.glitching ? 'syndicate-idle-glitch' : ''}"
+        style="left: {w.x}%; top: {w.y}%; --glitch-delay: {(i * 0.7) + Math.random() * 2}s;"
         onclick={(e) => handleWordClick(w, e)}>
         {#if showImages && getCardImageUrl(w)}
           <img
             src={getCardImageUrl(w)}
             alt={w.headword}
             class="w-16 h-16 md:w-20 md:h-20 object-cover border-2 border-[#00fff2]/50 shadow-[0_0_15px_rgba(0,255,242,0.3)]
-                   hover:border-[#00fff2] hover:shadow-[0_0_25px_rgba(0,255,242,0.5)] transition-all"
+                   hover:border-[#00fff2] hover:shadow-[0_0_25px_rgba(0,255,242,0.5)] transition-all syndicate-img-glitch"
           />
         {:else}
-          <span class="text-lg md:text-2xl lg:text-3xl tracking-widest
+          <span class="text-lg md:text-2xl lg:text-3xl tracking-widest syndicate-text-glitch
                        {!w.decrypting && !w.glitching ? 'text-[#00fff2]/60 hover:text-[#00fff2] syndicate-glow-subtle' : ''}">
             <span class="opacity-50">[</span>{w.headword}<span class="opacity-50">]</span>
           </span>
@@ -564,3 +565,146 @@
     </div>
   {/if}
 </div>
+
+<style>
+  /* Syndicate idle glitch animation - cyberpunk digital glitch with RGB split */
+  @keyframes syndicate-idle-glitch-anim {
+    0%, 85%, 100% {
+      transform: translate(-50%, -50%) translate(0, 0);
+    }
+    86% {
+      transform: translate(-50%, -50%) translate(-3px, 1px);
+    }
+    88% {
+      transform: translate(-50%, -50%) translate(3px, -1px);
+    }
+    90% {
+      transform: translate(-50%, -50%) translate(-1px, -2px);
+    }
+    92% {
+      transform: translate(-50%, -50%) translate(0, 0);
+    }
+  }
+
+  /* RGB split text effect */
+  @keyframes syndicate-rgb-split {
+    0%, 85%, 100% {
+      text-shadow: none;
+    }
+    86% {
+      text-shadow: -2px 0 #ff0040, 2px 0 #00fff2;
+    }
+    88% {
+      text-shadow: 2px 0 #ff0040, -2px 0 #00fff2;
+    }
+    90% {
+      text-shadow: -1px 0 #ff0040, 1px 0 #00fff2;
+    }
+    92% {
+      text-shadow: none;
+    }
+  }
+
+  /* Image glitch effect - uses hue-rotate instead of text-shadow */
+  @keyframes syndicate-img-glitch-anim {
+    0%, 85%, 100% {
+      transform: translate(0, 0);
+      filter: none;
+    }
+    86% {
+      transform: translate(-2px, 1px);
+      filter: hue-rotate(30deg) saturate(1.3);
+    }
+    88% {
+      transform: translate(2px, -1px);
+      filter: hue-rotate(-30deg) saturate(1.3);
+    }
+    90% {
+      transform: translate(-1px, -2px);
+      filter: hue-rotate(15deg) saturate(1.2);
+    }
+    92% {
+      transform: translate(0, 0);
+      filter: none;
+    }
+  }
+
+  /* Apply idle glitch to card container */
+  .syndicate-idle-glitch {
+    animation: syndicate-idle-glitch-anim 4s infinite;
+    animation-delay: var(--glitch-delay, 0s);
+  }
+
+  /* Apply RGB split to text */
+  .syndicate-text-glitch {
+    animation: syndicate-rgb-split 4s infinite;
+    animation-delay: var(--glitch-delay, 0s);
+  }
+
+  /* Apply hue-rotate glitch to images */
+  .syndicate-img-glitch {
+    animation: syndicate-img-glitch-anim 4s infinite;
+    animation-delay: var(--glitch-delay, 0s);
+  }
+
+  /* Subtle glow for idle words */
+  .syndicate-glow-subtle {
+    text-shadow: 0 0 10px rgba(0, 255, 242, 0.3);
+  }
+
+  /* Decrypt animation (when passing) */
+  .syndicate-decrypt {
+    animation: syndicate-decrypt-anim 0.8s ease-out forwards;
+  }
+
+  @keyframes syndicate-decrypt-anim {
+    0% {
+      opacity: 1;
+      filter: none;
+    }
+    50% {
+      opacity: 1;
+      filter: brightness(2) blur(2px);
+      text-shadow: 0 0 20px #39ff14;
+    }
+    100% {
+      opacity: 0;
+      filter: brightness(3) blur(5px);
+    }
+  }
+
+  /* Glitch animation (when failing) */
+  .syndicate-glitch {
+    animation: syndicate-fail-glitch 0.6s ease-out forwards;
+  }
+
+  @keyframes syndicate-fail-glitch {
+    0%, 100% {
+      opacity: 1;
+    }
+    10%, 30%, 50%, 70%, 90% {
+      opacity: 0;
+      transform: translate(-50%, -50%) translate(5px, -5px);
+    }
+    20%, 40%, 60%, 80% {
+      opacity: 1;
+      transform: translate(-50%, -50%) translate(-5px, 5px);
+    }
+  }
+
+  /* Pulse animation for complete text */
+  .syndicate-pulse {
+    animation: syndicate-pulse-anim 2s ease-in-out infinite;
+  }
+
+  @keyframes syndicate-pulse-anim {
+    0%, 100% {
+      opacity: 1;
+      text-shadow: 0 0 20px currentColor;
+    }
+    50% {
+      opacity: 0.8;
+      text-shadow: 0 0 40px currentColor;
+    }
+  }
+</style>

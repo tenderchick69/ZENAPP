@@ -60,6 +60,80 @@
   let sessionComplete = false;
   let breathPhase = 0;
 
+  // Wave ripple state
+  let cardRefs: HTMLElement[] = [];
+  let containerRef: HTMLElement;
+  let ripples: { id: number; x: number; y: number }[] = [];
+
+  // Wave ripple effect - click anywhere to create wave
+  function handleContainerClick(e: MouseEvent) {
+    // Don't trigger if clicking on a card or modal
+    const target = e.target as HTMLElement;
+    if (target.closest('.zen-word-card') || target.closest('.zen-modal') || revealedWord) return;
+
+    const clickX = e.clientX;
+    const clickY = e.clientY;
+    const startTime = Date.now();
+    const waveSpeed = 350; // pixels per second
+    const waveDuration = 2000; // ms for wave to complete
+    const waveHeight = 12; // max pixels to move
+
+    // Play subtle sound
+    playSound('ripple');
+
+    // Spawn visual ripple
+    const rippleId = Date.now();
+    ripples = [...ripples, { id: rippleId, x: clickX, y: clickY }];
+    setTimeout(() => {
+      ripples = ripples.filter(r => r.id !== rippleId);
+    }, 1500);
+
+    function animateWave() {
+      const elapsed = Date.now() - startTime;
+      if (elapsed > waveDuration) {
+        // Reset all cards smoothly
+        cardRefs.forEach(card => {
+          if (card) card.style.transform = '';
+        });
+        return;
+      }
+
+      const waveRadius = (elapsed / 1000) * waveSpeed;
+      const waveWidth = 120; // width of the wave band
+
+      cardRefs.forEach((card, idx) => {
+        if (!card || words[idx]?.mastered) return;
+        const rect = card.getBoundingClientRect();
+        const cardX = rect.left + rect.width / 2;
+        const cardY = rect.top + rect.height / 2;
+
+        // Distance from click point
+        const distance = Math.sqrt(
+          Math.pow(cardX - clickX, 2) +
+          Math.pow(cardY - clickY, 2)
+        );
+
+        // Wave function: card moves if wave is passing through it
+        const distanceFromWaveFront = Math.abs(distance - waveRadius);
+
+        if (distanceFromWaveFront < waveWidth) {
+          // Inside the wave band - apply sine displacement
+          const wavePosition = 1 - (distanceFromWaveFront / waveWidth);
+          const displacement = Math.sin(wavePosition * Math.PI) * waveHeight;
+          const baseTransform = `translate(-50%, -50%) translateY(${Math.sin(words[idx].drift) * 8}px)`;
+          card.style.transform = `${baseTransform} translateY(-${displacement}px)`;
+        } else if (distance < waveRadius - waveWidth) {
+          // Wave has passed - return to base position
+          card.style.transform = '';
+        }
+      });
+
+      requestAnimationFrame(animateWave);
+    }
+
+    requestAnimationFrame(animateWave);
+  }
+
   $: masteredCount = words.filter(w => w.mastered).length;
   $: activeWord = words.find((w, i) => i === currentIndex && !w.mastered);
 
@@ -206,12 +280,23 @@
     particles = [...particles, ...newParticles];
   }
 
-  function playSound(type: 'hover' | 'reveal' | 'dissolve' | 'fog' | 'complete') {
+  function playSound(type: 'hover' | 'reveal' | 'dissolve' | 'fog' | 'complete' | 'ripple') {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
 
-    if (type === 'hover') {
+    if (type === 'ripple') {
+      // Soft water droplet sound - descending pitch
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, t);
+      osc.frequency.exponentialRampToValueAtTime(200, t + 0.3);
+      g.gain.setValueAtTime(0.02, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(); osc.stop(t + 0.3);
+    } else if (type === 'hover') {
       const osc = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       osc.type = 'sine';
@@ -338,7 +423,12 @@
 </script>
 
 <!-- CONTAINER -->
-<div class="zen-void-container fixed inset-0 bg-black overflow-hidden font-void text-gray-400 select-none">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+  bind:this={containerRef}
+  onclick={handleContainerClick}
+  class="zen-void-container fixed inset-0 bg-black overflow-hidden font-void text-gray-400 select-none cursor-pointer">
 
   <!-- Subtle noise texture overlay -->
   <div class="absolute inset-0 opacity-[0.02]" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E');"></div>
@@ -358,13 +448,22 @@
     </div>
   {/each}
 
+  <!-- Click Ripples -->
+  {#each ripples as r (r.id)}
+    <div
+      class="zen-ripple pointer-events-none"
+      style="left: {r.x}px; top: {r.y}px;">
+    </div>
+  {/each}
+
   <!-- Words -->
   {#each words as w, i (w.id)}
     {#if !w.mastered}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
-        class="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
+        bind:this={cardRefs[i]}
+        class="zen-word-card absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
                transition-all duration-700
                {w.dissolving ? 'opacity-0 scale-75' : 'opacity-100'}"
         style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) translateY({Math.sin(w.drift) * 8}px);"
@@ -536,3 +635,33 @@
     </div>
   {/if}
 </div>
+
+<style>
+  /* Zen click wave ripple effect */
+  .zen-ripple {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(80, 80, 80, 0.15) 0%, transparent 70%);
+    animation: zen-ripple-expand 1.5s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes zen-ripple-expand {
+    0% {
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(5);
+      opacity: 0;
+    }
+  }
+
+  /* Smooth wave transition for cards */
+  .zen-word-card {
+    transition: transform 0.1s ease-out;
+  }
+</style>

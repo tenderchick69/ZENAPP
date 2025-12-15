@@ -370,14 +370,15 @@
   {/each}
 
   <!-- Words written on glass -->
-  {#each words as w (w.id)}
+  {#each words as w, i (w.id)}
     {@const style = getWordStyle(w)}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="absolute cursor-pointer transition-[opacity,filter] duration-500 select-none"
+      class="absolute cursor-pointer transition-[opacity,filter] duration-500 select-none frost-floating-card"
       class:animate-fog-return={fadingWords.includes(w.id)}
-      style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) rotate({w.rotation}deg);"
+      class:frost-mastered={w.mastered}
+      style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) rotate({w.rotation}deg); --delay: {(i * 0.5) + Math.random() * 1.5}s;"
       onmouseenter={() => handleHover(w.id)}
       onmouseleave={() => hoveredWord = null}
       onclick={(e) => handleSelect(w, e)}>
@@ -598,3 +599,89 @@
     4:00 AM
   </div>
 </div>
+
+<style>
+  /* Frost breath pulse animation - gentle breathing like fog on cold glass */
+  @keyframes frost-breath {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.9;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.02);
+      opacity: 1;
+    }
+  }
+
+  /* Ice shimmer effect */
+  @keyframes frost-shimmer {
+    0%, 100% {
+      filter: drop-shadow(0 0 5px rgba(168, 216, 234, 0));
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(168, 216, 234, 0.4));
+    }
+  }
+
+  /* Apply to floating cards */
+  .frost-floating-card {
+    animation:
+      frost-breath 4s ease-in-out infinite,
+      frost-shimmer 3s ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  /* Mastered cards get stronger crystallization on hover */
+  .frost-mastered:hover {
+    filter: drop-shadow(0 0 15px rgba(168, 216, 234, 0.6)) drop-shadow(0 0 25px rgba(168, 216, 234, 0.3)) !important;
+  }
+
+  /* Existing animations from app.css that may be missing */
+  .animate-breath-fade {
+    animation: breath-fade 2s ease-out forwards;
+  }
+
+  @keyframes breath-fade {
+    0% {
+      opacity: 0.5;
+      transform: translate(-50%, -50%) scale(0.5);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.5);
+    }
+  }
+
+  .animate-fog-return {
+    animation: fog-return 1.5s ease-out forwards;
+  }
+
+  @keyframes fog-return {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+      filter: blur(10px);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(3px);
+    }
+  }
+
+  .animate-frost-appear {
+    animation: frost-appear 0.5s ease-out forwards;
+  }
+
+  @keyframes frost-appear {
+    0% {
+      opacity: 0;
+      transform: scale(0);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>
