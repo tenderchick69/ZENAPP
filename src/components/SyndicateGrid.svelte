@@ -62,9 +62,17 @@
     opacity: number;
   };
 
+  // Grid glitch burst on click
+  type GlitchBurst = {
+    id: number;
+    x: number;
+    y: number;
+  };
+
   let words: WordState[] = [];
   let pixels: Pixel[] = [];
   let dataRain: DataDrop[] = [];
+  let glitchBursts: GlitchBurst[] = [];
   let revealedWord: WordState | null = null;
   let audioCtx: AudioContext;
   let animationFrame: number;
@@ -101,8 +109,8 @@
       };
     });
 
-    // Initialize data rain
-    for (let i = 0; i < 15; i++) {
+    // Initialize data rain - more visible matrix effect
+    for (let i = 0; i < 25; i++) {
       spawnDataDrop();
     }
 
@@ -178,7 +186,7 @@
   function spawnDataDrop() {
     const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'.split('');
     const dropChars: string[] = [];
-    const length = 5 + Math.floor(Math.random() * 10);
+    const length = 8 + Math.floor(Math.random() * 12);
     for (let i = 0; i < length; i++) {
       dropChars.push(chars[Math.floor(Math.random() * chars.length)]);
     }
@@ -186,9 +194,9 @@
       id: Date.now() + Math.random(),
       x: Math.random() * 100,
       y: -10,
-      speed: 0.3 + Math.random() * 0.5,
+      speed: 0.4 + Math.random() * 0.6,
       chars: dropChars,
-      opacity: 0.1 + Math.random() * 0.2
+      opacity: 0.25 + Math.random() * 0.35 // More visible: 0.25-0.6
     });
   }
 
@@ -219,8 +227,8 @@
       y: drop.y + drop.speed
     })).filter(drop => drop.y < 120);
 
-    // Spawn new drops
-    if (dataRain.length < 15 && Math.random() < 0.1) {
+    // Spawn new drops - keep matrix rain consistent
+    if (dataRain.length < 25 && Math.random() < 0.15) {
       spawnDataDrop();
     }
 
@@ -239,12 +247,25 @@
     animationFrame = requestAnimationFrame(loop);
   }
 
-  function playSound(type: 'hover' | 'reveal' | 'decrypt' | 'corrupt' | 'complete') {
+  function playSound(type: 'hover' | 'reveal' | 'decrypt' | 'corrupt' | 'complete' | 'gridglitch') {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
 
-    if (type === 'hover') {
+    if (type === 'gridglitch') {
+      // Electric surge sound
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(100, t);
+      osc.frequency.exponentialRampToValueAtTime(2000, t + 0.1);
+      osc.frequency.exponentialRampToValueAtTime(50, t + 0.3);
+      g.gain.setValueAtTime(0.04, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(); osc.stop(t + 0.3);
+    }
+    else if (type === 'hover') {
       const osc = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       osc.type = 'square';
@@ -360,10 +381,30 @@
     dispatch('grade', { id: targetId, rating });
     revealedWord = null;
   }
+
+  // Grid glitch effect on click
+  function handleContainerClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (target.closest('.syndicate-word-card') || target.closest('.syndicate-modal') || revealedWord) return;
+
+    playSound('gridglitch');
+
+    const burstId = Date.now();
+    glitchBursts = [...glitchBursts, { id: burstId, x: e.clientX, y: e.clientY }];
+
+    // Remove after animation
+    setTimeout(() => {
+      glitchBursts = glitchBursts.filter(b => b.id !== burstId);
+    }, 800);
+  }
 </script>
 
 <!-- CONTAINER -->
-<div class="syndicate-grid-container fixed inset-0 bg-[#050505] overflow-hidden font-mono text-gray-400 select-none">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+  class="syndicate-grid-container fixed inset-0 bg-[#050505] overflow-hidden font-mono text-gray-400 select-none"
+  onclick={handleContainerClick}>
 
   <!-- Grid background -->
   <div class="absolute inset-0 opacity-10"
@@ -396,13 +437,28 @@
     </div>
   {/each}
 
+  <!-- Grid glitch bursts -->
+  {#each glitchBursts as burst (burst.id)}
+    <div class="grid-glitch-burst pointer-events-none" style="left: {burst.x}px; top: {burst.y}px;">
+      <!-- Central pulse -->
+      <div class="glitch-pulse"></div>
+      <!-- Lightning branches -->
+      <svg class="glitch-lightning" viewBox="0 0 200 200">
+        <path d="M100,100 L{100 + Math.random() * 80 - 40},{Math.random() * 60} L{100 + Math.random() * 60 - 30},{Math.random() * 40}" stroke="#00fff2" stroke-width="2" fill="none" opacity="0.8"/>
+        <path d="M100,100 L{200 - Math.random() * 60},{100 + Math.random() * 80 - 40} L{200 - Math.random() * 40},{100 + Math.random() * 60 - 30}" stroke="#39ff14" stroke-width="2" fill="none" opacity="0.8"/>
+        <path d="M100,100 L{100 + Math.random() * 80 - 40},{200 - Math.random() * 60} L{100 + Math.random() * 60 - 30},{200 - Math.random() * 40}" stroke="#ff0040" stroke-width="2" fill="none" opacity="0.8"/>
+        <path d="M100,100 L{Math.random() * 60},{100 + Math.random() * 80 - 40} L{Math.random() * 40},{100 + Math.random() * 60 - 30}" stroke="#00fff2" stroke-width="1.5" fill="none" opacity="0.6"/>
+      </svg>
+    </div>
+  {/each}
+
   <!-- Words -->
   {#each words as w, i (w.id)}
     {#if !w.mastered}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
-        class="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
+        class="syndicate-word-card absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
                transition-all duration-300
                {w.decrypting ? 'syndicate-decrypt' : ''}
                {w.glitching ? 'syndicate-glitch' : ''}
@@ -705,6 +761,75 @@
     50% {
       opacity: 0.8;
       text-shadow: 0 0 40px currentColor;
+    }
+  }
+
+  /* Grid glitch burst on click */
+  .grid-glitch-burst {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    animation: glitch-burst-fade 0.8s ease-out forwards;
+  }
+
+  .glitch-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #00fff2 0%, transparent 70%);
+    border-radius: 50%;
+    animation: glitch-pulse-expand 0.4s ease-out forwards;
+  }
+
+  .glitch-lightning {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: glitch-lightning-flash 0.3s ease-out forwards;
+  }
+
+  @keyframes glitch-burst-fade {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes glitch-pulse-expand {
+    0% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      box-shadow: 0 0 30px #00fff2, 0 0 60px #39ff14;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(8);
+      opacity: 0;
+      box-shadow: 0 0 0 transparent;
+    }
+  }
+
+  @keyframes glitch-lightning-flash {
+    0% {
+      opacity: 1;
+      filter: brightness(2) hue-rotate(0deg);
+    }
+    25% {
+      filter: brightness(3) hue-rotate(20deg);
+    }
+    50% {
+      filter: brightness(1.5) hue-rotate(-20deg);
+    }
+    100% {
+      opacity: 0;
+      filter: brightness(1) hue-rotate(0deg);
     }
   }
 </style>

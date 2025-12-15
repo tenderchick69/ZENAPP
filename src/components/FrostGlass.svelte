@@ -44,6 +44,14 @@
     y: number;
   };
 
+  type Snowflake = {
+    id: number;
+    x: number;
+    y: number;
+    char: string;
+    delay: number;
+  };
+
   // Word states
   let words: WordState[] = $state([]);
   let hoveredWord: number | null = $state(null);
@@ -54,6 +62,7 @@
   // Visual effects
   let condensation: CondensationDrop[] = $state([]);
   let breathSpots: BreathSpot[] = $state([]);
+  let snowflakes: Snowflake[] = $state([]);
   let sessionComplete = $state(false);
 
   // Audio
@@ -160,12 +169,25 @@
   });
 
   // Audio Engine - Crystal Tones
-  function playSound(type: 'hover' | 'reveal' | 'clear' | 'fog' | 'complete') {
+  function playSound(type: 'hover' | 'reveal' | 'clear' | 'fog' | 'complete' | 'snowfall') {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
 
-    if (type === 'hover') {
+    if (type === 'snowfall') {
+      // Soft crystalline tinkle - high pitched shimmer
+      [1800, 2200, 1600].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.015, t + i * 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(t + i * 0.05); osc.stop(t + 0.4);
+      });
+    }
+    else if (type === 'hover') {
       // Glass touch - soft sine
       const osc = audioCtx.createOscillator();
       const g = audioCtx.createGain();
@@ -307,6 +329,36 @@
     }
   }
 
+  // Spawn snowflakes on click
+  function handleContainerClick(e: MouseEvent) {
+    // Don't trigger if clicking on a word or modal
+    const target = e.target as HTMLElement;
+    if (target.closest('.frost-floating-card') || target.closest('.fixed.inset-0.flex') || revealedWord) return;
+
+    playSound('snowfall');
+
+    const snowChars = ['❄', '❅', '❆', '✻', '✼'];
+    const newFlakes: Snowflake[] = [];
+    const baseId = Date.now();
+
+    for (let i = 0; i < 8; i++) {
+      newFlakes.push({
+        id: baseId + i,
+        x: e.clientX + (Math.random() - 0.5) * 60,
+        y: e.clientY,
+        char: snowChars[Math.floor(Math.random() * snowChars.length)],
+        delay: Math.random() * 0.3
+      });
+    }
+
+    snowflakes = [...snowflakes, ...newFlakes];
+
+    // Remove after animation completes
+    setTimeout(() => {
+      snowflakes = snowflakes.filter(f => !newFlakes.some(nf => nf.id === f.id));
+    }, 2500);
+  }
+
   // Word Visual State (3 levels)
   function getWordStyle(word: any) {
     const isHovered = hoveredWord === word.id;
@@ -338,7 +390,11 @@
 </script>
 
 <!-- CONTAINER -->
-<div class="fixed inset-0 bg-gradient-to-b from-[#1a2a3a] via-[#1a2a3a] to-slate-900 overflow-hidden font-hand text-gray-300 cursor-default select-none">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+  class="fixed inset-0 bg-gradient-to-b from-[#1a2a3a] via-[#1a2a3a] to-slate-900 overflow-hidden font-hand text-gray-300 cursor-default select-none"
+  onclick={handleContainerClick}>
 
   <!-- Outside scene - distant lights through window -->
   <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-yellow-200/30 rounded-full blur-sm"></div>
@@ -366,6 +422,15 @@
     <div
       class="absolute rounded-full animate-breath-fade pointer-events-none"
       style="left: {spot.x}%; top: {spot.y}%; width: 120px; height: 120px; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)">
+    </div>
+  {/each}
+
+  <!-- Snowflakes on click -->
+  {#each snowflakes as flake (flake.id)}
+    <div
+      class="snowflake pointer-events-none"
+      style="left: {flake.x}px; top: {flake.y}px; animation-delay: {flake.delay}s;">
+      {flake.char}
     </div>
   {/each}
 
@@ -682,6 +747,27 @@
     100% {
       opacity: 1;
       transform: scale(1);
+    }
+  }
+
+  /* Snowflake falling animation */
+  .snowflake {
+    position: absolute;
+    color: rgba(168, 216, 234, 0.8);
+    font-size: 16px;
+    pointer-events: none;
+    animation: snowfall 2s ease-out forwards;
+    text-shadow: 0 0 5px rgba(168, 216, 234, 0.5);
+  }
+
+  @keyframes snowfall {
+    0% {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(180px) rotate(180deg);
     }
   }
 </style>

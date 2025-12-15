@@ -38,6 +38,7 @@
     drift: number;
     mastered: boolean;
     dissolving: boolean;
+    waveOffset: number; // Wave ripple displacement
   };
 
   // Particle type
@@ -71,12 +72,16 @@
     const target = e.target as HTMLElement;
     if (target.closest('.zen-word-card') || target.closest('.zen-modal') || revealedWord) return;
 
+    // Get click position relative to container
+    const rect = containerRef?.getBoundingClientRect();
+    if (!rect) return;
+
     const clickX = e.clientX;
     const clickY = e.clientY;
     const startTime = Date.now();
-    const waveSpeed = 350; // pixels per second
+    const waveSpeed = 400; // pixels per second
     const waveDuration = 2000; // ms for wave to complete
-    const waveHeight = 12; // max pixels to move
+    const waveHeight = 18; // max pixels to move (increased for visibility)
 
     // Play subtle sound
     playSound('ripple');
@@ -91,26 +96,26 @@
     function animateWave() {
       const elapsed = Date.now() - startTime;
       if (elapsed > waveDuration) {
-        // Reset all cards smoothly
-        cardRefs.forEach(card => {
-          if (card) card.style.transform = '';
-        });
+        // Reset all wave offsets
+        words = words.map(w => ({ ...w, waveOffset: 0 }));
         return;
       }
 
       const waveRadius = (elapsed / 1000) * waveSpeed;
-      const waveWidth = 120; // width of the wave band
+      const waveWidth = 150; // width of the wave band
 
-      cardRefs.forEach((card, idx) => {
-        if (!card || words[idx]?.mastered) return;
-        const rect = card.getBoundingClientRect();
-        const cardX = rect.left + rect.width / 2;
-        const cardY = rect.top + rect.height / 2;
+      // Update wave offsets in state
+      words = words.map(w => {
+        if (w.mastered || w.dissolving) return { ...w, waveOffset: 0 };
 
-        // Distance from click point
+        // Convert percentage position to pixels
+        const cardX = (w.x / 100) * rect.width;
+        const cardY = (w.y / 100) * rect.height;
+
+        // Distance from click point (adjusted for container position)
         const distance = Math.sqrt(
-          Math.pow(cardX - clickX, 2) +
-          Math.pow(cardY - clickY, 2)
+          Math.pow(cardX - (clickX - rect.left), 2) +
+          Math.pow(cardY - (clickY - rect.top), 2)
         );
 
         // Wave function: card moves if wave is passing through it
@@ -120,12 +125,12 @@
           // Inside the wave band - apply sine displacement
           const wavePosition = 1 - (distanceFromWaveFront / waveWidth);
           const displacement = Math.sin(wavePosition * Math.PI) * waveHeight;
-          const baseTransform = `translate(-50%, -50%) translateY(${Math.sin(words[idx].drift) * 8}px)`;
-          card.style.transform = `${baseTransform} translateY(-${displacement}px)`;
+          return { ...w, waveOffset: displacement };
         } else if (distance < waveRadius - waveWidth) {
-          // Wave has passed - return to base position
-          card.style.transform = '';
+          // Wave has passed - ease back to rest
+          return { ...w, waveOffset: w.waveOffset * 0.9 };
         }
+        return w;
       });
 
       requestAnimationFrame(animateWave);
@@ -151,9 +156,10 @@
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
     // Initialize words with positions - accumulate to prevent overlap
+    // Use larger spacing when in image mode since images are bigger than text
     const placedWords: { x: number; y: number; headword: string }[] = [];
     words = queue.map((card, i) => {
-      const pos = findSafeSpot(placedWords, card.headword);
+      const pos = findSafeSpot(placedWords, card.headword, undefined, undefined, showImages && getCardImageUrl(card));
       placedWords.push({ x: pos.x, y: pos.y, headword: card.headword });
       return {
         ...card,
@@ -161,7 +167,8 @@
         y: pos.y,
         drift: Math.random() * Math.PI * 2,
         mastered: false,
-        dissolving: false
+        dissolving: false,
+        waveOffset: 0
       };
     });
 
@@ -184,16 +191,19 @@
     currentWords: { x: number; y: number; headword?: string }[],
     newHeadword?: string,
     avoidX?: number,
-    avoidY?: number
+    avoidY?: number,
+    isImage?: boolean
   ) {
     let safe = false;
     let x = 0, y = 0;
     let attempts = 0;
 
-    // Calculate spacing based on word length
+    // Calculate spacing based on content type
+    // Images need more space (they're about 80-96px = ~8-10% of viewport)
+    const baseHorizontalSpacing = isImage ? 14 : 12;
+    const baseVerticalSpacing = isImage ? 12 : 8;
     const newWordLen = newHeadword?.length || 8;
-    const baseHorizontalSpacing = 12;
-    const charWidth = 1.2;
+    const charWidth = isImage ? 0 : 1.2;
 
     while (!safe && attempts < 200) {
       x = 12 + Math.random() * 76;
@@ -203,7 +213,7 @@
       const hasCollision = currentWords.some(w => {
         const existingWordLen = w.headword?.length || 8;
         const requiredHSpacing = baseHorizontalSpacing + ((newWordLen + existingWordLen) / 2) * charWidth;
-        const requiredVSpacing = 8;
+        const requiredVSpacing = baseVerticalSpacing;
 
         const hDist = Math.abs(w.x - x);
         const vDist = Math.abs(w.y - y);
@@ -223,8 +233,8 @@
 
     // Grid fallback if no safe spot found
     if (!safe) {
-      const gridCols = 4;
-      const gridRows = 5;
+      const gridCols = isImage ? 3 : 4;
+      const gridRows = isImage ? 4 : 5;
       const cellWidth = 76 / gridCols;
       const cellHeight = 65 / gridRows;
       const index = currentWords.length % (gridCols * gridRows);
@@ -463,10 +473,9 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         bind:this={cardRefs[i]}
-        class="zen-word-card absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
-               transition-all duration-700
-               {w.dissolving ? 'opacity-0 scale-75' : 'opacity-100'}"
-        style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) translateY({Math.sin(w.drift) * 8}px);"
+        class="zen-word-card absolute cursor-pointer
+               {w.dissolving ? 'opacity-0 scale-75 transition-all duration-700' : 'opacity-100'}"
+        style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) translateY({Math.sin(w.drift) * 8 - w.waveOffset}px);"
         onclick={(e) => handleWordClick(w, e)}>
         {#if showImages && getCardImageUrl(w)}
           <img
