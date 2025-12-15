@@ -39,6 +39,7 @@
     mastered: boolean;
     dissolving: boolean;
     waveOffset: number; // Wave ripple displacement
+    imageFailed?: boolean;
   };
 
   // Particle type
@@ -477,12 +478,13 @@
                {w.dissolving ? 'opacity-0 scale-75 transition-all duration-700' : 'opacity-100'}"
         style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) translateY({Math.sin(w.drift) * 8 - w.waveOffset}px);"
         onclick={(e) => handleWordClick(w, e)}>
-        {#if showImages && getCardImageUrl(w)}
+        {#if showImages && getCardImageUrl(w) && !w.imageFailed}
           <img
             src={getCardImageUrl(w)}
             alt={w.headword}
             class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg border border-[#333] shadow-lg
                    {i === currentIndex && !w.dissolving ? 'ring-2 ring-[#444] shadow-[0_0_20px_rgba(100,100,100,0.3)]' : 'opacity-60 hover:opacity-90'}"
+            onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
           <span class="text-4xl md:text-5xl lg:text-6xl tracking-wider font-light
@@ -556,20 +558,12 @@
           <div class="text-[#444] text-base mb-2 tracking-wide text-center">{revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword with TTS icon (Click to hear) -->
-        <div class="flex items-center justify-center gap-3 mb-3">
-          <button
-            onclick={() => revealedWord && speak(revealedWord.headword)}
-            class="text-5xl md:text-6xl zen-living-gradient font-light tracking-wider cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
-            {revealedWord.headword}
-          </button>
-          <button
-            onclick={() => revealedWord && speak(revealedWord.headword)}
-            class="text-[#444] hover:text-[#666] text-xl cursor-pointer bg-transparent border-none transition-colors"
-            title="Speak">
-            🔊
-          </button>
-        </div>
+        <!-- Headword (Click to hear - hover shows speaker) -->
+        <button
+          onclick={() => revealedWord && speak(revealedWord.headword)}
+          class="text-5xl md:text-6xl zen-living-gradient font-light tracking-wider cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+          {revealedWord.headword}
+        </button>
 
         <!-- IPA -->
         {#if revealedWord.ipa}
@@ -582,12 +576,13 @@
         </p>
 
         <!-- Card Image -->
-        {#if getCardImageUrl(revealedWord)}
+        {#if getCardImageUrl(revealedWord) && !revealedWord.imageFailed}
           <div class="mb-8 flex justify-center">
             <img
               src={getCardImageUrl(revealedWord)}
               alt={revealedWord.headword}
               class="max-w-[160px] max-h-[160px] rounded-lg border border-[#222] opacity-80 hover:opacity-100 transition-opacity"
+              onerror={() => { words = words.map(word => word.id === revealedWord?.id ? { ...word, imageFailed: true } : word); if (revealedWord) revealedWord = { ...revealedWord, imageFailed: true }; }}
             />
           </div>
         {/if}

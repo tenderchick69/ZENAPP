@@ -38,6 +38,7 @@
     mastered: boolean;
     decrypting: boolean;
     glitching: boolean;
+    imageFailed?: boolean;
   };
 
   // Pixel particle for dissolve effect
@@ -194,9 +195,9 @@
       id: Date.now() + Math.random(),
       x: Math.random() * 100,
       y: -10,
-      speed: 0.4 + Math.random() * 0.6,
+      speed: 0.1 + Math.random() * 0.15, // Much slower: 0.1-0.25 (was 0.4-1.0)
       chars: dropChars,
-      opacity: 0.25 + Math.random() * 0.35 // More visible: 0.25-0.6
+      opacity: 0.15 + Math.random() * 0.2 // Subtler: 0.15-0.35 (was 0.25-0.6)
     });
   }
 
@@ -465,12 +466,13 @@
                {!w.decrypting && !w.glitching ? 'syndicate-idle-glitch' : ''}"
         style="left: {w.x}%; top: {w.y}%; --glitch-delay: {(i * 0.7) + Math.random() * 2}s;"
         onclick={(e) => handleWordClick(w, e)}>
-        {#if showImages && getCardImageUrl(w)}
+        {#if showImages && getCardImageUrl(w) && !w.imageFailed}
           <img
             src={getCardImageUrl(w)}
             alt={w.headword}
             class="w-16 h-16 md:w-20 md:h-20 object-cover border-2 border-[#00fff2]/50 shadow-[0_0_15px_rgba(0,255,242,0.3)]
                    hover:border-[#00fff2] hover:shadow-[0_0_25px_rgba(0,255,242,0.5)] transition-all syndicate-img-glitch"
+            onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
           <span class="text-lg md:text-2xl lg:text-3xl tracking-widest syndicate-text-glitch
@@ -544,20 +546,12 @@
           <div class="text-[#ff0040]/70 text-sm mb-2 text-center"># {revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword with TTS icon (Click to hear) -->
-        <div class="flex items-center justify-center gap-3 mb-3">
-          <button
-            onclick={() => revealedWord && speak(revealedWord.headword)}
-            class="text-4xl md:text-5xl text-[#00fff2] tracking-wider syndicate-pulse cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
-            [{revealedWord.headword}]
-          </button>
-          <button
-            onclick={() => revealedWord && speak(revealedWord.headword)}
-            class="text-[#00fff2]/50 hover:text-[#00fff2] text-xl cursor-pointer bg-transparent border-none transition-colors"
-            title="Speak">
-            🔊
-          </button>
-        </div>
+        <!-- Headword (Click to hear - hover shows speaker) -->
+        <button
+          onclick={() => revealedWord && speak(revealedWord.headword)}
+          class="text-4xl md:text-5xl text-[#00fff2] tracking-wider syndicate-pulse cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+          [{revealedWord.headword}]
+        </button>
 
         <!-- IPA -->
         {#if revealedWord.ipa}

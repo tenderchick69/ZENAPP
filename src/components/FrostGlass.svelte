@@ -27,6 +27,7 @@
     rotation: number;
     attempts: number;
     mastered: boolean;
+    imageFailed?: boolean;
   };
 
   // Visual effect types
@@ -448,13 +449,14 @@
       onmouseleave={() => hoveredWord = null}
       onclick={(e) => handleSelect(w, e)}>
 
-      {#if showImages && getCardImageUrl(w)}
+      {#if showImages && getCardImageUrl(w) && !w.imageFailed}
         <img
           src={getCardImageUrl(w)}
           alt={w.headword}
           class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg border-2 transition-all
                  {w.mastered ? 'border-[#a8d8ea] shadow-[0_0_20px_rgba(168,216,234,0.5)] opacity-90' : 'border-white/20 opacity-30 hover:opacity-70 hover:border-[#a8d8ea]/50'}"
           style="filter: {style.filter};"
+          onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
         <span class="font-finger text-5xl md:text-6xl lg:text-7xl tracking-wide whitespace-nowrap transition-[color,text-shadow] duration-500"
@@ -539,20 +541,12 @@
           <div class="text-[#a8d8ea] text-lg font-hand mb-2 text-center">{revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword with TTS icon (Click to hear) -->
-        <div class="flex items-center justify-center gap-3 mb-3">
-          <button
-            onclick={() => revealedWord && speak(revealedWord.headword)}
-            class="text-5xl text-[#a8d8ea] font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
-            {revealedWord.headword}
-          </button>
-          <button
-            onclick={() => revealedWord && speak(revealedWord.headword)}
-            class="text-[#a8d8ea]/50 hover:text-[#a8d8ea] text-xl cursor-pointer bg-transparent border-none transition-colors"
-            title="Speak">
-            🔊
-          </button>
-        </div>
+        <!-- Headword (Click to hear - hover shows speaker) -->
+        <button
+          onclick={() => revealedWord && speak(revealedWord.headword)}
+          class="text-5xl text-[#a8d8ea] font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+          {revealedWord.headword}
+        </button>
 
         <!-- IPA -->
         {#if revealedWord.ipa}

@@ -27,8 +27,10 @@
   let sessionComplete = false;
 
   $: masteredCount = words.filter(w => w.mastered).length;
-  // Visual warmth: Starts at 10%, caps at 35% height
-  $: warmthHeight = 10 + ((masteredCount / (words.length || 1)) * 25);
+  // Visual warmth: Logarithmic scaling for gradual red increase
+  // Uses sqrt for softer progression - won't get overwhelming with 20 cards
+  $: progress = masteredCount / (words.length || 1);
+  $: warmthHeight = 10 + (Math.sqrt(progress) * 20); // Slower growth: 10% to 30%
 
   // Trigger completion check
   $: if (words.length > 0 && masteredCount === words.length && !sessionComplete) {
@@ -298,13 +300,13 @@
   onclick={handleBackgroundClick}
 >
 
-  <!-- Capped Warmth Gradient (max 35%) -->
+  <!-- Warmth Gradient - Logarithmic scaling for subtle progression -->
   <div
     class="absolute bottom-0 left-0 right-0 transition-all duration-1000 pointer-events-none"
     style="
       height: {warmthHeight}%;
-      opacity: {0.3 + (masteredCount / (words.length || 1) * 0.5)};
-      background: linear-gradient(to top, rgba(255,69,0,0.6), transparent);
+      opacity: {0.2 + (Math.sqrt(progress) * 0.35)};
+      background: linear-gradient(to top, rgba(255,69,0,0.4), transparent);
       filter: blur(30px);
     ">
   </div>
@@ -334,12 +336,13 @@
       onmouseenter={() => playSound('hover')}
       onclick={(e) => handleSelect(w, e)}
     >
-      {#if showImages && getCardImageUrl(w)}
+      {#if showImages && getCardImageUrl(w) && !w.imageFailed}
         <img
           src={getCardImageUrl(w)}
           alt={w.headword}
           class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg border-2 transition-all
                  {w.mastered ? 'border-yellow-500 shadow-[0_0_20px_rgba(255,215,0,0.6)] scale-110' : 'border-orange-900/50 opacity-60 hover:opacity-100 hover:border-orange-500 hover:scale-110'}"
+          onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
         <span class="transition-[color,text-shadow] duration-1000
@@ -398,20 +401,12 @@
           <div class="text-orange-500 text-lg font-serif mb-2 text-center">{revealedWord.gloss_de}</div>
         {/if}
 
-        <!-- Headword with TTS icon (Click to hear) -->
-        <div class="flex items-center justify-center gap-3 mb-3">
-          <button
-            onclick={() => speak(revealedWord.headword)}
-            class="text-5xl md:text-6xl text-orange-100 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable">
-            {revealedWord.headword}
-          </button>
-          <button
-            onclick={() => speak(revealedWord.headword)}
-            class="text-orange-500/50 hover:text-orange-400 text-xl cursor-pointer bg-transparent border-none transition-colors"
-            title="Speak">
-            🔊
-          </button>
-        </div>
+        <!-- Headword (Click to hear - hover shows speaker) -->
+        <button
+          onclick={() => speak(revealedWord.headword)}
+          class="text-5xl md:text-6xl text-orange-100 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+          {revealedWord.headword}
+        </button>
 
         {#if revealedWord.ipa}
           <!-- Use font-sans for IPA legibility -->
@@ -420,9 +415,14 @@
 
         <p class="text-2xl text-gray-200 mb-10 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
 
-        {#if getCardImageUrl(revealedWord)}
+        {#if getCardImageUrl(revealedWord) && !revealedWord.imageFailed}
           <div class="mb-6 flex justify-center">
-            <img src={getCardImageUrl(revealedWord)} alt={revealedWord.headword} class="max-w-[160px] max-h-[160px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity" />
+            <img
+              src={getCardImageUrl(revealedWord)}
+              alt={revealedWord.headword}
+              class="max-w-[160px] max-h-[160px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity"
+              onerror={() => { words = words.map(word => word.id === revealedWord.id ? { ...word, imageFailed: true } : word); revealedWord = { ...revealedWord, imageFailed: true }; }}
+            />
           </div>
         {/if}
 
