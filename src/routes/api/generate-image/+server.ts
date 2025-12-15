@@ -13,12 +13,13 @@ import { saveImageToStorage } from '$lib/supabase-server';
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.json();
-    const { card, model, style, customPrompt, cardId } = body as {
+    const { card, model, style, customPrompt, cardId, userId } = body as {
       card: CardData;
       model?: string;
       style?: string;
       customPrompt?: string;
       cardId?: number | string;
+      userId?: string;
     };
 
     // Validate card data
@@ -86,24 +87,31 @@ export const POST: RequestHandler = async ({ request }) => {
 
     console.log(`Image generated (temp):`, result.imageUrl);
 
-    // Save to Supabase Storage for permanent URL
-    let permanentUrl = result.imageUrl;
-    if (env.SUPABASE_SERVICE_ROLE_KEY) {
+    // Save to Supabase Storage - returns filepath for database storage
+    // Signed URLs are generated on-demand when displaying images
+    let imageUrl = result.imageUrl; // Fallback to temp URL
+    if (env.SUPABASE_SERVICE_ROLE_KEY && userId) {
       try {
-        const uniqueId = cardId || `${card.headword}-${Date.now()}`;
-        permanentUrl = await saveImageToStorage(result.imageUrl, uniqueId);
-        console.log(`Image saved to Supabase:`, permanentUrl);
+        const uniqueCardId = cardId || `temp-${Date.now()}`;
+        const filepath = await saveImageToStorage(result.imageUrl, userId, uniqueCardId);
+        console.log(`Image saved to Supabase Storage:`, filepath);
+        imageUrl = filepath; // Store filepath, not full URL
       } catch (storageError) {
         // Log error but don't fail - return temp URL as fallback
         console.error('Failed to save to Supabase Storage:', storageError);
-        console.log('Falling back to temporary URL');
+        console.log('Falling back to temporary URL (will expire)');
       }
     } else {
-      console.warn('SUPABASE_SERVICE_ROLE_KEY not configured - using temporary URL');
+      if (!env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.warn('SUPABASE_SERVICE_ROLE_KEY not configured - using temporary URL');
+      }
+      if (!userId) {
+        console.warn('userId not provided - using temporary URL');
+      }
     }
 
     return json({
-      imageUrl: permanentUrl,
+      imageUrl, // Either filepath (permanent) or temp URL (fallback)
       prompt: finalPrompt,
       provider: result.provider
     });

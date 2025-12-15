@@ -8,6 +8,8 @@
   import { helpMode } from '$lib/tooltip';
   import { speak as ttsSpeak } from '$lib/tts';
   import { exportDeckToCSV } from '$lib/export';
+  import { user } from '$lib/auth';
+  import { getSignedImageUrl } from '$lib/storage';
   import EmberGarden from '../../components/EmberGarden.svelte';
   import FrostGlass from '../../components/FrostGlass.svelte';
   import ZenVoid from '../../components/ZenVoid.svelte';
@@ -962,6 +964,7 @@
             </label>
             <ImageGenerator
               card={{
+                id: editingCard?.id,
                 headword: gardenerForm.headword,
                 definition: gardenerForm.definition,
                 mnemonic: gardenerForm.mnemonic,
@@ -969,6 +972,7 @@
               }}
               imageUrls={gardenerForm.image_urls}
               selectedImageIndex={gardenerForm.selected_image_index}
+              userId={$user?.id}
               onImagesChanged={(urls, selectedIndex) => {
                 console.log('onImagesChanged called:', { urls, selectedIndex });
                 // Use object spread to ensure Svelte 5 reactivity triggers

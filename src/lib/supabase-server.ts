@@ -18,11 +18,18 @@ export function createServerSupabase() {
 }
 
 /**
- * Downloads an image from a temporary URL and uploads it to Supabase Storage
- * Returns the permanent public URL
+ * Downloads an image from a temporary URL and uploads it to Supabase Storage.
+ * Returns the storage FILEPATH (not URL) for database storage.
+ * Signed URLs are generated on-demand when displaying images.
+ *
+ * @param tempUrl - Temporary URL from image provider (e.g., Runware)
+ * @param userId - User ID for scoped storage path
+ * @param cardId - Card ID for organizing images
+ * @returns Storage filepath like "user123/card456/1234567890.webp"
  */
 export async function saveImageToStorage(
   tempUrl: string,
+  userId: string,
   cardId: number | string
 ): Promise<string> {
   const supabase = createServerSupabase();
@@ -33,17 +40,18 @@ export async function saveImageToStorage(
     throw new Error(`Failed to download image: ${response.statusText}`);
   }
 
-  const imageBlob = await response.blob();
+  const imageBuffer = await response.arrayBuffer();
 
-  // 2. Create unique filename
+  // 2. Create user-scoped filepath
   const timestamp = Date.now();
-  const filename = `card-${cardId}-${timestamp}.webp`;
+  const filepath = `${userId}/${cardId}/${timestamp}.webp`;
 
   // 3. Upload to Supabase Storage
   const { data, error } = await supabase.storage
     .from('vocab-assets')
-    .upload(filename, imageBlob, {
+    .upload(filepath, imageBuffer, {
       contentType: 'image/webp',
+      cacheControl: '31536000', // 1 year cache
       upsert: true
     });
 
@@ -51,10 +59,6 @@ export async function saveImageToStorage(
     throw new Error(`Storage upload failed: ${error.message}`);
   }
 
-  // 4. Get public URL
-  const { data: urlData } = supabase.storage
-    .from('vocab-assets')
-    .getPublicUrl(filename);
-
-  return urlData.publicUrl;
+  // 4. Return filepath (NOT full URL) - signed URLs generated on-demand
+  return filepath;
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { theme } from '$lib/theme';
   import { onMount } from 'svelte';
+  import { getSignedImageUrls, isStoragePath } from '$lib/storage';
 
   interface Props {
     card: {
@@ -14,15 +15,17 @@
     imageUrls?: string[];
     selectedImageIndex?: number;
     onImagesChanged?: (urls: string[], selectedIndex: number) => void;
+    userId?: string; // For user-scoped storage paths
   }
 
-  let { card, imageUrls = [], selectedImageIndex = 0, onImagesChanged }: Props = $props();
+  let { card, imageUrls = [], selectedImageIndex = 0, onImagesChanged, userId }: Props = $props();
 
   // State
   let isGenerating = $state(false);
   let error = $state('');
   let currentIndex = $state(selectedImageIndex);
-  let images = $state<string[]>([...imageUrls]);
+  let images = $state<string[]>([...imageUrls]); // Filepaths stored in DB
+  let displayUrls = $state<string[]>([]); // Signed URLs for display
 
   // Track which card we're initialized for (using headword as identifier)
   let initializedFor = $state('');
@@ -38,7 +41,31 @@
       images = [...imageUrls];
       currentIndex = selectedImageIndex;
       initializedFor = card.headword;
+      // Refresh display URLs for new card
+      refreshDisplayUrls();
     }
+  });
+
+  // Convert filepaths to signed URLs for display
+  async function refreshDisplayUrls() {
+    if (images.length === 0) {
+      displayUrls = [];
+      return;
+    }
+    try {
+      displayUrls = await getSignedImageUrls(images);
+    } catch (e) {
+      console.error('Failed to get signed URLs:', e);
+      // Fallback: use images directly (works for legacy full URLs)
+      displayUrls = [...images];
+    }
+  }
+
+  // Refresh display URLs whenever images array changes
+  $effect(() => {
+    // Track images array to trigger refresh
+    const _ = images.length;
+    refreshDisplayUrls();
   });
 
   // Modal state
@@ -143,6 +170,7 @@
         body: JSON.stringify({
           card,
           cardId: card.id,
+          userId, // Pass userId for user-scoped storage paths
           model: selectedModel,
           style: selectedStyle,
           customPrompt: customPrompt.trim() || undefined
@@ -225,8 +253,8 @@
     {/if}
 
     <div class="preview-container">
-      {#if images.length > 0}
-        <img src={images[currentIndex]} alt={card.headword} class="preview-image" />
+      {#if images.length > 0 && displayUrls[currentIndex]}
+        <img src={displayUrls[currentIndex]} alt={card.headword} class="preview-image" />
         <button
           onclick={() => deleteImage(currentIndex)}
           class="delete-btn"
