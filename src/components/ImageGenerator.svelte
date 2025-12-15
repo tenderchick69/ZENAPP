@@ -4,6 +4,7 @@
 
   interface Props {
     card: {
+      id?: number;
       headword: string;
       definition: string;
       mnemonic?: string;
@@ -141,6 +142,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           card,
+          cardId: card.id,
           model: selectedModel,
           style: selectedStyle,
           customPrompt: customPrompt.trim() || undefined

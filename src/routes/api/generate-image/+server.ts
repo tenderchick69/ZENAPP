@@ -8,15 +8,17 @@ import {
   type CardData
 } from '$lib/imagegen';
 import { env } from '$env/dynamic/private';
+import { saveImageToStorage } from '$lib/supabase-server';
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.json();
-    const { card, model, style, customPrompt } = body as {
+    const { card, model, style, customPrompt, cardId } = body as {
       card: CardData;
       model?: string;
       style?: string;
       customPrompt?: string;
+      cardId?: number | string;
     };
 
     // Validate card data
@@ -82,10 +84,26 @@ export const POST: RequestHandler = async ({ request }) => {
       }, { status: 500 });
     }
 
-    console.log(`Image generated:`, result.imageUrl);
+    console.log(`Image generated (temp):`, result.imageUrl);
+
+    // Save to Supabase Storage for permanent URL
+    let permanentUrl = result.imageUrl;
+    if (env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const uniqueId = cardId || `${card.headword}-${Date.now()}`;
+        permanentUrl = await saveImageToStorage(result.imageUrl, uniqueId);
+        console.log(`Image saved to Supabase:`, permanentUrl);
+      } catch (storageError) {
+        // Log error but don't fail - return temp URL as fallback
+        console.error('Failed to save to Supabase Storage:', storageError);
+        console.log('Falling back to temporary URL');
+      }
+    } else {
+      console.warn('SUPABASE_SERVICE_ROLE_KEY not configured - using temporary URL');
+    }
 
     return json({
-      imageUrl: result.imageUrl,
+      imageUrl: permanentUrl,
       prompt: finalPrompt,
       provider: result.provider
     });

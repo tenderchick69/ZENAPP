@@ -36,8 +36,9 @@
   let levelDist = $state([0, 0, 0, 0, 0, 0]);
 
   // Deck renaming
-  let isRenaming = $state(false);
+  let showRenameModal = $state(false);
   let deckName = $state('');
+  let renameInputValue = $state('');
 
   // Gardener (Edit Card) Modal
   let editingCard = $state<Card | null>(null);
@@ -152,12 +153,23 @@
     }
   }
 
-  async function renameDeck() {
-    if (!deckName.trim()) return;
-    const { error } = await supabase.from('decks').update({ name: deckName }).eq('id', deckId);
+  function openRenameModal() {
+    renameInputValue = deckName;
+    showRenameModal = true;
+  }
+
+  async function saveRename() {
+    if (!renameInputValue.trim()) return;
+    const { error } = await supabase.from('decks').update({ name: renameInputValue.trim() }).eq('id', deckId);
     if (!error) {
-      isRenaming = false;
+      deckName = renameInputValue.trim();
+      showRenameModal = false;
     }
+  }
+
+  function cancelRename() {
+    showRenameModal = false;
+    renameInputValue = deckName;
   }
 
   async function deleteDeck() {
@@ -484,22 +496,11 @@
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
 
-      <!-- Header / Renamer -->
+      <!-- Header -->
       <div class="mb-6 md:mb-12 text-center">
-        {#if isRenaming}
-          <!-- svelte-ignore a11y_autofocus -->
-          <input
-            bind:value={deckName}
-            onkeydown={(e) => e.key === 'Enter' && renameDeck()}
-            onblur={() => renameDeck()}
-            class="text-3xl md:text-7xl font-heading text-main bg-transparent border-b-2 border-accent text-center outline-none w-full max-w-[70%] mx-auto"
-            autofocus
-          />
-        {:else}
-          <h1 class="text-3xl md:text-7xl font-heading text-main tracking-tight">
-            {deckName || 'Loading...'}
-          </h1>
-        {/if}
+        <h1 class="text-3xl md:text-7xl font-heading text-main tracking-tight">
+          {deckName || 'Loading...'}
+        </h1>
 
         <!-- Action Buttons (Below Title) -->
         <div class="flex items-center justify-center gap-1 md:gap-2 mt-4">
@@ -525,7 +526,7 @@
           <!-- Rename Button -->
           <Tooltip text="Rename Deck">
             <button
-              onclick={() => isRenaming = true}
+              onclick={openRenameModal}
               class="text-dim hover:text-accent transition-colors p-2 cursor-pointer"
               title="Rename deck">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1014,6 +1015,61 @@
         <p class="font-ember text-lg font-bold tracking-wide whitespace-nowrap">
           {toastMessage}
         </p>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Rename Deck Modal -->
+  {#if showRenameModal}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onclick={cancelRename}>
+      <div
+        class="bg-panel border border-dim rounded-2xl shadow-2xl w-full max-w-md p-6 md:p-8"
+        onclick={(e) => e.stopPropagation()}>
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-heading text-main">
+            {$theme === 'ember' ? 'Rename Garden' :
+             $theme === 'frost' ? 'Rename Window' :
+             $theme === 'syndicate' ? 'RENAME DECK' :
+             'Rename Deck'}
+          </h2>
+          <button
+            onclick={cancelRename}
+            class="text-dim hover:text-main text-2xl leading-none cursor-pointer transition-colors">
+            ✕
+          </button>
+        </div>
+
+        <!-- Input -->
+        <div class="mb-6">
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            type="text"
+            bind:value={renameInputValue}
+            onkeydown={(e) => e.key === 'Enter' && saveRename()}
+            autofocus
+            class="w-full bg-bg border-2 border-dim p-4 text-main font-heading text-xl md:text-2xl focus:border-accent outline-none transition-colors rounded-xl text-center"
+            placeholder="Enter deck name..."
+          />
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3 justify-end">
+          <button
+            onclick={cancelRename}
+            class="px-6 py-3 border border-dim text-dim hover:text-main hover:border-main transition-colors rounded-xl cursor-pointer font-body">
+            Cancel
+          </button>
+          <button
+            onclick={saveRename}
+            class="px-6 py-3 bg-accent text-bg font-heading font-bold hover:shadow-[0_0_20px_var(--color-accent)] transition-all rounded-xl cursor-pointer">
+            Save
+          </button>
+        </div>
       </div>
     </div>
   {/if}
