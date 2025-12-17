@@ -3,10 +3,19 @@
   import { fade, scale } from 'svelte/transition';
   import type { Card } from '$lib/srs';
   import { speak } from '$lib/tts';
+  import { theme } from '$lib/theme';
 
   // Svelte 5 props syntax
   let { queue = [], showImages = false }: { queue?: Card[], showImages?: boolean } = $props();
   const dispatch = createEventDispatcher();
+
+  // Theme cycling
+  const themeOrder = ['frost', 'zen', 'syndicate', 'ember'] as const;
+  function cycleTheme() {
+    const currentIdx = themeOrder.indexOf($theme as any);
+    const nextIdx = (currentIdx + 1) % themeOrder.length;
+    theme.set(themeOrder[nextIdx]);
+  }
 
   // Helper to get card image URL (handles both old and new formats)
   function getCardImageUrl(card: any): string | null {
@@ -125,7 +134,7 @@
       y: positions[i].y,
       rotation: (Math.random() - 0.5) * 8,
       attempts: 0,
-      mastered: false
+      mastered: card.mastered || false // Preserve mastered state from parent
     }));
 
     // Generate condensation drops
@@ -629,7 +638,7 @@
     </div>
   {/if}
 
-  <!-- Exit button & Image Toggle -->
+  <!-- Toolbar -->
   {#if !sessionComplete}
     <div class="absolute top-6 right-6 z-40 flex gap-2">
       <button
@@ -638,6 +647,13 @@
         class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-3 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer"
         title={showImages ? 'Show Text' : 'Show Images'}>
         {showImages ? 'Aa' : '🖼️'}
+      </button>
+      <button
+        type="button"
+        onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
+        class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-3 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer"
+        title="Change theme">
+        Frost ↻
       </button>
       <button
         type="button"

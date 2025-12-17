@@ -88,21 +88,15 @@
     }
   });
 
-  // Track previous theme to reload when theme changes during study
+  // Track previous theme - no longer restarts session, just logs
+  // Theme components will re-mount but queue persists with mastered state
   let prevTheme = $state<string | null>(null);
 
   $effect(() => {
     const currentTheme = $theme;
     if (prevTheme !== null && currentTheme !== prevTheme && view === 'study') {
-      console.log('Theme changed during study, reloading queue');
-      // Theme changed during study - restart the session with same mode
-      const mode = sessionMode;
-      // Use an async IIFE to properly handle the async flow
-      (async () => {
-        await exitToLobby();
-        // Small delay to let the view reset, then restart
-        setTimeout(() => startSession(mode), 100);
-      })();
+      console.log('Theme changed during study:', prevTheme, '->', currentTheme);
+      // Queue and mastered state persist - new theme component will initialize from it
     }
     prevTheme = currentTheme;
   });
@@ -444,8 +438,8 @@
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 
-  // Handler for EmberGarden grade events
-  async function handleEmberGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
+  // Unified grade handler - updates queue mastered state for theme persistence
+  async function handleGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
     const { id, rating } = event.detail;
     const card = queue.find(c => c.id === id);
     if (!card) return;
@@ -456,6 +450,8 @@
       await supabase.from('cards').update({ state: updates.state }).eq('id', card.id);
     } else {
       sessionStats.correct++;
+      // Mark as mastered in queue so theme switch preserves state
+      queue = queue.map(c => c.id === id ? { ...c, mastered: true } : c);
       if (sessionMode === 'standard') {
         const updates = calculateNextReview(card, 'pass');
         await supabase.from('cards').update(updates).eq('id', card.id);
@@ -463,62 +459,11 @@
     }
   }
 
-  // Handler for FrostGlass grade events
-  async function handleFrostGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
-    const { id, rating } = event.detail;
-    const card = queue.find(c => c.id === id);
-    if (!card) return;
-
-    if (rating === 'fail') {
-      sessionStats.wrong++;
-      const updates = calculateNextReview(card, 'fail');
-      await supabase.from('cards').update({ state: updates.state }).eq('id', card.id);
-    } else {
-      sessionStats.correct++;
-      if (sessionMode === 'standard') {
-        const updates = calculateNextReview(card, 'pass');
-        await supabase.from('cards').update(updates).eq('id', card.id);
-      }
-    }
-  }
-
-  // Handler for ZenVoid grade events
-  async function handleZenGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
-    const { id, rating } = event.detail;
-    const card = queue.find(c => c.id === id);
-    if (!card) return;
-
-    if (rating === 'fail') {
-      sessionStats.wrong++;
-      const updates = calculateNextReview(card, 'fail');
-      await supabase.from('cards').update({ state: updates.state }).eq('id', card.id);
-    } else {
-      sessionStats.correct++;
-      if (sessionMode === 'standard') {
-        const updates = calculateNextReview(card, 'pass');
-        await supabase.from('cards').update(updates).eq('id', card.id);
-      }
-    }
-  }
-
-  // Handler for SyndicateGrid grade events
-  async function handleSyndicateGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
-    const { id, rating } = event.detail;
-    const card = queue.find(c => c.id === id);
-    if (!card) return;
-
-    if (rating === 'fail') {
-      sessionStats.wrong++;
-      const updates = calculateNextReview(card, 'fail');
-      await supabase.from('cards').update({ state: updates.state }).eq('id', card.id);
-    } else {
-      sessionStats.correct++;
-      if (sessionMode === 'standard') {
-        const updates = calculateNextReview(card, 'pass');
-        await supabase.from('cards').update(updates).eq('id', card.id);
-      }
-    }
-  }
+  // Theme-specific handlers (all delegate to unified handler)
+  const handleEmberGrade = handleGrade;
+  const handleFrostGrade = handleGrade;
+  const handleZenGrade = handleGrade;
+  const handleSyndicateGrade = handleGrade;
 </script>
 
 <div class="min-h-[80vh] flex flex-col items-center justify-center max-w-3xl mx-auto px-6">

@@ -2,10 +2,19 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { fade, scale } from 'svelte/transition';
   import { speak } from '$lib/tts';
+  import { theme } from '$lib/theme';
 
   export let queue: any[] = [];
   export let showImages: boolean = false;
   const dispatch = createEventDispatcher();
+
+  // Theme cycling
+  const themeOrder = ['ember', 'frost', 'zen', 'syndicate'] as const;
+  function cycleTheme() {
+    const currentIdx = themeOrder.indexOf($theme as any);
+    const nextIdx = (currentIdx + 1) % themeOrder.length;
+    theme.set(themeOrder[nextIdx]);
+  }
 
   // Helper to get card image URL (handles both old and new formats)
   function getCardImageUrl(card: any): string | null {
@@ -55,7 +64,7 @@
         x: pos.x,
         y: pos.y,
         drift: Math.random() * Math.PI * 2,
-        mastered: false,
+        mastered: card.mastered || false, // Preserve mastered state from parent
         burning: false
       };
     });
@@ -369,7 +378,7 @@
     </div>
   {/if}
 
-  <!-- Exit Button & Image Toggle (Hidden if complete) -->
+  <!-- Toolbar (Hidden if complete) -->
   {#if !sessionComplete}
     <div class="absolute top-6 right-6 z-40 flex gap-2">
       <button
@@ -378,6 +387,13 @@
         class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-3 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
         title={showImages ? 'Show Text' : 'Show Images'}>
         {showImages ? 'Aa' : '🖼️'}
+      </button>
+      <button
+        type="button"
+        onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
+        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-3 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
+        title="Change theme">
+        EMBER ↻
       </button>
       <button
         type="button"

@@ -2,10 +2,19 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { fade, scale } from 'svelte/transition';
   import { speak } from '$lib/tts';
+  import { theme } from '$lib/theme';
 
   export let queue: any[] = [];
   export let showImages: boolean = false;
   const dispatch = createEventDispatcher();
+
+  // Theme cycling
+  const themeOrder = ['zen', 'syndicate', 'ember', 'frost'] as const;
+  function cycleTheme() {
+    const currentIdx = themeOrder.indexOf($theme as any);
+    const nextIdx = (currentIdx + 1) % themeOrder.length;
+    theme.set(themeOrder[nextIdx]);
+  }
 
   // Helper to get card image URL (handles both old and new formats)
   function getCardImageUrl(card: any): string | null {
@@ -167,7 +176,7 @@
         x: pos.x,
         y: pos.y,
         drift: Math.random() * Math.PI * 2,
-        mastered: false,
+        mastered: card.mastered || false, // Preserve mastered state from parent
         dissolving: false,
         waveOffset: 0
       };
@@ -512,6 +521,13 @@
         class="text-[#222] hover:text-[#444] text-xs tracking-[0.3em] transition-colors uppercase border border-[#1a1a1a] px-3 py-2 rounded hover:border-[#333] bg-black/50 cursor-pointer"
         title={showImages ? 'Show Text' : 'Show Images'}>
         {showImages ? 'Aa' : '🖼️'}
+      </button>
+      <button
+        type="button"
+        onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
+        class="text-[#222] hover:text-[#444] text-xs tracking-[0.3em] transition-colors uppercase border border-[#1a1a1a] px-3 py-2 rounded hover:border-[#333] bg-black/50 cursor-pointer"
+        title="Change theme">
+        Zen ↻
       </button>
       <button
         type="button"
