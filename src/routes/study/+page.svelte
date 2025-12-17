@@ -37,6 +37,10 @@
   let stats = $state({ due: 0, learning: 0, mastered: 0, total: 0 });
   let levelDist = $state([0, 0, 0, 0, 0, 0]);
 
+  // Track cards that have been failed in this session
+  // Once failed, they won't be demoted again or promoted even if passed later
+  let failedInSession = $state<Set<number>>(new Set());
+
   // Deck renaming
   let showRenameModal = $state(false);
   let deckName = $state('');
@@ -108,6 +112,7 @@
     queue = [];
     currentCard = null;
     sessionStats = { correct: 0, wrong: 0 };
+    failedInSession = new Set(); // Reset failed cards tracking
     // Reload stats to reflect any changes made during study
     try {
       await loadStats();
@@ -357,6 +362,9 @@
 
   async function startSession(mode: 'standard' | 'all' | 'overclock' | 'souls') {
     sessionMode = mode;
+    // Reset failed cards tracking for new session
+    failedInSession = new Set();
+
     const now = new Date().toISOString();
     let query = supabase.from('cards').select('*').eq('deck_id', deckId);
 
@@ -412,20 +420,31 @@
 
   async function handleGrade(rating: 'pass' | 'fail') {
     if (!currentCard) return;
+    const cardId = currentCard.id;
+
     if (rating === 'fail') {
       sessionStats.wrong++;
-      const updates = calculateNextReview(currentCard, 'fail');
-      await supabase.from('cards').update({ state: updates.state }).eq('id', currentCard.id);
-      currentCard.state = updates.state;
+
+      // Only demote if this is the FIRST fail for this card in this session
+      if (!failedInSession.has(cardId)) {
+        failedInSession = new Set([...failedInSession, cardId]); // Add to failed set
+        const updates = calculateNextReview(currentCard, 'fail');
+        await supabase.from('cards').update({ state: updates.state }).eq('id', cardId);
+        currentCard.state = updates.state;
+      }
+      // Move card to end of queue (regardless of whether already failed)
       const c = queue.shift();
       if (c) queue.push(c);
       nextCard();
     } else {
       sessionStats.correct++;
-      if (sessionMode === 'standard') {
+
+      // Only promote if card was NOT failed in this session
+      if (sessionMode === 'standard' && !failedInSession.has(cardId)) {
         const updates = calculateNextReview(currentCard, 'pass');
-        await supabase.from('cards').update(updates).eq('id', currentCard.id);
+        await supabase.from('cards').update(updates).eq('id', cardId);
       }
+      // Remove from queue (passed)
       queue.shift();
       nextCard();
     }
@@ -446,15 +465,23 @@
 
     if (rating === 'fail') {
       sessionStats.wrong++;
-      const updates = calculateNextReview(card, 'fail');
-      await supabase.from('cards').update({ state: updates.state }).eq('id', card.id);
+
+      // Only demote if this is the FIRST fail for this card in this session
+      if (!failedInSession.has(id)) {
+        failedInSession = new Set([...failedInSession, id]); // Add to failed set
+        const updates = calculateNextReview(card, 'fail');
+        await supabase.from('cards').update({ state: updates.state }).eq('id', id);
+      }
+      // Card stays in queue and will be shown again (theme components handle this internally)
     } else {
       sessionStats.correct++;
       // Mark as mastered in queue so theme switch preserves state
       queue = queue.map(c => c.id === id ? { ...c, mastered: true } : c);
-      if (sessionMode === 'standard') {
+
+      // Only promote if card was NOT failed in this session
+      if (sessionMode === 'standard' && !failedInSession.has(id)) {
         const updates = calculateNextReview(card, 'pass');
-        await supabase.from('cards').update(updates).eq('id', card.id);
+        await supabase.from('cards').update(updates).eq('id', id);
       }
     }
   }
