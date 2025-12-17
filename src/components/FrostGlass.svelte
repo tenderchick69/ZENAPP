@@ -653,7 +653,7 @@
         onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
         class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-3 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer"
         title="Change theme">
-        Frost ↻
+        Fro ↻
       </button>
       <button
         type="button"

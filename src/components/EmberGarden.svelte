@@ -393,7 +393,7 @@
         onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
         class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-3 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
         title="Change theme">
-        EMBER ↻
+        Emb ↻
       </button>
       <button
         type="button"
