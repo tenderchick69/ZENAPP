@@ -518,21 +518,21 @@
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
-        class="text-[#222] hover:text-[#444] text-xs tracking-[0.3em] transition-colors uppercase border border-[#1a1a1a] px-3 py-2 rounded hover:border-[#333] bg-black/50 cursor-pointer"
+        class="w-10 h-9 flex items-center justify-center text-[#222] hover:text-[#444] text-sm transition-colors border border-[#1a1a1a] rounded hover:border-[#333] bg-black/50 cursor-pointer"
         title={showImages ? 'Show Text' : 'Show Images'}>
         {showImages ? 'Aa' : '🖼️'}
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
-        class="text-[#222] hover:text-[#444] text-xs tracking-[0.3em] transition-colors uppercase border border-[#1a1a1a] px-3 py-2 rounded hover:border-[#333] bg-black/50 cursor-pointer"
+        class="w-16 h-9 flex items-center justify-center text-[#222] hover:text-[#444] text-xs transition-colors border border-[#1a1a1a] rounded hover:border-[#333] bg-black/50 cursor-pointer"
         title="Change theme">
         Zen ↻
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
-        class="text-[#222] hover:text-[#444] text-xs tracking-[0.3em] transition-colors uppercase border border-[#1a1a1a] px-3 py-2 rounded hover:border-[#333] bg-black/50 cursor-pointer">
+        class="w-12 h-9 flex items-center justify-center text-[#222] hover:text-[#444] text-xs transition-colors border border-[#1a1a1a] rounded hover:border-[#333] bg-black/50 cursor-pointer">
         Exit
       </button>
     </div>

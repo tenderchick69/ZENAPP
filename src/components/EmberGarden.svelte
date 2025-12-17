@@ -384,21 +384,21 @@
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
-        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-3 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
+        class="w-10 h-9 flex items-center justify-center text-orange-900 hover:text-orange-500 text-sm transition-colors border border-orange-900/30 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
         title={showImages ? 'Show Text' : 'Show Images'}>
         {showImages ? 'Aa' : '🖼️'}
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
-        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-3 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
+        class="w-16 h-9 flex items-center justify-center text-orange-900 hover:text-orange-500 text-xs transition-colors border border-orange-900/30 rounded hover:border-orange-500 bg-black/50 cursor-pointer"
         title="Change theme">
         Emb ↻
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
-        class="text-orange-900 hover:text-orange-500 text-xs tracking-widest transition-colors uppercase border border-orange-900/30 px-3 py-2 rounded hover:border-orange-500 bg-black/50 cursor-pointer">
+        class="w-12 h-9 flex items-center justify-center text-orange-900 hover:text-orange-500 text-xs transition-colors border border-orange-900/30 rounded hover:border-orange-500 bg-black/50 cursor-pointer">
         Exit
       </button>
     </div>

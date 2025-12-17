@@ -644,21 +644,21 @@
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
-        class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-3 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer"
+        class="w-10 h-9 flex items-center justify-center text-white/30 hover:text-[#a8d8ea] text-sm transition-colors border border-white/10 rounded hover:border-[#a8d8ea]/50 bg-black/50 cursor-pointer"
         title={showImages ? 'Show Text' : 'Show Images'}>
         {showImages ? 'Aa' : '🖼️'}
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
-        class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-3 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer"
+        class="w-16 h-9 flex items-center justify-center text-white/30 hover:text-[#a8d8ea] text-xs transition-colors border border-white/10 rounded hover:border-[#a8d8ea]/50 bg-black/50 cursor-pointer"
         title="Change theme">
         Fro ↻
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
-        class="text-white/30 hover:text-[#a8d8ea] text-xs tracking-widest transition-colors uppercase border border-white/10 px-3 py-2 rounded hover:border-[#a8d8ea]/50 bg-black/50 font-hand cursor-pointer">
+        class="w-12 h-9 flex items-center justify-center text-white/30 hover:text-[#a8d8ea] text-xs transition-colors border border-white/10 rounded hover:border-[#a8d8ea]/50 bg-black/50 cursor-pointer">
         Exit
       </button>
     </div>
