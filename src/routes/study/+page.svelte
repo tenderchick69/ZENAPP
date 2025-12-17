@@ -97,20 +97,29 @@
       console.log('Theme changed during study, reloading queue');
       // Theme changed during study - restart the session with same mode
       const mode = sessionMode;
-      exitToLobby();
-      // Small delay to let the view reset, then restart
-      setTimeout(() => startSession(mode), 100);
+      // Use an async IIFE to properly handle the async flow
+      (async () => {
+        await exitToLobby();
+        // Small delay to let the view reset, then restart
+        setTimeout(() => startSession(mode), 100);
+      })();
     }
     prevTheme = currentTheme;
   });
 
   // Handler for exiting study mode back to lobby
   async function exitToLobby() {
+    console.log('exitToLobby called');
     view = 'lobby';
     queue = [];
     currentCard = null;
+    sessionStats = { correct: 0, wrong: 0 };
     // Reload stats to reflect any changes made during study
-    await loadStats();
+    try {
+      await loadStats();
+    } catch (e) {
+      console.error('Failed to load stats on exit:', e);
+    }
   }
 
   function toggleImageMode() {
@@ -135,23 +144,43 @@
   }
 
   async function loadStats() {
-    // Fetch deck name
-    const { data: deck } = await supabase.from('decks').select('name').eq('id', deckId).single();
-    if (deck) deckName = deck.name;
+    if (!deckId) {
+      console.error('loadStats: No deckId');
+      return;
+    }
 
-    const { data } = await supabase.from('cards').select('*').eq('deck_id', deckId);
-    if (data) {
-      allCards = data;
-      stats.total = data.length;
-      stats.mastered = data.filter(c => c.state === 5).length;
-      stats.learning = data.filter(c => c.state > 0 && c.state < 5).length;
-      stats.due = data.filter(c => c.state < 5 && (c.state === 0 || new Date(c.due) <= new Date())).length;
+    try {
+      // Add timeout to prevent infinite hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Load stats timed out')), 10000)
+      );
 
-      levelDist = [0, 0, 0, 0, 0, 0];
-      data.forEach(c => {
-        const lvl = Math.min(Math.max(c.state, 0), 5);
-        levelDist[lvl]++;
-      });
+      // Fetch deck name
+      const deckPromise = supabase.from('decks').select('name').eq('id', deckId).single();
+      const { data: deck } = await Promise.race([deckPromise, timeoutPromise]) as any;
+      if (deck) deckName = deck.name;
+
+      // Fetch cards
+      const cardsPromise = supabase.from('cards').select('*').eq('deck_id', deckId);
+      const { data } = await Promise.race([cardsPromise, timeoutPromise]) as any;
+
+      if (data) {
+        allCards = data;
+        stats.total = data.length;
+        stats.mastered = data.filter((c: any) => c.state === 5).length;
+        stats.learning = data.filter((c: any) => c.state > 0 && c.state < 5).length;
+        stats.due = data.filter((c: any) => c.state < 5 && (c.state === 0 || new Date(c.due) <= new Date())).length;
+
+        levelDist = [0, 0, 0, 0, 0, 0];
+        data.forEach((c: any) => {
+          const lvl = Math.min(Math.max(c.state, 0), 5);
+          levelDist[lvl]++;
+        });
+      }
+    } catch (e) {
+      console.error('loadStats error:', e);
+      // Still set some default values so the UI doesn't break
+      if (!deckName) deckName = 'Unknown Deck';
     }
   }
 
@@ -248,7 +277,6 @@
 
   async function saveCardEdits() {
     console.log('=== SAVE STARTED ===');
-    console.log('Button clicked, isSaving:', isSaving);
 
     // Prevent double-clicks
     if (isSaving) {
@@ -256,26 +284,18 @@
       return;
     }
 
-    isSaving = true;
-    saveButtonText = 'Saving...';
-
-    console.log('editingCard:', editingCard);
-    console.log('gardenerForm.image_urls:', gardenerForm.image_urls);
-    console.log('gardenerForm.selected_image_index:', gardenerForm.selected_image_index);
-    console.log('Full gardenerForm:', JSON.stringify(gardenerForm, null, 2));
-
     if (!editingCard) {
       console.error('No editingCard!');
-      isSaving = false;
-      saveButtonText = 'Error: No card!';
       alert('Save failed: No card selected');
       return;
     }
 
+    isSaving = true;
+    saveButtonText = 'Saving...';
+
     try {
       // Get the selected image for backward compatibility
       const selectedUrl = gardenerForm.image_urls[gardenerForm.selected_image_index] || null;
-      console.log('selectedUrl:', selectedUrl);
 
       const updateData = {
         headword: gardenerForm.headword,
@@ -287,20 +307,30 @@
         selected_image_index: gardenerForm.selected_image_index,
         image_url: selectedUrl // backward compatibility
       };
-      console.log('Sending to Supabase:', JSON.stringify(updateData, null, 2));
+      console.log('Saving card:', editingCard.id, updateData);
 
-      const { error: updateError } = await supabase.from('cards').update(updateData).eq('id', editingCard.id);
+      // Add timeout to prevent infinite hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Save timed out after 10 seconds')), 10000)
+      );
+
+      const savePromise = supabase
+        .from('cards')
+        .update(updateData)
+        .eq('id', editingCard.id)
+        .select()
+        .single();
+
+      const { data, error: updateError } = await Promise.race([savePromise, timeoutPromise]) as any;
 
       if (updateError) {
         console.error('=== SAVE FAILED ===', updateError);
-        isSaving = false;
         saveButtonText = 'Save Failed!';
-        alert('Save failed: ' + updateError.message);
         showToastMessage('Save failed: ' + updateError.message);
         return;
       }
 
-      console.log('=== SAVE SUCCESS ===');
+      console.log('=== SAVE SUCCESS ===', data);
       saveButtonText = 'Saved ✓';
 
       await loadStats(); // Reload all cards
@@ -308,12 +338,14 @@
       showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');
     } catch (error: any) {
       console.error('=== SAVE EXCEPTION ===', error);
-      isSaving = false;
       saveButtonText = 'Error!';
-      alert('Save error: ' + (error.message || 'Unknown error'));
+      showToastMessage('Save error: ' + (error.message || 'Unknown error'));
     } finally {
       isSaving = false;
-      saveButtonText = 'Save Changes';
+      // Reset button text after a delay so user sees the result
+      setTimeout(() => {
+        saveButtonText = 'Save Changes';
+      }, 1500);
     }
   }
 
@@ -775,8 +807,8 @@
              {:else}
                <!-- Text Mode: Show headword -->
                <button type="button"
-                   class="text-6xl md:text-7xl font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors bg-transparent border-none"
-                   style="text-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                   class="font-heading text-main mb-6 tracking-tight cursor-pointer hover:text-accent transition-colors bg-transparent border-none max-w-full break-words overflow-wrap-anywhere"
+                   style="text-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: clamp(1.5rem, 8vw, 4.5rem);"
                    onclick={() => { if (currentCard) speak(currentCard.headword); }}>
                    {currentCard.headword}
                </button>
