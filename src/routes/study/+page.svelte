@@ -438,8 +438,8 @@
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 
-  // Unified grade handler - updates queue mastered state for theme persistence
-  async function handleGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
+  // Unified grade handler for themed components - updates queue mastered state for theme persistence
+  async function handleThemeGrade(event: CustomEvent<{ id: number; rating: 'pass' | 'fail' }>) {
     const { id, rating } = event.detail;
     const card = queue.find(c => c.id === id);
     if (!card) return;
@@ -460,10 +460,10 @@
   }
 
   // Theme-specific handlers (all delegate to unified handler)
-  const handleEmberGrade = handleGrade;
-  const handleFrostGrade = handleGrade;
-  const handleZenGrade = handleGrade;
-  const handleSyndicateGrade = handleGrade;
+  const handleEmberGrade = handleThemeGrade;
+  const handleFrostGrade = handleThemeGrade;
+  const handleZenGrade = handleThemeGrade;
+  const handleSyndicateGrade = handleThemeGrade;
 </script>
 
 <div class="min-h-[80vh] flex flex-col items-center justify-center max-w-3xl mx-auto px-6">
