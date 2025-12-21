@@ -150,9 +150,16 @@
     const baseHorizontalSpacing = 12; // Base spacing in viewport %
     const charWidth = 1.2; // Approximate % per character
 
+    // Use larger margins on mobile to prevent cards from being pushed off screen by glitch animation
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const minX = isMobile ? 15 : 8;
+    const maxXRange = isMobile ? 70 : 84;
+    const minY = isMobile ? 18 : 12;
+    const maxYRange = isMobile ? 64 : 76;
+
     while (!safe && attempts < 200) {
-      x = 8 + Math.random() * 84;
-      y = 12 + Math.random() * 76;
+      x = minX + Math.random() * maxXRange;
+      y = minY + Math.random() * maxYRange;
 
       // Check collision with all existing words
       const hasCollision = currentWords.some(w => {
@@ -464,18 +471,18 @@
     </div>
   {/each}
 
-  <!-- Words -->
+  <!-- Words - z-20 ensures they're above background elements -->
   {#each words as w, i (w.id)}
     {#if !w.mastered}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="syndicate-word-card absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
-               transition-all duration-300
+               transition-all duration-300 z-20
                {w.decrypting ? 'syndicate-decrypt' : ''}
                {w.glitching ? 'syndicate-glitch' : ''}
                {!w.decrypting && !w.glitching ? 'syndicate-idle-glitch' : ''}"
-        style="left: {w.x}%; top: {w.y}%; --glitch-delay: {(i * 0.7) + Math.random() * 2}s;"
+        style="left: {w.x}%; top: {w.y}%; --glitch-delay: {(i * 0.7) + Math.random() * 2}s; touch-action: manipulation;"
         onclick={(e) => handleWordClick(w, e)}>
         {#if showImages && getCardImageUrl(w) && !w.imageFailed}
           <img
@@ -486,8 +493,8 @@
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
-          <span class="text-base md:text-xl lg:text-2xl tracking-widest syndicate-text-glitch max-w-[85vw] break-words text-center
-                       {!w.decrypting && !w.glitching ? 'text-[#00fff2]/60 hover:text-[#00fff2] syndicate-glow-subtle' : ''}">
+          <span class="syndicate-card-text text-sm md:text-lg lg:text-xl tracking-wider syndicate-text-glitch text-center
+                       {!w.decrypting && !w.glitching ? 'text-[#00fff2]/70 hover:text-[#00fff2] syndicate-glow-subtle' : ''}">
             <span class="opacity-50">[</span>{w.headword}<span class="opacity-50">]</span>
           </span>
         {/if}
@@ -729,6 +736,50 @@
     text-shadow: 0 0 10px rgba(0, 255, 242, 0.3);
   }
 
+  /* Mobile-safe glitch - reduced movement to prevent off-screen */
+  @media (max-width: 768px) {
+    @keyframes syndicate-idle-glitch-anim {
+      0%, 85%, 100% {
+        transform: translate(-50%, -50%) translate(0, 0);
+      }
+      86% {
+        transform: translate(-50%, -50%) translate(-1px, 0.5px);
+      }
+      88% {
+        transform: translate(-50%, -50%) translate(1px, -0.5px);
+      }
+      90% {
+        transform: translate(-50%, -50%) translate(-0.5px, -1px);
+      }
+      92% {
+        transform: translate(-50%, -50%) translate(0, 0);
+      }
+    }
+
+    @keyframes syndicate-img-glitch-anim {
+      0%, 85%, 100% {
+        transform: translate(0, 0);
+        filter: none;
+      }
+      86% {
+        transform: translate(-1px, 0.5px);
+        filter: hue-rotate(15deg) saturate(1.2);
+      }
+      88% {
+        transform: translate(1px, -0.5px);
+        filter: hue-rotate(-15deg) saturate(1.2);
+      }
+      90% {
+        transform: translate(-0.5px, -1px);
+        filter: hue-rotate(10deg) saturate(1.1);
+      }
+      92% {
+        transform: translate(0, 0);
+        filter: none;
+      }
+    }
+  }
+
   /* Decrypt animation (when passing) */
   .syndicate-decrypt {
     animation: syndicate-decrypt-anim 0.8s ease-out forwards;
@@ -851,6 +902,43 @@
     100% {
       opacity: 0;
       filter: brightness(1) hue-rotate(0deg);
+    }
+  }
+
+  /* Card text containment for long phrases */
+  .syndicate-card-text {
+    display: inline-block;
+    max-width: min(280px, 75vw);
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 255, 242, 0.08);
+    border: 1px solid rgba(0, 255, 242, 0.25);
+    border-radius: 6px;
+
+    /* Text wrapping */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+
+    /* Prevent line overlap */
+    line-height: 1.5;
+
+    /* Touch target */
+    min-height: 44px;
+    min-width: 60px;
+  }
+
+  .syndicate-card-text:hover {
+    background: rgba(0, 255, 242, 0.15);
+    border-color: rgba(0, 255, 242, 0.5);
+  }
+
+  @media (max-width: 768px) {
+    .syndicate-card-text {
+      max-width: min(220px, 70vw);
+      font-size: 0.875rem;
+      padding: 0.4rem 0.6rem;
+      line-height: 1.4;
     }
   }
 </style>

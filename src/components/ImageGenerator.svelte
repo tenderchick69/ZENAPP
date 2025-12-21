@@ -328,7 +328,7 @@
   {/if}
 </div>
 
-<!-- Model/Style Selection Modal -->
+<!-- Model/Style Selection Modal - MUST render above parent modals -->
 {#if showModal}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -600,57 +600,76 @@
     line-height: 1.5;
   }
 
-  /* Modal Styles */
+  /* Modal Styles - High z-index to escape parent stacking context */
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 9999; /* Must be higher than parent Gardener modal (z-50) */
+    padding: 1rem;
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
   .modal {
     background: var(--color-panel);
-    border: 1px solid var(--color-dim);
-    border-radius: 1rem;
-    width: 90%;
+    border: 2px solid var(--color-accent);
+    border-radius: 1.5rem;
+    width: 100%;
     max-width: 400px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    max-height: 90vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--color-accent-rgb), 0.2);
   }
 
   .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--color-dim);
+    position: sticky;
+    top: 0;
+    background: var(--color-panel);
+    z-index: 1;
   }
 
   .modal-header h3 {
     margin: 0;
-    font-size: 1.1rem;
-    color: var(--color-main);
+    font-size: 1.25rem;
+    color: var(--color-accent);
+    font-weight: 600;
   }
 
   .modal-close {
-    background: none;
-    border: none;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+    border: 1px solid var(--color-dim);
+    border-radius: 50%;
     color: var(--color-dim);
     font-size: 1.25rem;
     cursor: pointer;
-    padding: 0;
     line-height: 1;
+    transition: all 0.2s;
   }
 
   .modal-close:hover {
     color: var(--color-accent);
+    border-color: var(--color-accent);
   }
 
   .modal-body {
-    padding: 1.25rem;
+    padding: 1.5rem;
   }
 
   .section {
@@ -778,16 +797,20 @@
 
   .modal-footer {
     display: flex;
-    gap: 0.75rem;
-    padding: 1rem 1.25rem;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
     border-top: 1px solid var(--color-dim);
+    position: sticky;
+    bottom: 0;
+    background: var(--color-panel);
   }
 
   .btn-cancel, .btn-generate {
     flex: 1;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.9rem;
+    min-height: 48px; /* Mobile touch target */
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -812,5 +835,21 @@
 
   .btn-generate:hover {
     opacity: 0.9;
+  }
+
+  /* Option items need proper touch targets on mobile */
+  @media (max-width: 768px) {
+    .option-item {
+      min-height: 48px;
+    }
+
+    .style-select {
+      min-height: 48px;
+      font-size: 16px; /* Prevent iOS zoom */
+    }
+
+    .prompt-textarea {
+      font-size: 16px; /* Prevent iOS zoom */
+    }
   }
 </style>

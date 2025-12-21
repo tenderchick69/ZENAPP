@@ -498,8 +498,8 @@
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
-          <span class="text-2xl md:text-3xl lg:text-4xl tracking-wider font-light max-w-[85vw] break-words text-center
-                       {i === currentIndex && !w.dissolving ? 'zen-living-gradient' : 'text-[#2a2a2a] hover:text-[#444]'}">
+          <span class="zen-card-text tracking-wider font-light text-center
+                       {i === currentIndex && !w.dissolving ? 'zen-card-active' : 'zen-card-inactive'}">
             {w.headword}
           </span>
         {/if}
@@ -694,5 +694,64 @@
   /* Smooth wave transition for cards */
   .zen-word-card {
     transition: transform 0.1s ease-out;
+  }
+
+  /* Card text containment for long phrases */
+  .zen-card-text {
+    display: inline-block;
+    max-width: min(280px, 75vw);
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+
+    /* Text wrapping */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+
+    /* Prevent line overlap */
+    line-height: 1.5;
+    font-size: clamp(1rem, 4vw, 1.75rem);
+
+    /* Touch target */
+    min-height: 44px;
+    min-width: 60px;
+  }
+
+  .zen-card-inactive {
+    color: #2a2a2a;
+  }
+
+  .zen-card-inactive:hover {
+    color: #444;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .zen-card-active {
+    background: linear-gradient(135deg, rgba(60, 60, 60, 0.15), rgba(40, 40, 40, 0.1));
+    animation: zen-gradient-shift 8s ease-in-out infinite;
+  }
+
+  /* Living gradient animation */
+  @keyframes zen-gradient-shift {
+    0%, 100% {
+      filter: brightness(1);
+      color: #555;
+    }
+    50% {
+      filter: brightness(1.2);
+      color: #666;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .zen-card-text {
+      max-width: min(220px, 70vw);
+      font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+      padding: 0.4rem 0.6rem;
+      line-height: 1.4;
+    }
   }
 </style>

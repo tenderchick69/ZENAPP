@@ -470,8 +470,8 @@
           onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
-        <span class="font-finger text-2xl md:text-3xl lg:text-4xl tracking-wide max-w-[85vw] break-words text-center transition-[color,text-shadow] duration-500"
-              style="color: {style.color}; text-shadow: {style.textShadow};">
+        <span class="frost-card-text font-finger tracking-wide text-center transition-[color,text-shadow,filter] duration-500"
+              style="color: {style.color}; text-shadow: {style.textShadow}; filter: {style.filter};">
           {w.headword}
         </span>
       {/if}
@@ -782,6 +782,44 @@
     100% {
       opacity: 0;
       transform: translateY(180px) rotate(180deg);
+    }
+  }
+
+  /* Card text containment for long phrases */
+  .frost-card-text {
+    display: inline-block;
+    max-width: min(280px, 75vw);
+    padding: 0.5rem 0.75rem;
+    background: rgba(168, 216, 234, 0.05);
+    border: 1px solid rgba(168, 216, 234, 0.15);
+    border-radius: 8px;
+
+    /* Text wrapping */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+
+    /* Prevent line overlap */
+    line-height: 1.5;
+    font-size: clamp(1rem, 4vw, 1.75rem);
+
+    /* Touch target */
+    min-height: 44px;
+    min-width: 60px;
+  }
+
+  .frost-card-text:hover {
+    background: rgba(168, 216, 234, 0.1);
+    border-color: rgba(168, 216, 234, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .frost-card-text {
+      max-width: min(220px, 70vw);
+      font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+      padding: 0.4rem 0.6rem;
+      line-height: 1.4;
     }
   }
 </style>

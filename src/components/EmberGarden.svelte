@@ -95,9 +95,16 @@
     const baseHorizontalSpacing = 12;
     const charWidth = 1.2;
 
+    // Use larger margins on mobile to prevent words from floating off screen
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const minX = isMobile ? 15 : 8;
+    const maxXRange = isMobile ? 70 : 84;
+    const minY = isMobile ? 18 : 12;
+    const maxYRange = isMobile ? 64 : 76;
+
     while (!safe && attempts < 200) {
-      x = 8 + Math.random() * 84;
-      y = 12 + Math.random() * 76;
+      x = minX + Math.random() * maxXRange;
+      y = minY + Math.random() * maxYRange;
 
       // Check collision with all existing words
       const hasCollision = currentWords.some(w => {
@@ -122,17 +129,19 @@
       attempts++;
     }
 
-    // Grid fallback if no safe spot found
+    // Grid fallback if no safe spot found - use mobile-safe coordinates
     if (!safe) {
-      const gridCols = 4;
-      const gridRows = 5;
-      const cellWidth = 80 / gridCols;
-      const cellHeight = 70 / gridRows;
+      const gridCols = isMobile ? 3 : 4; // Fewer columns on mobile
+      const gridRows = isMobile ? 4 : 5;
+      const gridWidth = isMobile ? 70 : 80;
+      const gridHeight = isMobile ? 60 : 70;
+      const cellWidth = gridWidth / gridCols;
+      const cellHeight = gridHeight / gridRows;
       const index = currentWords.length % (gridCols * gridRows);
       const col = index % gridCols;
       const row = Math.floor(index / gridCols);
-      x = 10 + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 5;
-      y = 15 + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 5;
+      x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
+      y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 3;
     }
 
     return { x, y };
@@ -356,9 +365,8 @@
           onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
-        <span class="transition-[color,text-shadow] duration-1000 max-w-[85vw] break-words text-center
-                     {w.mastered ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)] scale-110' : 'text-white/20 hover:text-orange-200 hover:scale-110'}"
-              style="font-size: clamp(1rem, 4vw, {w.mastered ? '2rem' : '1.5rem'});">
+        <span class="ember-card-text transition-[color,text-shadow] duration-1000 text-center
+                     {w.mastered ? 'ember-card-mastered' : 'ember-card-unmastered'}">
           {w.headword}
         </span>
       {/if}
@@ -505,3 +513,57 @@
     </div>
   {/if}
 </div>
+
+<style>
+  /* Card text containment for long phrases */
+  .ember-card-text {
+    display: inline-block;
+    max-width: min(280px, 75vw);
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 8px;
+
+    /* Text wrapping */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+
+    /* Prevent line overlap */
+    line-height: 1.5;
+    font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+
+    /* Touch target */
+    min-height: 44px;
+    min-width: 60px;
+  }
+
+  .ember-card-unmastered {
+    color: rgba(255, 255, 255, 0.25);
+  }
+
+  .ember-card-unmastered:hover {
+    color: rgba(255, 200, 150, 0.9);
+    background: rgba(255, 107, 53, 0.15);
+    border-color: rgba(255, 107, 53, 0.4);
+    transform: scale(1.05);
+  }
+
+  .ember-card-mastered {
+    color: #facc15;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    transform: scale(1.1);
+    background: rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .ember-card-text {
+      max-width: min(220px, 70vw);
+      font-size: clamp(0.75rem, 3vw, 1rem);
+      padding: 0.4rem 0.6rem;
+      line-height: 1.4;
+    }
+  }
+</style>

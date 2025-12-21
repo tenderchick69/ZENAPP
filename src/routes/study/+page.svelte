@@ -644,10 +644,16 @@
         </Tooltip>
       </div>
 
-      <!-- Footer -->
+      <!-- Footer - Theme-appropriate styling -->
       <div class="flex justify-center gap-4 md:gap-8">
-         <button type="button" onclick={() => view = 'inspect'} class="text-xs md:text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest">[ {$t.btn_inspect} ]</button>
-         <a href="/" class="text-xs md:text-sm font-ember opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest">[ {$t.btn_exit} ]</a>
+         <button type="button" onclick={() => view = 'inspect'} class="text-xs md:text-sm font-body opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest
+           {$theme === 'zen' ? 'tracking-[0.2em]' : ''}">
+           {$theme === 'zen' ? $t.btn_inspect : `[ ${$t.btn_inspect} ]`}
+         </button>
+         <a href="/" class="text-xs md:text-sm font-body opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest
+           {$theme === 'zen' ? 'tracking-[0.2em]' : ''}">
+           {$theme === 'zen' ? $t.btn_exit : `[ ${$t.btn_exit} ]`}
+         </a>
       </div>
     </div>
 
