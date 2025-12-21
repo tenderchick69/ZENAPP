@@ -73,6 +73,8 @@
     loop();
 
     return () => {
+      // Close any open modals
+      revealedWord = null;
       cancelAnimationFrame(animationFrame);
       if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
     };
@@ -354,9 +356,9 @@
           onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
-        <span class="transition-[color,text-shadow] duration-1000
+        <span class="transition-[color,text-shadow] duration-1000 max-w-[85vw] break-words text-center
                      {w.mastered ? 'text-yellow-400 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)] scale-110' : 'text-white/20 hover:text-orange-200 hover:scale-110'}"
-              style="font-size: {w.mastered ? '2rem' : '1.5rem'};">
+              style="font-size: clamp(1rem, 4vw, {w.mastered ? '2rem' : '1.5rem'});">
           {w.headword}
         </span>
       {/if}

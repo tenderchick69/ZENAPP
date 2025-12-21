@@ -49,6 +49,16 @@
 </script>
 
 <svelte:head>
+  <!-- iOS Status Bar Theme Color - matches each theme's background -->
+  {#if $theme === 'syndicate'}
+    <meta name="theme-color" content="#000000">
+  {:else if $theme === 'zen'}
+    <meta name="theme-color" content="#1a1a1a">
+  {:else if $theme === 'ember'}
+    <meta name="theme-color" content="#1a0a0a">
+  {:else if $theme === 'frost'}
+    <meta name="theme-color" content="#1a2a3a">
+  {/if}
   <!-- Google Fonts: Syndicate (Orbitron, Share Tech Mono), Zen (Inter), Ember (Cormorant Garamond), Frost (Caveat, Patrick Hand), Void (Space Grotesk) -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;600&family=Cormorant+Garamond:wght@300;400;600&family=Caveat:wght@700&family=Patrick+Hand&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
 </svelte:head>

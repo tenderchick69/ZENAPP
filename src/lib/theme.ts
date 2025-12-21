@@ -14,9 +14,9 @@ if (browser) {
 const DICTIONARY = {
   syndicate: {
     // Global
-    title_1: 'VOCAPP',
-    title_2: 'SYNDICATE',
-    subtitle: 'Upgrade Your Wetware',
+    title_1: 'SYNDICATE',
+    title_2: '',
+    subtitle: 'Upgrade Your Software',
 
     // Home
     btn_import: 'DATA INGESTION',
@@ -91,8 +91,8 @@ const DICTIONARY = {
   },
   zen: {
     // Global
-    title_1: 'VOCAPP',
-    title_2: 'ZEN',
+    title_1: 'ZEN',
+    title_2: '',
     subtitle: 'One Path. No Noise.',
 
     // Home

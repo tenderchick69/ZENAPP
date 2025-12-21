@@ -191,6 +191,8 @@
     }, 40);
 
     return () => {
+      // Close any open modals
+      revealedWord = null;
       cancelAnimationFrame(animationFrame);
       clearInterval(breathInterval);
       if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
@@ -496,7 +498,7 @@
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
-          <span class="text-4xl md:text-5xl lg:text-6xl tracking-wider font-light
+          <span class="text-2xl md:text-3xl lg:text-4xl tracking-wider font-light max-w-[85vw] break-words text-center
                        {i === currentIndex && !w.dissolving ? 'zen-living-gradient' : 'text-[#2a2a2a] hover:text-[#444]'}">
             {w.headword}
           </span>
@@ -518,21 +520,21 @@
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
-        class="w-10 h-9 flex items-center justify-center text-[#222] hover:text-[#444] text-sm transition-colors border border-[#1a1a1a] rounded hover:border-[#333] bg-black/50 cursor-pointer"
+        class="w-10 h-9 flex items-center justify-center text-white/50 hover:text-white/80 text-sm transition-colors border border-white/20 rounded hover:border-white/40 bg-black/60 cursor-pointer"
         title={showImages ? 'Show Text' : 'Show Images'}>
         {showImages ? 'Aa' : '🖼️'}
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); cycleTheme(); }}
-        class="w-16 h-9 flex items-center justify-center text-[#222] hover:text-[#444] text-xs transition-colors border border-[#1a1a1a] rounded hover:border-[#333] bg-black/50 cursor-pointer"
+        class="w-16 h-9 flex items-center justify-center text-white/50 hover:text-white/80 text-xs transition-colors border border-white/20 rounded hover:border-white/40 bg-black/60 cursor-pointer"
         title="Change theme">
         Zen ↻
       </button>
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('exit'); }}
-        class="w-12 h-9 flex items-center justify-center text-[#222] hover:text-[#444] text-xs transition-colors border border-[#1a1a1a] rounded hover:border-[#333] bg-black/50 cursor-pointer">
+        class="w-12 h-9 flex items-center justify-center text-white/50 hover:text-white/80 text-xs transition-colors border border-white/20 rounded hover:border-white/40 bg-black/60 cursor-pointer">
         Exit
       </button>
     </div>

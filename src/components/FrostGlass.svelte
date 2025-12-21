@@ -165,6 +165,8 @@
     }, 100);
 
     return () => {
+      // Close any open modals
+      revealedWord = null;
       clearInterval(interval);
       if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
     };
@@ -468,7 +470,7 @@
           onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
-        <span class="font-finger text-5xl md:text-6xl lg:text-7xl tracking-wide whitespace-nowrap transition-[color,text-shadow] duration-500"
+        <span class="font-finger text-2xl md:text-3xl lg:text-4xl tracking-wide max-w-[85vw] break-words text-center transition-[color,text-shadow] duration-500"
               style="color: {style.color}; text-shadow: {style.textShadow};">
           {w.headword}
         </span>

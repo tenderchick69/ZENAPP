@@ -108,11 +108,18 @@
   // Handler for exiting study mode back to lobby
   async function exitToLobby() {
     console.log('exitToLobby called');
+
+    // Close all modals first
+    editingCard = null;
+    showRenameModal = false;
+
+    // Reset study state
     view = 'lobby';
     queue = [];
     currentCard = null;
     sessionStats = { correct: 0, wrong: 0 };
     failedInSession = new Set(); // Reset failed cards tracking
+
     // Reload stats to reflect any changes made during study
     try {
       await loadStats();
@@ -644,44 +651,66 @@
       </div>
     </div>
 
-  <!-- INSPECT VIEW -->
+  <!-- INSPECT VIEW - Mobile Optimized Full Screen Modal -->
   {:else if view === 'inspect'}
-    <div class="w-full h-[80vh] border border-dim bg-panel p-8 flex flex-col relative overflow-hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="font-heading text-2xl text-main">{$t.inspect_title}</h2>
-        <button type="button" onclick={exitToLobby} class="text-dim hover:text-accent font-body text-xs cursor-pointer">[ {$t.btn_back} ]</button>
+    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh] bg-bg">
+      <!-- Fixed Header -->
+      <div class="flex-shrink-0 flex justify-between items-center p-4 md:p-6 border-b border-dim/30 bg-panel">
+        <h2 class="font-heading text-xl md:text-2xl text-main">{$t.inspect_title}</h2>
+        <button
+          type="button"
+          onclick={exitToLobby}
+          class="w-11 h-11 flex items-center justify-center text-dim hover:text-accent bg-bg/50 border border-dim rounded-full transition-colors text-xl cursor-pointer">
+          ✕
+        </button>
       </div>
 
-      <!-- Scrollable List -->
-      <div class="flex-1 overflow-y-auto pr-2 space-y-1">
-        {#each [...allCards].sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
-          <button
-            onclick={() => openGardenerModal(card)}
-            class="w-full flex items-center gap-3 p-3 border-b border-dim/30 hover:bg-accent/10 hover:border-accent/50 text-xs font-body group cursor-pointer transition-all hover:shadow-[0_0_15px_rgba(var(--color-accent-rgb),0.2)] rounded-lg">
-             <!-- Image thumbnail -->
-             <div class="w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-dim/20">
-               {#if getCardImageUrl(card)}
-                 <img src={getCardImageUrl(card)} alt="" class="w-full h-full object-cover" />
-               {:else}
-                 <div class="w-full h-full flex items-center justify-center text-dim/50 text-lg">📷</div>
-               {/if}
-             </div>
-             <!-- Level pips -->
-             <div class="flex gap-0.5 flex-shrink-0">
-               {#each [1,2,3,4,5] as l}
-                 <div class="w-1 h-3 {card.state >= l ? 'bg-accent' : 'bg-dim/30'}"></div>
-               {/each}
-             </div>
-             <!-- Headword -->
-             <div class="flex-1 font-bold text-main group-hover:text-accent transition-colors truncate text-left">{card.headword}</div>
-             <!-- Definition -->
-             <div class="flex-1 text-dim truncate text-left">{card.definition}</div>
-             <!-- Due date -->
-             <div class="flex-shrink-0 text-right {new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
-               {formatDate(card.due)}
-             </div>
-          </button>
-        {/each}
+      <!-- Scrollable Card List -->
+      <div class="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain" style="-webkit-overflow-scrolling: touch;">
+        <div class="p-4 md:p-6 space-y-2">
+          {#each [...allCards].sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
+            <button
+              onclick={() => openGardenerModal(card)}
+              class="w-full flex items-center gap-3 p-3 md:p-4 bg-panel border border-dim/30 hover:bg-accent/10 hover:border-accent/50 text-xs md:text-sm font-body group cursor-pointer transition-all rounded-xl">
+               <!-- Image thumbnail -->
+               <div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-lg overflow-hidden bg-dim/20">
+                 {#if getCardImageUrl(card)}
+                   <img src={getCardImageUrl(card)} alt="" class="w-full h-full object-cover" />
+                 {:else}
+                   <div class="w-full h-full flex items-center justify-center text-dim/50 text-lg">📷</div>
+                 {/if}
+               </div>
+               <!-- Card Info -->
+               <div class="flex-1 min-w-0 text-left">
+                 <!-- Headword + Level pips -->
+                 <div class="flex items-center gap-2 mb-1">
+                   <span class="font-bold text-main group-hover:text-accent transition-colors truncate text-sm md:text-base">{card.headword}</span>
+                   <div class="flex gap-0.5 flex-shrink-0">
+                     {#each [1,2,3,4,5] as l}
+                       <div class="w-1 h-2 md:h-3 {card.state >= l ? 'bg-accent' : 'bg-dim/30'}"></div>
+                     {/each}
+                   </div>
+                 </div>
+                 <!-- Definition -->
+                 <div class="text-dim truncate text-xs md:text-sm">{card.definition}</div>
+               </div>
+               <!-- Due date -->
+               <div class="flex-shrink-0 text-right text-xs {new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
+                 {formatDate(card.due)}
+               </div>
+            </button>
+          {/each}
+        </div>
+      </div>
+
+      <!-- Fixed Footer with Back Button -->
+      <div class="flex-shrink-0 p-4 border-t border-dim/30 bg-panel" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));">
+        <button
+          type="button"
+          onclick={exitToLobby}
+          class="w-full py-3 border border-accent text-accent hover:bg-accent hover:text-bg transition-all rounded-xl cursor-pointer font-body text-sm">
+          {$t.btn_back}
+        </button>
       </div>
     </div>
 

@@ -127,6 +127,8 @@
     loop();
 
     return () => {
+      // Close any open modals
+      revealedWord = null;
       cancelAnimationFrame(animationFrame);
       if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
     };
@@ -484,7 +486,7 @@
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
-          <span class="text-lg md:text-2xl lg:text-3xl tracking-widest syndicate-text-glitch
+          <span class="text-base md:text-xl lg:text-2xl tracking-widest syndicate-text-glitch max-w-[85vw] break-words text-center
                        {!w.decrypting && !w.glitching ? 'text-[#00fff2]/60 hover:text-[#00fff2] syndicate-glow-subtle' : ''}">
             <span class="opacity-50">[</span>{w.headword}<span class="opacity-50">]</span>
           </span>

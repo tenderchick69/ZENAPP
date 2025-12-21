@@ -65,10 +65,6 @@
 
 <section class="space-y-12 w-full">
   <div class="hero-container text-center space-y-2 mb-16 w-full">
-    {#if $theme === 'syndicate'}
-      <p class="text-danger text-xs tracking-[0.3em] animate-pulse">UNAUTHORIZED MODIFICATION DETECTED</p>
-    {/if}
-
     <h1 class="hero-title font-heading uppercase">
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent
         {$theme === 'ember' ? 'to-warmth' : 'to-blue-600'}">
