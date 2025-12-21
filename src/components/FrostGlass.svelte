@@ -528,93 +528,95 @@
 
   <!-- Reveal Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 flex items-center justify-center z-50" transition:fade>
+    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div
-        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onclick={() => revealedWord = null}>
-      </div>
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick={() => revealedWord = null}></div>
 
-      <!-- Modal Content -->
-      <div class="relative bg-slate-800/95 border border-[#a8d8ea]/30 p-8 rounded-lg max-w-md shadow-2xl backdrop-blur-md" transition:scale>
+      <!-- Modal Content Container -->
+      <div class="relative flex flex-col h-full max-w-md w-full mx-auto" transition:scale>
+        <!-- Header with Close Button -->
+        <div class="flex-shrink-0 flex justify-end p-4">
+          <button class="text-gray-600 cursor-pointer hover:text-white bg-slate-800/80 border border-[#a8d8ea]/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
+        </div>
 
-        <!-- Close Button -->
-        <button
-          class="absolute top-4 right-4 text-gray-600 cursor-pointer hover:text-white bg-transparent border-none text-xl"
-          onclick={() => revealedWord = null}>✕</button>
-
-        <!-- German Gloss -->
-        {#if revealedWord.gloss_de}
-          <div class="text-[#a8d8ea] text-lg font-hand mb-2 text-center">{revealedWord.gloss_de}</div>
-        {/if}
-
-        <!-- Headword (Click to hear - hover shows speaker) -->
-        <button
-          onclick={() => revealedWord && speak(revealedWord.headword)}
-          class="text-5xl text-[#a8d8ea] font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
-          {revealedWord.headword}
-        </button>
-
-        <!-- IPA -->
-        {#if revealedWord.ipa}
-          <p class="text-[#a8d8ea]/50 text-sm mb-8 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
-        {/if}
-
-        <!-- Definition -->
-        <p class="text-xl text-gray-300 mb-10 leading-relaxed font-light font-hand text-center">
-          {revealedWord.definition}
-        </p>
-
-        <!-- Rich Data Block -->
-        {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
-          <div class="border-t border-[#a8d8ea]/20 pt-6 mb-8 text-center space-y-6">
-
-            {#if revealedWord.mnemonic}
-              <div class="bg-[#a8d8ea]/5 p-4 rounded border border-[#a8d8ea]/10">
-                <span class="text-[10px] uppercase text-[#a8d8ea]/70 tracking-widest block mb-2 font-hand">Hint</span>
-                <p class="text-base text-[#a8d8ea]/80 font-hand leading-snug">{revealedWord.mnemonic}</p>
-              </div>
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto overscroll-contain px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+          <div class="bg-slate-800/95 border border-[#a8d8ea]/30 p-6 md:p-8 rounded-lg shadow-2xl backdrop-blur-md text-center">
+            <!-- German Gloss -->
+            {#if revealedWord.gloss_de}
+              <div class="text-[#a8d8ea] text-lg font-hand mb-2 text-center">{revealedWord.gloss_de}</div>
             {/if}
 
-            {#if revealedWord.etymology}
-              <div class="pt-2">
-                <span class="text-[10px] uppercase text-gray-500 tracking-widest block mb-1 font-hand">Etymology</span>
-                <p class="text-base text-gray-400 italic font-hand">{revealedWord.etymology}</p>
-              </div>
+            <!-- Headword (Click to hear - hover shows speaker) -->
+            <button
+              onclick={() => revealedWord && speak(revealedWord.headword)}
+              class="text-4xl md:text-5xl text-[#a8d8ea] font-finger tracking-wider drop-shadow-[0_0_15px_rgba(168,216,234,0.3)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+              {revealedWord.headword}
+            </button>
+
+            <!-- IPA -->
+            {#if revealedWord.ipa}
+              <p class="text-[#a8d8ea]/50 text-sm mb-6 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
             {/if}
 
-            {#if revealedWord.example}
-              <div class="pt-4">
-                <span class="text-[10px] uppercase text-[#a8d8ea]/50 tracking-[0.2em] font-hand">USAGE</span>
-                <div class="text-lg text-[#a8d8ea]/70 italic mt-2 font-hand">
-                  "{revealedWord.example}"
-                </div>
-                {#if revealedWord.example_gloss}
-                  <div class="text-base text-gray-300 mt-1 font-hand">
-                    "{revealedWord.example_gloss}"
+            <!-- Definition -->
+            <p class="text-lg md:text-xl text-gray-300 mb-6 leading-relaxed font-light font-hand text-center">
+              {revealedWord.definition}
+            </p>
+
+            <!-- Rich Data Block -->
+            {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
+              <div class="border-t border-[#a8d8ea]/20 pt-6 text-center space-y-5">
+
+                {#if revealedWord.mnemonic}
+                  <div class="bg-[#a8d8ea]/5 p-4 rounded border border-[#a8d8ea]/10">
+                    <span class="text-[10px] uppercase text-[#a8d8ea]/70 tracking-widest block mb-2 font-hand">Hint</span>
+                    <p class="text-base text-[#a8d8ea]/80 font-hand leading-snug">{revealedWord.mnemonic}</p>
+                  </div>
+                {/if}
+
+                {#if revealedWord.etymology}
+                  <div class="pt-2">
+                    <span class="text-[10px] uppercase text-gray-500 tracking-widest block mb-1 font-hand">Etymology</span>
+                    <p class="text-base text-gray-400 italic font-hand">{revealedWord.etymology}</p>
+                  </div>
+                {/if}
+
+                {#if revealedWord.example}
+                  <div class="pt-4">
+                    <span class="text-[10px] uppercase text-[#a8d8ea]/50 tracking-[0.2em] font-hand">USAGE</span>
+                    <div class="text-lg text-[#a8d8ea]/70 italic mt-2 font-hand">
+                      "{revealedWord.example}"
+                    </div>
+                    {#if revealedWord.example_gloss}
+                      <div class="text-base text-gray-300 mt-1 font-hand">
+                        "{revealedWord.example_gloss}"
+                      </div>
+                    {/if}
                   </div>
                 {/if}
               </div>
             {/if}
           </div>
-        {/if}
-
-        <!-- Action Buttons -->
-        <div class="flex gap-4 justify-center mt-4">
-          <button
-            onclick={() => handleDecision('pass')}
-            class="px-6 py-3 bg-[#2a4a6a]/80 hover:bg-[#2a4a6a] text-white rounded-lg transition-all font-hand text-lg cursor-pointer">
-            I knew it
-          </button>
-          <button
-            onclick={() => handleDecision('fail')}
-            class="px-6 py-3 bg-[#a8d8ea]/20 hover:bg-[#a8d8ea]/30 text-[#a8d8ea] rounded-lg transition-all font-hand text-lg cursor-pointer">
-            Show me again
-          </button>
         </div>
 
+        <!-- Fixed Footer with Action Buttons -->
+        <div class="flex-shrink-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
+          <div class="flex gap-4 justify-center">
+            <button
+              onclick={() => handleDecision('pass')}
+              class="flex-1 max-w-[150px] py-3 bg-[#2a4a6a]/80 hover:bg-[#2a4a6a] text-white rounded-lg transition-all font-hand text-lg cursor-pointer">
+              I knew it
+            </button>
+            <button
+              onclick={() => handleDecision('fail')}
+              class="flex-1 max-w-[150px] py-3 bg-[#a8d8ea]/20 hover:bg-[#a8d8ea]/30 text-[#a8d8ea] rounded-lg transition-all font-hand text-lg cursor-pointer">
+              Show again
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   {/if}

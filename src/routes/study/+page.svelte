@@ -878,139 +878,141 @@
     </div>
   {/if}
 
-  <!-- Gardener Edit Modal -->
+  <!-- Gardener Edit Modal - Mobile Optimized -->
   {#if editingCard}
-    <div class="fixed inset-0 flex items-center justify-center z-50 px-4">
+    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]">
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div
-        class="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onclick={closeGardenerModal}>
-      </div>
+      <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick={closeGardenerModal}></div>
 
-      <!-- Modal Content -->
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <div
-        class="relative bg-panel border-2 border-accent/50 p-8 rounded-2xl max-w-2xl w-full shadow-[0_0_60px_rgba(var(--color-accent-rgb),0.3)] max-h-[90vh] overflow-y-auto"
-        onclick={(e) => e.stopPropagation()}>
-
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="font-heading text-3xl text-accent">
+      <!-- Modal Content Container -->
+      <div class="relative flex flex-col h-full max-w-2xl w-full mx-auto">
+        <!-- Fixed Header -->
+        <div class="flex-shrink-0 flex justify-between items-center p-4 md:p-6">
+          <h2 class="font-heading text-2xl md:text-3xl text-accent">
             {$theme === 'ember' ? 'Tend This Seed' : 'Edit Card'}
           </h2>
           <button
             onclick={closeGardenerModal}
-            class="text-dim hover:text-accent transition-colors text-2xl leading-none cursor-pointer">
+            class="w-11 h-11 flex items-center justify-center text-dim hover:text-accent bg-panel/80 border border-accent/30 rounded-full transition-colors text-xl cursor-pointer">
             ✕
           </button>
         </div>
 
-        <!-- Form -->
-        <div class="space-y-6">
-          <!-- Headword -->
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Headword</label>
-            <input
-              bind:value={gardenerForm.headword}
-              class="w-full bg-bg border border-dim p-4 text-main font-heading text-2xl focus:border-accent outline-none transition-colors rounded-lg"
-              placeholder="Enter word..." />
-          </div>
+        <!-- Scrollable Form Content -->
+        <div class="flex-1 overflow-y-auto overscroll-contain px-4 md:px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+          <div class="bg-panel border-2 border-accent/50 p-4 md:p-6 rounded-2xl shadow-[0_0_60px_rgba(var(--color-accent-rgb),0.3)]">
+            <div class="space-y-5">
+              <!-- Headword -->
+              <div>
+                <!-- svelte-ignore a11y_label_has_associated_control -->
+                <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Headword</label>
+                <input
+                  bind:value={gardenerForm.headword}
+                  class="w-full bg-bg border border-dim p-3 md:p-4 text-main font-heading text-xl md:text-2xl focus:border-accent outline-none transition-colors rounded-lg"
+                  style="font-size: 16px;"
+                  placeholder="Enter word..." />
+              </div>
 
-          <!-- Definition -->
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Definition</label>
-            <textarea
-              bind:value={gardenerForm.definition}
-              class="w-full bg-bg border border-dim p-4 text-accent font-body text-lg focus:border-accent outline-none transition-colors rounded-lg min-h-[100px] resize-y"
-              placeholder="Enter definition..."></textarea>
-          </div>
+              <!-- Definition -->
+              <div>
+                <!-- svelte-ignore a11y_label_has_associated_control -->
+                <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Definition</label>
+                <textarea
+                  bind:value={gardenerForm.definition}
+                  class="w-full bg-bg border border-dim p-3 md:p-4 text-accent font-body text-base md:text-lg focus:border-accent outline-none transition-colors rounded-lg min-h-[80px] resize-y"
+                  style="font-size: 16px;"
+                  placeholder="Enter definition..."></textarea>
+              </div>
 
-          <!-- German Gloss (Optional) -->
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">German Translation (Optional)</label>
-            <input
-              bind:value={gardenerForm.gloss_de}
-              class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg"
-              placeholder="Deutsch..." />
-          </div>
+              <!-- German Gloss (Optional) -->
+              <div>
+                <!-- svelte-ignore a11y_label_has_associated_control -->
+                <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">German Translation (Optional)</label>
+                <input
+                  bind:value={gardenerForm.gloss_de}
+                  class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg"
+                  style="font-size: 16px;"
+                  placeholder="Deutsch..." />
+              </div>
 
-          <!-- Mnemonic (Optional) -->
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Mnemonic (Optional)</label>
-            <textarea
-              bind:value={gardenerForm.mnemonic}
-              class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg min-h-[80px] resize-y"
-              placeholder="Memory aid..."></textarea>
-          </div>
+              <!-- Mnemonic (Optional) -->
+              <div>
+                <!-- svelte-ignore a11y_label_has_associated_control -->
+                <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Mnemonic (Optional)</label>
+                <textarea
+                  bind:value={gardenerForm.mnemonic}
+                  class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg min-h-[60px] resize-y"
+                  style="font-size: 16px;"
+                  placeholder="Memory aid..."></textarea>
+              </div>
 
-          <!-- Etymology (Optional) -->
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Etymology (Optional)</label>
-            <input
-              bind:value={gardenerForm.etymology}
-              class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg"
-              placeholder="Word origin..." />
-          </div>
+              <!-- Etymology (Optional) -->
+              <div>
+                <!-- svelte-ignore a11y_label_has_associated_control -->
+                <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">Etymology (Optional)</label>
+                <input
+                  bind:value={gardenerForm.etymology}
+                  class="w-full bg-bg border border-dim p-3 text-main font-body focus:border-accent outline-none transition-colors rounded-lg"
+                  style="font-size: 16px;"
+                  placeholder="Word origin..." />
+              </div>
 
-          <!-- Image Generation -->
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">
-              {$theme === 'ember' ? 'Seed Vision' : $theme === 'frost' ? 'Crystal Image' : $theme === 'syndicate' ? 'VISUAL RENDER' : 'Card Image'}
-            </label>
-            <ImageGenerator
-              card={{
-                id: editingCard?.id,
-                headword: gardenerForm.headword,
-                definition: gardenerForm.definition,
-                mnemonic: gardenerForm.mnemonic,
-                etymology: gardenerForm.etymology
-              }}
-              imageUrls={gardenerForm.image_urls}
-              selectedImageIndex={gardenerForm.selected_image_index}
-              userId={$user?.id}
-              onImagesChanged={(urls, selectedIndex) => {
-                console.log('onImagesChanged called:', { urls, selectedIndex });
-                // Use object spread to ensure Svelte 5 reactivity triggers
-                gardenerForm = {
-                  ...gardenerForm,
-                  image_urls: [...urls],
-                  selected_image_index: selectedIndex
-                };
-                console.log('gardenerForm updated:', gardenerForm.image_urls);
-              }}
-            />
+              <!-- Image Generation -->
+              <div>
+                <!-- svelte-ignore a11y_label_has_associated_control -->
+                <label class="block text-xs font-body uppercase tracking-widest text-dim mb-2">
+                  {$theme === 'ember' ? 'Seed Vision' : $theme === 'frost' ? 'Crystal Image' : $theme === 'syndicate' ? 'VISUAL RENDER' : 'Card Image'}
+                </label>
+                <ImageGenerator
+                  card={{
+                    id: editingCard?.id,
+                    headword: gardenerForm.headword,
+                    definition: gardenerForm.definition,
+                    mnemonic: gardenerForm.mnemonic,
+                    etymology: gardenerForm.etymology
+                  }}
+                  imageUrls={gardenerForm.image_urls}
+                  selectedImageIndex={gardenerForm.selected_image_index}
+                  userId={$user?.id}
+                  onImagesChanged={(urls, selectedIndex) => {
+                    console.log('onImagesChanged called:', { urls, selectedIndex });
+                    gardenerForm = {
+                      ...gardenerForm,
+                      image_urls: [...urls],
+                      selected_image_index: selectedIndex
+                    };
+                    console.log('gardenerForm updated:', gardenerForm.image_urls);
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex justify-center items-center gap-4 mt-8">
-          <button
-            type="button"
-            onclick={(e) => {
-              e.preventDefault();
-              console.log('Save button clicked!');
-              saveCardEdits();
-            }}
-            disabled={isSaving}
-            class="px-8 py-3 bg-accent text-bg font-heading text-base font-bold hover:shadow-[0_0_20px_var(--color-accent)] hover:scale-105 transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            class:cursor-pointer={!isSaving}>
-            {saveButtonText}
-          </button>
-          <button
-            onclick={() => deleteCard(editingCard!.id)}
-            class="px-4 py-3 border-2 border-danger text-danger hover:bg-danger hover:text-bg font-heading text-base transition-all rounded-xl cursor-pointer"
-            title={$theme === 'ember' ? 'Compost' : 'Delete'}>
-            {$theme === 'ember' ? '🍂' : '🗑️'}
-          </button>
+        <!-- Fixed Footer with Actions -->
+        <div class="flex-shrink-0 bg-gradient-to-t from-black via-black/95 to-transparent px-4 md:px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
+          <div class="flex justify-center items-center gap-4">
+            <button
+              type="button"
+              onclick={(e) => {
+                e.preventDefault();
+                console.log('Save button clicked!');
+                saveCardEdits();
+              }}
+              disabled={isSaving}
+              class="flex-1 max-w-[200px] py-4 bg-accent text-bg font-heading text-base font-bold hover:shadow-[0_0_20px_var(--color-accent)] transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              class:cursor-pointer={!isSaving}>
+              {saveButtonText}
+            </button>
+            <button
+              onclick={() => deleteCard(editingCard!.id)}
+              class="w-14 h-14 flex items-center justify-center border-2 border-danger text-danger hover:bg-danger hover:text-bg font-heading text-xl transition-all rounded-xl cursor-pointer"
+              title={$theme === 'ember' ? 'Compost' : 'Delete'}>
+              {$theme === 'ember' ? '🍂' : '🗑️'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1027,19 +1029,20 @@
     </div>
   {/if}
 
-  <!-- Rename Deck Modal -->
+  <!-- Rename Deck Modal - Mobile Optimized -->
   {#if showRenameModal}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      style="padding-bottom: max(1rem, env(safe-area-inset-bottom));"
       onclick={cancelRename}>
       <div
-        class="bg-panel border border-dim rounded-2xl shadow-2xl w-full max-w-md p-6 md:p-8"
+        class="bg-panel border border-dim rounded-2xl shadow-2xl w-full max-w-md p-5 md:p-8"
         onclick={(e) => e.stopPropagation()}>
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-heading text-main">
+          <h2 class="text-lg md:text-xl font-heading text-main">
             {$theme === 'ember' ? 'Rename Garden' :
              $theme === 'frost' ? 'Rename Window' :
              $theme === 'syndicate' ? 'RENAME DECK' :
@@ -1047,7 +1050,7 @@
           </h2>
           <button
             onclick={cancelRename}
-            class="text-dim hover:text-main text-2xl leading-none cursor-pointer transition-colors">
+            class="w-11 h-11 flex items-center justify-center text-dim hover:text-main bg-bg/50 border border-dim rounded-full text-xl cursor-pointer transition-colors">
             ✕
           </button>
         </div>
@@ -1060,21 +1063,22 @@
             bind:value={renameInputValue}
             onkeydown={(e) => e.key === 'Enter' && saveRename()}
             autofocus
-            class="w-full bg-bg border-2 border-dim p-4 text-main font-heading text-xl md:text-2xl focus:border-accent outline-none transition-colors rounded-xl text-center"
+            class="w-full bg-bg border-2 border-dim p-4 text-main font-heading text-lg md:text-2xl focus:border-accent outline-none transition-colors rounded-xl text-center"
+            style="font-size: 16px;"
             placeholder="Enter deck name..."
           />
         </div>
 
-        <!-- Actions -->
-        <div class="flex gap-3 justify-end">
+        <!-- Actions - Full width buttons on mobile -->
+        <div class="flex flex-col md:flex-row gap-3">
           <button
             onclick={cancelRename}
-            class="px-6 py-3 border border-dim text-dim hover:text-main hover:border-main transition-colors rounded-xl cursor-pointer font-body">
+            class="flex-1 min-h-[48px] px-6 py-3 border border-dim text-dim hover:text-main hover:border-main transition-colors rounded-xl cursor-pointer font-body order-2 md:order-1">
             Cancel
           </button>
           <button
             onclick={saveRename}
-            class="px-6 py-3 bg-accent text-bg font-heading font-bold hover:shadow-[0_0_20px_var(--color-accent)] transition-all rounded-xl cursor-pointer">
+            class="flex-1 min-h-[48px] px-6 py-3 bg-accent text-bg font-heading font-bold hover:shadow-[0_0_20px_var(--color-accent)] transition-all rounded-xl cursor-pointer order-1 md:order-2">
             Save
           </button>
         </div>

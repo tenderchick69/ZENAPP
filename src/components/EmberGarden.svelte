@@ -406,86 +406,99 @@
 
   <!-- Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-[2px]" transition:fade>
-      <div class="bg-gradient-to-b from-[#121212] to-black border border-orange-900/40 p-12 rounded-xl max-w-lg w-full text-center shadow-[0_0_100px_rgba(255,69,0,0.15)] relative" transition:scale>
+    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]" transition:fade>
+      <!-- Backdrop -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div class="absolute inset-0 bg-black/95 backdrop-blur-[2px]" onclick={() => revealedWord = null}></div>
 
-        <!-- Close Button -->
-        <button class="absolute top-4 right-4 text-gray-600 cursor-pointer hover:text-white bg-transparent border-none text-xl" onclick={() => revealedWord = null}>✕</button>
+      <!-- Modal Content Container -->
+      <div class="relative flex flex-col h-full max-w-lg w-full mx-auto" transition:scale>
+        <!-- Header with Close Button -->
+        <div class="flex-shrink-0 flex justify-end p-4">
+          <button class="text-gray-600 cursor-pointer hover:text-white bg-black/50 border border-orange-900/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
+        </div>
 
-        <!-- German Gloss -->
-        {#if revealedWord.gloss_de}
-          <div class="text-orange-500 text-lg font-serif mb-2 text-center">{revealedWord.gloss_de}</div>
-        {/if}
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto overscroll-contain px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+          <div class="bg-gradient-to-b from-[#121212] to-black border border-orange-900/40 p-6 md:p-10 rounded-xl text-center shadow-[0_0_100px_rgba(255,69,0,0.15)]">
+            <!-- German Gloss -->
+            {#if revealedWord.gloss_de}
+              <div class="text-orange-500 text-lg font-serif mb-2 text-center">{revealedWord.gloss_de}</div>
+            {/if}
 
-        <!-- Headword (Click to hear - hover shows speaker) -->
-        <button
-          onclick={() => speak(revealedWord.headword)}
-          class="text-5xl md:text-6xl text-orange-100 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
-          {revealedWord.headword}
-        </button>
+            <!-- Headword (Click to hear - hover shows speaker) -->
+            <button
+              onclick={() => speak(revealedWord.headword)}
+              class="text-4xl md:text-5xl lg:text-6xl text-orange-100 font-ember tracking-wider drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+              {revealedWord.headword}
+            </button>
 
-        {#if revealedWord.ipa}
-          <!-- Use font-sans for IPA legibility -->
-          <p class="text-orange-500/50 text-sm mb-8 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
-        {/if}
+            {#if revealedWord.ipa}
+              <!-- Use font-sans for IPA legibility -->
+              <p class="text-orange-500/50 text-sm mb-6 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
+            {/if}
 
-        <p class="text-2xl text-gray-200 mb-10 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
+            <p class="text-xl md:text-2xl text-gray-200 mb-6 leading-relaxed font-light font-ember">{revealedWord.definition}</p>
 
-        {#if getCardImageUrl(revealedWord) && !revealedWord.imageFailed}
-          <div class="mb-6 flex justify-center">
-            <img
-              src={getCardImageUrl(revealedWord)}
-              alt={revealedWord.headword}
-              class="max-w-[160px] max-h-[160px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity"
-              onerror={() => { words = words.map(word => word.id === revealedWord.id ? { ...word, imageFailed: true } : word); revealedWord = { ...revealedWord, imageFailed: true }; }}
-            />
-          </div>
-        {/if}
-
-        <!-- RICH DATA BLOCK -->
-        <div class="border-t border-orange-900/30 pt-6 mb-8 text-center space-y-5">
-
-           {#if revealedWord.mnemonic}
-             <div class="bg-orange-900/10 p-4 rounded border border-orange-900/20">
-                <span class="text-[10px] uppercase text-orange-500 tracking-widest block mb-2">Mnemonic</span>
-                <p class="text-base text-gray-300 font-ember leading-snug">{revealedWord.mnemonic}</p>
-             </div>
-           {/if}
-
-           {#if revealedWord.etymology}
-              <div class="pt-2">
-                 <span class="text-[10px] uppercase text-gray-500 tracking-widest block mb-1">Etymology</span>
-                 <p class="text-base text-gray-400 italic">{revealedWord.etymology}</p>
+            {#if getCardImageUrl(revealedWord) && !revealedWord.imageFailed}
+              <div class="mb-6 flex justify-center">
+                <img
+                  src={getCardImageUrl(revealedWord)}
+                  alt={revealedWord.headword}
+                  class="max-w-[140px] max-h-[140px] md:max-w-[160px] md:max-h-[160px] rounded-lg border border-orange-900/30 opacity-80 hover:opacity-100 transition-opacity"
+                  onerror={() => { words = words.map(word => word.id === revealedWord.id ? { ...word, imageFailed: true } : word); revealedWord = { ...revealedWord, imageFailed: true }; }}
+                />
               </div>
-           {/if}
+            {/if}
 
-           {#if revealedWord.example}
-              <div class="pt-4">
-                 <span class="text-[10px] uppercase text-orange-500/60 tracking-[0.2em]">USAGE</span>
-                 <div class="text-lg text-orange-200/80 italic mt-2">
-                    "{revealedWord.example}"
+            <!-- RICH DATA BLOCK -->
+            <div class="border-t border-orange-900/30 pt-6 text-center space-y-5">
+
+               {#if revealedWord.mnemonic}
+                 <div class="bg-orange-900/10 p-4 rounded border border-orange-900/20">
+                    <span class="text-[10px] uppercase text-orange-500 tracking-widest block mb-2">Mnemonic</span>
+                    <p class="text-base text-gray-300 font-ember leading-snug">{revealedWord.mnemonic}</p>
                  </div>
-                 {#if revealedWord.example_gloss}
-                   <div class="text-base text-gray-300 mt-1">
-                      "{revealedWord.example_gloss}"
-                   </div>
-                 {/if}
-              </div>
-           {/if}
+               {/if}
+
+               {#if revealedWord.etymology}
+                  <div class="pt-2">
+                     <span class="text-[10px] uppercase text-gray-500 tracking-widest block mb-1">Etymology</span>
+                     <p class="text-base text-gray-400 italic">{revealedWord.etymology}</p>
+                  </div>
+               {/if}
+
+               {#if revealedWord.example}
+                  <div class="pt-4">
+                     <span class="text-[10px] uppercase text-orange-500/60 tracking-[0.2em]">USAGE</span>
+                     <div class="text-lg text-orange-200/80 italic mt-2">
+                        "{revealedWord.example}"
+                     </div>
+                     {#if revealedWord.example_gloss}
+                       <div class="text-base text-gray-300 mt-1">
+                          "{revealedWord.example_gloss}"
+                       </div>
+                     {/if}
+                  </div>
+               {/if}
+            </div>
+          </div>
         </div>
 
-        <!-- Controls -->
-        <div class="flex gap-6 justify-center mt-4">
-          <button onclick={() => handleDecision('pass')}
-            class="px-10 py-4 bg-yellow-900/10 border border-yellow-600/30 text-yellow-500 hover:bg-yellow-500/20 hover:border-yellow-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,215,0,0.05)] cursor-pointer">
-            I knew it
-          </button>
-          <button onclick={() => handleDecision('fail')}
-            class="px-10 py-4 bg-orange-900/10 border border-orange-600/30 text-orange-500 hover:bg-orange-500/20 hover:border-orange-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,69,0,0.05)] cursor-pointer">
-            Show again
-          </button>
+        <!-- Fixed Footer with Action Buttons -->
+        <div class="flex-shrink-0 bg-gradient-to-t from-black via-black/95 to-transparent px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
+          <div class="flex gap-4 justify-center">
+            <button onclick={() => handleDecision('pass')}
+              class="flex-1 max-w-[160px] py-4 bg-yellow-900/10 border border-yellow-600/30 text-yellow-500 hover:bg-yellow-500/20 hover:border-yellow-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,215,0,0.05)] cursor-pointer">
+              I knew it
+            </button>
+            <button onclick={() => handleDecision('fail')}
+              class="flex-1 max-w-[160px] py-4 bg-orange-900/10 border border-orange-600/30 text-orange-500 hover:bg-orange-500/20 hover:border-orange-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,69,0,0.05)] cursor-pointer">
+              Show again
+            </button>
+          </div>
         </div>
-
       </div>
     </div>
   {/if}

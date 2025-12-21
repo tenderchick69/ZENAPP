@@ -62,18 +62,18 @@
     </a>
 
     <div class="flex items-center gap-2 md:gap-3" style="justify-content: flex-end;">
-      <!-- HELP MODE TOGGLE -->
+      <!-- HELP MODE TOGGLE - 44px touch target on mobile -->
       <button
         onclick={() => helpMode.update(v => !v)}
-        class="w-8 h-8 flex items-center justify-center border text-xs font-mono rounded-full transition-all cursor-pointer
+        class="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center border text-sm md:text-xs font-mono rounded-full transition-all cursor-pointer
         {$helpMode ? 'bg-accent text-bg border-accent' : 'border-dim text-dim hover:border-accent hover:text-accent'}">
         ?
       </button>
 
-      <!-- THEME TOGGLE - 3 letter abbreviation, fixed width -->
+      <!-- THEME TOGGLE - 3 letter abbreviation, 44px touch target on mobile -->
       <button
         onclick={toggleTheme}
-        class="px-3 py-1 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none"
+        class="px-3 py-2 md:py-1 min-h-[44px] md:min-h-0 border border-dim text-xs font-body hover:border-accent hover:text-accent transition-all uppercase cursor-pointer select-none"
         style="min-width: 60px; text-align: center;">
         {$theme === 'syndicate' ? 'SYN' : $theme === 'zen' ? 'ZEN' : $theme === 'ember' ? 'EMB' : 'FRO'}
       </button>
@@ -81,8 +81,8 @@
       <!-- AUTH: User Menu or Sign In -->
       {#if $user}
         <div class="user-menu">
-          <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" style="width: 32px; height: 32px; flex-shrink: 0;" />
-          <button onclick={signOut} class="sign-out-btn" title="Sign Out" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+          <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" />
+          <button onclick={signOut} class="sign-out-btn" title="Sign Out">
             ⏻
           </button>
         </div>
@@ -112,11 +112,18 @@
   }
 
   .avatar {
-    width: 32px !important;
-    height: 32px !important;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 2px solid var(--color-accent);
     flex-shrink: 0;
+  }
+
+  @media (min-width: 768px) {
+    .avatar {
+      width: 32px;
+      height: 32px;
+    }
   }
 
   .user-name {
@@ -134,15 +141,28 @@
   }
 
   .sign-out-btn {
-    padding: 0.5rem 1rem;
+    /* 44px touch target on mobile */
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: 1px solid var(--color-dim);
     color: var(--color-dim);
-    border-radius: 4px;
-    font-size: 0.85rem;
+    border-radius: 50%;
+    font-size: 18px;
     cursor: pointer;
     transition: all 0.2s;
-    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .sign-out-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+    }
   }
 
   .sign-out-btn:hover {

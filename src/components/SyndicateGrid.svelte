@@ -547,86 +547,95 @@
 
   <!-- Reveal Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/95" transition:fade>
-      <div class="bg-[#0a0a0a] border border-[#00fff2]/50 p-8 md:p-12 max-w-lg w-full mx-4 relative font-mono" transition:scale>
+    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]" transition:fade>
+      <!-- Backdrop -->
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div class="absolute inset-0 bg-black/95" onclick={() => revealedWord = null}></div>
 
-        <!-- Close Button -->
-        <button
-          class="absolute top-4 right-4 text-[#00fff2]/50 cursor-pointer hover:text-[#00fff2] text-xl font-mono"
-          onclick={() => revealedWord = null}>
-          [X]
-        </button>
+      <!-- Modal Content Container -->
+      <div class="relative flex flex-col h-full max-w-lg w-full mx-auto font-mono" transition:scale>
+        <!-- Header with Close Button -->
+        <div class="flex-shrink-0 flex justify-end p-4">
+          <button class="text-[#00fff2]/50 cursor-pointer hover:text-[#00fff2] bg-[#0a0a0a] border border-[#00fff2]/30 rounded w-10 h-10 flex items-center justify-center text-sm" onclick={() => revealedWord = null}>[X]</button>
+        </div>
 
-        <!-- German Gloss -->
-        {#if revealedWord.gloss_de}
-          <div class="text-[#ff0040]/70 text-sm mb-2 text-center"># {revealedWord.gloss_de}</div>
-        {/if}
-
-        <!-- Headword (Click to hear - hover shows speaker) -->
-        <button
-          onclick={() => revealedWord && speak(revealedWord.headword)}
-          class="text-4xl md:text-5xl text-[#00fff2] tracking-wider syndicate-pulse cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
-          [{revealedWord.headword}]
-        </button>
-
-        <!-- IPA -->
-        {#if revealedWord.ipa}
-          <p class="text-[#39ff14]/50 text-sm mb-6 tracking-widest text-center">/{revealedWord.ipa}/</p>
-        {/if}
-
-        <!-- Definition -->
-        <p class="text-xl text-gray-300 mb-8 leading-relaxed text-center">
-          {revealedWord.definition}
-        </p>
-
-        <!-- Rich Data Block -->
-        {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
-          <div class="border-t border-[#00fff2]/20 pt-6 mb-6 space-y-4 text-center">
-
-            {#if revealedWord.mnemonic}
-              <div class="bg-[#0f0f0f] p-4 border border-[#ff0040]/30 rounded">
-                <span class="text-[10px] uppercase text-[#ff0040]/70 tracking-widest block mb-2">// MEMORY_HOOK</span>
-                <p class="text-base text-gray-400 leading-relaxed">{revealedWord.mnemonic}</p>
-              </div>
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto overscroll-contain px-4 md:px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+          <div class="bg-[#0a0a0a] border border-[#00fff2]/50 p-6 md:p-10 text-center">
+            <!-- German Gloss -->
+            {#if revealedWord.gloss_de}
+              <div class="text-[#ff0040]/70 text-sm mb-2 text-center"># {revealedWord.gloss_de}</div>
             {/if}
 
-            {#if revealedWord.etymology}
-              <div class="pt-2">
-                <span class="text-[10px] uppercase text-[#00fff2]/50 tracking-widest block mb-1">// ORIGIN</span>
-                <p class="text-base text-gray-500 italic">{revealedWord.etymology}</p>
-              </div>
+            <!-- Headword (Click to hear - hover shows speaker) -->
+            <button
+              onclick={() => revealedWord && speak(revealedWord.headword)}
+              class="text-3xl md:text-4xl lg:text-5xl text-[#00fff2] tracking-wider syndicate-pulse cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+              [{revealedWord.headword}]
+            </button>
+
+            <!-- IPA -->
+            {#if revealedWord.ipa}
+              <p class="text-[#39ff14]/50 text-sm mb-6 tracking-widest text-center">/{revealedWord.ipa}/</p>
             {/if}
 
-            {#if revealedWord.example}
-              <div class="pt-4">
-                <span class="text-[10px] uppercase text-[#39ff14]/50 tracking-widest">// USAGE</span>
-                <div class="text-lg text-[#39ff14]/70 italic mt-2">
-                  "{revealedWord.example}"
-                </div>
-                {#if revealedWord.example_gloss}
-                  <div class="text-base text-gray-400 mt-1">
-                    "{revealedWord.example_gloss}"
+            <!-- Definition -->
+            <p class="text-lg md:text-xl text-gray-300 mb-6 leading-relaxed text-center">
+              {revealedWord.definition}
+            </p>
+
+            <!-- Rich Data Block -->
+            {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
+              <div class="border-t border-[#00fff2]/20 pt-6 space-y-4 text-center">
+
+                {#if revealedWord.mnemonic}
+                  <div class="bg-[#0f0f0f] p-4 border border-[#ff0040]/30 rounded">
+                    <span class="text-[10px] uppercase text-[#ff0040]/70 tracking-widest block mb-2">// MEMORY_HOOK</span>
+                    <p class="text-base text-gray-400 leading-relaxed">{revealedWord.mnemonic}</p>
+                  </div>
+                {/if}
+
+                {#if revealedWord.etymology}
+                  <div class="pt-2">
+                    <span class="text-[10px] uppercase text-[#00fff2]/50 tracking-widest block mb-1">// ORIGIN</span>
+                    <p class="text-base text-gray-500 italic">{revealedWord.etymology}</p>
+                  </div>
+                {/if}
+
+                {#if revealedWord.example}
+                  <div class="pt-4">
+                    <span class="text-[10px] uppercase text-[#39ff14]/50 tracking-widest">// USAGE</span>
+                    <div class="text-lg text-[#39ff14]/70 italic mt-2">
+                      "{revealedWord.example}"
+                    </div>
+                    {#if revealedWord.example_gloss}
+                      <div class="text-base text-gray-400 mt-1">
+                        "{revealedWord.example_gloss}"
+                      </div>
+                    {/if}
                   </div>
                 {/if}
               </div>
             {/if}
           </div>
-        {/if}
-
-        <!-- Controls -->
-        <div class="flex gap-4 justify-center mt-6">
-          <button
-            onclick={() => handleDecision('pass')}
-            class="px-6 py-3 bg-[#39ff14]/10 border border-[#39ff14]/50 text-[#39ff14] hover:bg-[#39ff14]/20 hover:border-[#39ff14] transition-all tracking-widest uppercase text-sm cursor-pointer">
-            [DECRYPT]
-          </button>
-          <button
-            onclick={() => handleDecision('fail')}
-            class="px-6 py-3 bg-[#ff0040]/10 border border-[#ff0040]/50 text-[#ff0040] hover:bg-[#ff0040]/20 hover:border-[#ff0040] transition-all tracking-widest uppercase text-sm cursor-pointer">
-            [CORRUPT]
-          </button>
         </div>
 
+        <!-- Fixed Footer with Action Buttons -->
+        <div class="flex-shrink-0 bg-gradient-to-t from-black via-black/95 to-transparent px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
+          <div class="flex gap-4 justify-center">
+            <button
+              onclick={() => handleDecision('pass')}
+              class="flex-1 max-w-[140px] py-3 bg-[#39ff14]/10 border border-[#39ff14]/50 text-[#39ff14] hover:bg-[#39ff14]/20 hover:border-[#39ff14] transition-all tracking-widest uppercase text-sm cursor-pointer">
+              [DECRYPT]
+            </button>
+            <button
+              onclick={() => handleDecision('fail')}
+              class="flex-1 max-w-[140px] py-3 bg-[#ff0040]/10 border border-[#ff0040]/50 text-[#ff0040] hover:bg-[#ff0040]/20 hover:border-[#ff0040] transition-all tracking-widest uppercase text-sm cursor-pointer">
+              [CORRUPT]
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   {/if}
