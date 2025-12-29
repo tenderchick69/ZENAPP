@@ -721,37 +721,70 @@
   }
 
   .zen-card-inactive {
-    color: #2a2a2a;
+    /* Much more visible - soft white on dark */
+    color: rgba(180, 180, 180, 0.7);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
   }
 
   .zen-card-inactive:hover {
-    color: #444;
-    background: rgba(255, 255, 255, 0.06);
+    color: rgba(220, 220, 220, 0.9);
+    background: rgba(255, 255, 255, 0.08);
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
   }
 
   .zen-card-active {
-    background: linear-gradient(135deg, rgba(60, 60, 60, 0.15), rgba(40, 40, 40, 0.1));
-    animation: zen-gradient-shift 8s ease-in-out infinite;
+    /* Active/current card - clearly visible */
+    color: rgba(230, 230, 230, 0.95);
+    background: linear-gradient(135deg, rgba(100, 100, 100, 0.2), rgba(80, 80, 80, 0.15));
+    animation: zen-gradient-shift 4s ease-in-out infinite;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
   }
 
-  /* Living gradient animation */
+  /* Living gradient animation - more visible */
   @keyframes zen-gradient-shift {
     0%, 100% {
       filter: brightness(1);
-      color: #555;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
     }
     50% {
-      filter: brightness(1.2);
-      color: #666;
+      filter: brightness(1.15);
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  /* Mastered zen cards - ethereal glow */
+  .zen-card-mastered {
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    animation: zen-mastered-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes zen-mastered-pulse {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+    50% {
+      box-shadow: 0 0 35px rgba(255, 255, 255, 0.2);
     }
   }
 
   @media (max-width: 768px) {
     .zen-card-text {
-      max-width: min(220px, 70vw);
-      font-size: clamp(0.875rem, 3.5vw, 1.25rem);
-      padding: 0.4rem 0.6rem;
-      line-height: 1.4;
+      max-width: min(180px, 65vw);
+      font-size: 0.8rem;
+      padding: 0.35rem 0.5rem;
+      line-height: 1.35;
+    }
+  }
+
+  /* Very small screens */
+  @media (max-width: 400px) {
+    .zen-card-text {
+      max-width: min(150px, 60vw);
+      font-size: 0.7rem;
+      padding: 0.3rem 0.4rem;
     }
   }
 </style>

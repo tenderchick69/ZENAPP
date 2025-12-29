@@ -371,31 +371,31 @@
     }, 2500);
   }
 
-  // Word Visual State (3 levels)
+  // Word Visual State (3 levels) - MUST BE READABLE on mobile
   function getWordStyle(word: any) {
     const isHovered = hoveredWord === word.id;
     const isMastered = word.mastered;
 
     if (isMastered) {
-      // Sharp, crystal clear
+      // Sharp, crystal clear - strong glow
       return {
-        color: 'rgba(200, 230, 245, 0.85)',
+        color: 'rgba(200, 235, 255, 1)',
         filter: 'none',
-        textShadow: '0 0 8px rgba(168, 216, 234, 0.4), 0 0 2px rgba(255,255,255,0.2)'
+        textShadow: '0 0 15px rgba(168, 216, 234, 0.8), 0 0 30px rgba(168, 216, 234, 0.4), 0 0 4px rgba(255,255,255,0.5)'
       };
     } else if (isHovered) {
       // Readable through cleared breath
       return {
-        color: 'rgba(220, 235, 245, 0.75)',
-        filter: 'blur(0.3px)',
-        textShadow: '0 0 6px rgba(255,255,255,0.2)'
+        color: 'rgba(220, 240, 255, 0.95)',
+        filter: 'none',
+        textShadow: '0 0 10px rgba(168, 216, 234, 0.5), 0 0 3px rgba(255,255,255,0.3)'
       };
     } else {
-      // Barely visible through heavy fog
+      // Default - READABLE with subtle frost effect (no heavy blur!)
       return {
-        color: 'rgba(180, 200, 220, 0.12)',
-        filter: 'blur(3px)',
-        textShadow: '0 0 20px rgba(180,200,220,0.15)'
+        color: 'rgba(180, 210, 235, 0.7)',
+        filter: 'blur(0.5px)',
+        textShadow: '0 0 8px rgba(168, 216, 234, 0.3)'
       };
     }
   }
@@ -790,8 +790,8 @@
     display: inline-block;
     max-width: min(280px, 75vw);
     padding: 0.5rem 0.75rem;
-    background: rgba(168, 216, 234, 0.05);
-    border: 1px solid rgba(168, 216, 234, 0.15);
+    background: rgba(168, 216, 234, 0.1);
+    border: 1px solid rgba(168, 216, 234, 0.25);
     border-radius: 8px;
 
     /* Text wrapping */
@@ -810,16 +810,41 @@
   }
 
   .frost-card-text:hover {
-    background: rgba(168, 216, 234, 0.1);
-    border-color: rgba(168, 216, 234, 0.3);
+    background: rgba(168, 216, 234, 0.15);
+    border-color: rgba(168, 216, 234, 0.4);
+  }
+
+  /* Mastered frost cards - crystal clear with ice glow */
+  .frost-mastered .frost-card-text {
+    background: rgba(168, 216, 234, 0.2);
+    border-color: rgba(168, 216, 234, 0.6);
+    animation: frost-mastered-shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes frost-mastered-shimmer {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(168, 216, 234, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(168, 216, 234, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2);
+    }
   }
 
   @media (max-width: 768px) {
     .frost-card-text {
-      max-width: min(220px, 70vw);
-      font-size: clamp(0.875rem, 3.5vw, 1.25rem);
-      padding: 0.4rem 0.6rem;
-      line-height: 1.4;
+      max-width: min(180px, 65vw);
+      font-size: 0.8rem;
+      padding: 0.35rem 0.5rem;
+      line-height: 1.35;
+    }
+  }
+
+  /* Very small screens */
+  @media (max-width: 400px) {
+    .frost-card-text {
+      max-width: min(150px, 60vw);
+      font-size: 0.7rem;
+      padding: 0.3rem 0.4rem;
     }
   }
 </style>

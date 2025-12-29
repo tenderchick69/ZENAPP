@@ -540,30 +540,54 @@
   }
 
   .ember-card-unmastered {
-    color: rgba(255, 255, 255, 0.25);
+    /* MUCH more visible - orange glow on dark */
+    color: rgba(255, 180, 120, 0.85);
+    text-shadow: 0 0 8px rgba(255, 100, 50, 0.4);
   }
 
   .ember-card-unmastered:hover {
-    color: rgba(255, 200, 150, 0.9);
-    background: rgba(255, 107, 53, 0.15);
-    border-color: rgba(255, 107, 53, 0.4);
+    color: rgba(255, 220, 180, 1);
+    background: rgba(255, 107, 53, 0.2);
+    border-color: rgba(255, 107, 53, 0.5);
     transform: scale(1.05);
+    text-shadow: 0 0 12px rgba(255, 100, 50, 0.6);
   }
 
   .ember-card-mastered {
-    color: #facc15;
-    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-    transform: scale(1.1);
-    background: rgba(255, 215, 0, 0.1);
-    border-color: rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.5);
+    transform: scale(1.15);
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.5);
+    animation: ember-mastered-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes ember-mastered-pulse {
+    0%, 100% {
+      text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.5);
+      filter: brightness(1);
+    }
+    50% {
+      text-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 215, 0, 0.7);
+      filter: brightness(1.2);
+    }
   }
 
   @media (max-width: 768px) {
     .ember-card-text {
-      max-width: min(220px, 70vw);
-      font-size: clamp(0.75rem, 3vw, 1rem);
-      padding: 0.4rem 0.6rem;
-      line-height: 1.4;
+      max-width: min(180px, 65vw);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.5rem;
+      line-height: 1.35;
+    }
+  }
+
+  /* Very small screens */
+  @media (max-width: 400px) {
+    .ember-card-text {
+      max-width: min(150px, 60vw);
+      font-size: 0.7rem;
+      padding: 0.3rem 0.4rem;
     }
   }
 </style>

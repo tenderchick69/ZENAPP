@@ -494,8 +494,8 @@
           />
         {:else}
           <span class="syndicate-card-text text-sm md:text-lg lg:text-xl tracking-wider syndicate-text-glitch text-center
-                       {!w.decrypting && !w.glitching ? 'text-[#00fff2]/70 hover:text-[#00fff2] syndicate-glow-subtle' : ''}">
-            <span class="opacity-50">[</span>{w.headword}<span class="opacity-50">]</span>
+                       {!w.decrypting && !w.glitching ? 'text-[#00fff2]/90 hover:text-[#00fff2] syndicate-glow-visible' : ''}">
+            <span class="opacity-60">[</span>{w.headword}<span class="opacity-60">]</span>
           </span>
         {/if}
       </div>
@@ -731,9 +731,9 @@
     animation-delay: var(--glitch-delay, 0s);
   }
 
-  /* Subtle glow for idle words */
-  .syndicate-glow-subtle {
-    text-shadow: 0 0 10px rgba(0, 255, 242, 0.3);
+  /* Visible glow for idle words - stronger for readability */
+  .syndicate-glow-visible {
+    text-shadow: 0 0 12px rgba(0, 255, 242, 0.5), 0 0 4px rgba(0, 255, 242, 0.3);
   }
 
   /* Mobile-safe glitch - reduced movement to prevent off-screen */
@@ -935,10 +935,20 @@
 
   @media (max-width: 768px) {
     .syndicate-card-text {
-      max-width: min(220px, 70vw);
-      font-size: 0.875rem;
-      padding: 0.4rem 0.6rem;
-      line-height: 1.4;
+      max-width: min(180px, 65vw);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.5rem;
+      line-height: 1.35;
+      letter-spacing: 0.02em;
+    }
+  }
+
+  /* Very small screens - even smaller text */
+  @media (max-width: 400px) {
+    .syndicate-card-text {
+      max-width: min(150px, 60vw);
+      font-size: 0.7rem;
+      padding: 0.3rem 0.4rem;
     }
   }
 </style>
