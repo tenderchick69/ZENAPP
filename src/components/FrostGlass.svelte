@@ -470,7 +470,7 @@
           onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
-        <span class="frost-card-text font-finger tracking-wide text-center transition-[color,text-shadow,filter] duration-500"
+        <span class="frost-card-text font-finger tracking-wide text-center transition-[color,text-shadow,filter] duration-500 frost-hue-{i % 5}"
               style="color: {style.color}; text-shadow: {style.textShadow}; filter: {style.filter};">
           {w.headword}
         </span>
@@ -846,5 +846,27 @@
       font-size: 0.7rem;
       padding: 0.3rem 0.4rem;
     }
+  }
+
+  /* Frost Hue Variations - Ice blue palette */
+  .frost-hue-0 {
+    border-color: rgba(168, 216, 234, 0.3); /* Classic frost */
+    background: rgba(168, 216, 234, 0.12);
+  }
+  .frost-hue-1 {
+    border-color: rgba(180, 230, 250, 0.3); /* Light ice */
+    background: rgba(180, 230, 250, 0.12);
+  }
+  .frost-hue-2 {
+    border-color: rgba(150, 200, 220, 0.3); /* Deep winter */
+    background: rgba(150, 200, 220, 0.12);
+  }
+  .frost-hue-3 {
+    border-color: rgba(190, 220, 240, 0.3); /* Crystal blue */
+    background: rgba(190, 220, 240, 0.12);
+  }
+  .frost-hue-4 {
+    border-color: rgba(160, 210, 230, 0.3); /* Glacier */
+    background: rgba(160, 210, 230, 0.12);
   }
 </style>

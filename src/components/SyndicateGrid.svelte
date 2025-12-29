@@ -493,8 +493,8 @@
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
-          <span class="syndicate-card-text text-sm md:text-lg lg:text-xl tracking-wider syndicate-text-glitch text-center
-                       {!w.decrypting && !w.glitching ? 'text-[#00fff2]/90 hover:text-[#00fff2] syndicate-glow-visible' : ''}">
+          <span class="syndicate-card-text text-sm md:text-lg lg:text-xl tracking-wider syndicate-text-glitch text-center syndicate-hue-{i % 5}
+                       {!w.decrypting && !w.glitching ? 'syndicate-glow-visible' : ''}">
             <span class="opacity-60">[</span>{w.headword}<span class="opacity-60">]</span>
           </span>
         {/if}
@@ -733,7 +733,54 @@
 
   /* Visible glow for idle words - stronger for readability */
   .syndicate-glow-visible {
-    text-shadow: 0 0 12px rgba(0, 255, 242, 0.5), 0 0 4px rgba(0, 255, 242, 0.3);
+    text-shadow: 0 0 12px var(--syn-glow, rgba(0, 255, 242, 0.5)), 0 0 4px var(--syn-glow, rgba(0, 255, 242, 0.3));
+  }
+
+  /* Subtle hue variations - cyberpunk palette */
+  .syndicate-hue-0 {
+    --syn-color: rgba(0, 255, 242, 0.9);     /* Pure cyan */
+    --syn-glow: rgba(0, 255, 242, 0.5);
+    --syn-bg: rgba(0, 255, 242, 0.08);
+    --syn-border: rgba(0, 255, 242, 0.25);
+    color: var(--syn-color);
+    background: var(--syn-bg);
+    border-color: var(--syn-border);
+  }
+  .syndicate-hue-1 {
+    --syn-color: rgba(57, 255, 20, 0.85);    /* Neon green */
+    --syn-glow: rgba(57, 255, 20, 0.5);
+    --syn-bg: rgba(57, 255, 20, 0.06);
+    --syn-border: rgba(57, 255, 20, 0.2);
+    color: var(--syn-color);
+    background: var(--syn-bg);
+    border-color: var(--syn-border);
+  }
+  .syndicate-hue-2 {
+    --syn-color: rgba(0, 200, 255, 0.9);     /* Electric blue */
+    --syn-glow: rgba(0, 200, 255, 0.5);
+    --syn-bg: rgba(0, 200, 255, 0.08);
+    --syn-border: rgba(0, 200, 255, 0.25);
+    color: var(--syn-color);
+    background: var(--syn-bg);
+    border-color: var(--syn-border);
+  }
+  .syndicate-hue-3 {
+    --syn-color: rgba(180, 255, 220, 0.85);  /* Mint */
+    --syn-glow: rgba(180, 255, 220, 0.4);
+    --syn-bg: rgba(180, 255, 220, 0.06);
+    --syn-border: rgba(180, 255, 220, 0.2);
+    color: var(--syn-color);
+    background: var(--syn-bg);
+    border-color: var(--syn-border);
+  }
+  .syndicate-hue-4 {
+    --syn-color: rgba(200, 100, 255, 0.85);  /* Purple glitch */
+    --syn-glow: rgba(200, 100, 255, 0.4);
+    --syn-bg: rgba(200, 100, 255, 0.06);
+    --syn-border: rgba(200, 100, 255, 0.2);
+    color: var(--syn-color);
+    background: var(--syn-bg);
+    border-color: var(--syn-border);
   }
 
   /* Mobile-safe glitch - reduced movement to prevent off-screen */

@@ -498,7 +498,7 @@
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
-          <span class="zen-card-text tracking-wider font-light text-center
+          <span class="zen-card-text tracking-wider font-light text-center zen-hue-{i % 5}
                        {i === currentIndex && !w.dissolving ? 'zen-card-active' : 'zen-card-inactive'}">
             {w.headword}
           </span>
@@ -786,5 +786,26 @@
       font-size: 0.7rem;
       padding: 0.3rem 0.4rem;
     }
+  }
+
+  /* Zen Hue Variations - Subtle grayscale with minimal tint */
+  .zen-hue-0 {
+    --zen-tint: rgba(200, 200, 210, 0.08); /* Cool gray */
+  }
+  .zen-hue-1 {
+    --zen-tint: rgba(210, 205, 195, 0.08); /* Warm gray */
+  }
+  .zen-hue-2 {
+    --zen-tint: rgba(195, 205, 200, 0.08); /* Sage gray */
+  }
+  .zen-hue-3 {
+    --zen-tint: rgba(205, 195, 205, 0.08); /* Lavender gray */
+  }
+  .zen-hue-4 {
+    --zen-tint: rgba(200, 200, 200, 0.08); /* Pure gray */
+  }
+
+  .zen-hue-0, .zen-hue-1, .zen-hue-2, .zen-hue-3, .zen-hue-4 {
+    background: var(--zen-tint);
   }
 </style>

@@ -345,7 +345,7 @@
   {/each}
 
   <!-- Words -->
-  {#each words as w (w.id)}
+  {#each words as w, i (w.id)}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
@@ -365,8 +365,8 @@
           onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
         />
       {:else}
-        <span class="ember-card-text transition-[color,text-shadow] duration-1000 text-center
-                     {w.mastered ? 'ember-card-mastered' : 'ember-card-unmastered'}">
+        <span class="ember-card-text transition-[color,text-shadow] duration-1000 text-center ember-hue-{i % 5}
+                     {w.mastered ? 'ember-card-mastered' : ''}">
           {w.headword}
         </span>
       {/if}
@@ -589,5 +589,36 @@
       font-size: 0.7rem;
       padding: 0.3rem 0.4rem;
     }
+  }
+
+  /* Ember Hue Variations - Warm fire palette */
+  .ember-hue-0 {
+    color: rgba(255, 160, 100, 0.85); /* Warm orange */
+    border-color: rgba(255, 140, 80, 0.25);
+    background: rgba(255, 120, 60, 0.08);
+  }
+  .ember-hue-1 {
+    color: rgba(255, 190, 120, 0.85); /* Amber gold */
+    border-color: rgba(255, 180, 100, 0.25);
+    background: rgba(255, 170, 80, 0.08);
+  }
+  .ember-hue-2 {
+    color: rgba(255, 130, 100, 0.85); /* Coral red */
+    border-color: rgba(255, 110, 80, 0.25);
+    background: rgba(255, 100, 70, 0.08);
+  }
+  .ember-hue-3 {
+    color: rgba(255, 200, 140, 0.85); /* Soft gold */
+    border-color: rgba(255, 190, 120, 0.25);
+    background: rgba(255, 180, 100, 0.08);
+  }
+  .ember-hue-4 {
+    color: rgba(255, 145, 85, 0.85); /* Deep flame */
+    border-color: rgba(255, 125, 65, 0.25);
+    background: rgba(255, 110, 55, 0.08);
+  }
+
+  .ember-hue-0:hover, .ember-hue-1:hover, .ember-hue-2:hover, .ember-hue-3:hover, .ember-hue-4:hover {
+    filter: brightness(1.15);
   }
 </style>
