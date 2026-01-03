@@ -25,7 +25,7 @@ export interface OpenRouterConfig {
 }
 
 export const DEFAULT_CONFIG: Partial<OpenRouterConfig> = {
-  model: 'moonshotai/kimi-k2', // KIMI K2 - cheap and effective
+  model: 'moonshotai/kimi-k2-0905', // KIMI K2 0905 - 2x context (262K), faster
   maxTokens: 4000,
   temperature: 0.7, // Some creativity, not too wild
 };

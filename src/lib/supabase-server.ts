@@ -62,3 +62,50 @@ export async function saveImageToStorage(
   // 4. Return filepath (NOT full URL) - signed URLs generated on-demand
   return filepath;
 }
+
+/**
+ * Saves a base64 image directly to Supabase Storage.
+ * Used for providers that return base64 data (like GPT-5 Image Mini).
+ *
+ * @param base64Data - Base64 data URL like "data:image/png;base64,iVBORw0K..."
+ * @param userId - User ID for scoped storage path
+ * @param cardId - Card ID for organizing images
+ * @returns Storage filepath like "user123/card456/1234567890.png"
+ */
+export async function saveBase64ToStorage(
+  base64Data: string,
+  userId: string,
+  cardId: number | string
+): Promise<string> {
+  const supabase = createServerSupabase();
+
+  // 1. Parse base64 data URL
+  const matches = base64Data.match(/^data:image\/(\w+);base64,(.+)$/);
+  if (!matches) {
+    throw new Error('Invalid base64 data URL format');
+  }
+
+  const [, format, base64Content] = matches;
+  const imageBuffer = Buffer.from(base64Content, 'base64');
+
+  // 2. Create user-scoped filepath
+  const timestamp = Date.now();
+  const extension = format === 'jpeg' ? 'jpg' : format;
+  const filepath = `${userId}/${cardId}/${timestamp}.${extension}`;
+
+  // 3. Upload to Supabase Storage
+  const { data, error } = await supabase.storage
+    .from('vocab-assets')
+    .upload(filepath, imageBuffer, {
+      contentType: `image/${format}`,
+      cacheControl: '31536000', // 1 year cache
+      upsert: true
+    });
+
+  if (error) {
+    throw new Error(`Storage upload failed: ${error.message}`);
+  }
+
+  // 4. Return filepath (NOT full URL) - signed URLs generated on-demand
+  return filepath;
+}

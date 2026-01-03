@@ -70,11 +70,18 @@
 
   // Modal state
   let showModal = $state(false);
+  let selectedProvider = $state('runware'); // 'runware' | 'openrouter-image'
   let selectedModel = $state('sd15');
   let selectedStyle = $state('photorealistic');
   let customPrompt = $state('');
 
-  // Model options
+  // Provider options
+  const providers = [
+    { id: 'runware', name: 'Runware', desc: 'Free, fast' },
+    { id: 'openrouter-image', name: 'GPT-5 Image', desc: '~$0.03, best quality' }
+  ];
+
+  // Model options (only for Runware)
   const models = [
     { id: 'sd15', name: 'SD 1.5', desc: 'Fastest' },
     { id: 'sdxl', name: 'SDXL', desc: 'Better' },
@@ -134,8 +141,10 @@
 
   // Load saved preferences
   onMount(() => {
+    const savedProvider = localStorage.getItem('vocapp_imagegen_provider');
     const savedModel = localStorage.getItem('vocapp_imagegen_model');
     const savedStyle = localStorage.getItem('vocapp_imagegen_style');
+    if (savedProvider) selectedProvider = savedProvider;
     if (savedModel) selectedModel = savedModel;
     if (savedStyle) selectedStyle = savedStyle;
   });
@@ -151,6 +160,7 @@
   }
 
   async function handleGenerate() {
+    localStorage.setItem('vocapp_imagegen_provider', selectedProvider);
     localStorage.setItem('vocapp_imagegen_model', selectedModel);
     localStorage.setItem('vocapp_imagegen_style', selectedStyle);
     closeModal();
@@ -171,7 +181,8 @@
           card,
           cardId: card.id,
           userId, // Pass userId for user-scoped storage paths
-          model: selectedModel,
+          provider: selectedProvider,
+          model: selectedProvider === 'runware' ? selectedModel : undefined, // Model only for Runware
           style: selectedStyle,
           customPrompt: customPrompt.trim() || undefined
         })
@@ -340,24 +351,45 @@
       </div>
 
       <div class="modal-body">
-        <!-- Model Selection -->
+        <!-- Provider Selection -->
         <div class="section">
-          <label class="section-label">Model:</label>
+          <label class="section-label">Provider:</label>
           <div class="option-list">
-            {#each models as model}
+            {#each providers as provider}
               <label class="option-item">
                 <input
                   type="radio"
-                  name="model"
-                  value={model.id}
-                  bind:group={selectedModel}
+                  name="provider"
+                  value={provider.id}
+                  bind:group={selectedProvider}
                 />
-                <span class="option-name">{model.name}</span>
-                <span class="option-desc">({model.desc})</span>
+                <span class="option-name">{provider.name}</span>
+                <span class="option-desc">({provider.desc})</span>
               </label>
             {/each}
           </div>
         </div>
+
+        <!-- Model Selection (Runware only) -->
+        {#if selectedProvider === 'runware'}
+          <div class="section">
+            <label class="section-label">Model:</label>
+            <div class="option-list">
+              {#each models as model}
+                <label class="option-item">
+                  <input
+                    type="radio"
+                    name="model"
+                    value={model.id}
+                    bind:group={selectedModel}
+                  />
+                  <span class="option-name">{model.name}</span>
+                  <span class="option-desc">({model.desc})</span>
+                </label>
+              {/each}
+            </div>
+          </div>
+        {/if}
 
         <!-- Style Selection -->
         <div class="section">
