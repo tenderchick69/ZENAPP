@@ -19,6 +19,7 @@ const DICTIONARY = {
     subtitle: 'Upgrade Your Software',
 
     // Home
+    yourDecks: 'YOUR IMPLANTS',
     btn_import: 'DATA INGESTION',
     btn_ai: 'AI NEURAL SYNTHESIS',
     no_decks: 'NO IMPLANTS DETECTED',
@@ -96,6 +97,7 @@ const DICTIONARY = {
     subtitle: 'One Path. No Noise.',
 
     // Home
+    yourDecks: 'Your Decks',
     btn_import: 'Import CSV',
     btn_ai: 'AI Generator',
     no_decks: 'The garden is empty.',
@@ -173,6 +175,7 @@ const DICTIONARY = {
     subtitle: 'Keep the fire burning.',
 
     // Home
+    yourDecks: 'Your Gardens',
     btn_import: 'Sow Seeds',
     btn_ai: 'Spark Life',
     no_decks: 'The hearth is cold.',
@@ -250,6 +253,7 @@ const DICTIONARY = {
     subtitle: 'Write your breath.',
 
     // Home
+    yourDecks: 'Your Crystals',
     btn_import: 'Condensation',
     btn_ai: 'Breathe Words',
     no_decks: 'The glass is clear.',

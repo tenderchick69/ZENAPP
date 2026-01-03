@@ -136,7 +136,7 @@
   {:else}
     <!-- Decks Exist: Show Grid + Add Options -->
     <h2 class="text-2xl font-heading text-main mb-8 tracking-tight uppercase opacity-80 text-center">
-      {$theme === 'ember' ? 'Your Gardens' : 'Your Decks'}
+      {$t.yourDecks}
     </h2>
 
     <!-- Deck Grid -->

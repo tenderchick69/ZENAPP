@@ -71,21 +71,14 @@
   // Modal state
   let showModal = $state(false);
   let selectedProvider = $state('runware'); // 'runware' | 'openrouter-image'
-  let selectedModel = $state('sd15');
+  let selectedModel = $state('sdxl'); // Default to SDXL
   let selectedStyle = $state('photorealistic');
   let customPrompt = $state('');
 
-  // Provider options
+  // Provider options - simplified
   const providers = [
-    { id: 'runware', name: 'Runware', desc: 'Free, fast' },
-    { id: 'openrouter-image', name: 'GPT-5 Image', desc: '~$0.03, best quality' }
-  ];
-
-  // Model options (only for Runware)
-  const models = [
-    { id: 'sd15', name: 'SD 1.5', desc: 'Fastest' },
-    { id: 'sdxl', name: 'SDXL', desc: 'Better' },
-    { id: 'flux', name: 'FLUX', desc: 'Best' }
+    { id: 'runware', name: 'Runware SDXL', desc: 'Free' },
+    { id: 'openrouter-image', name: 'GPT-5 Image Mini', desc: '~$0.03, best' }
   ];
 
   // Style options
@@ -182,7 +175,7 @@
           cardId: card.id,
           userId, // Pass userId for user-scoped storage paths
           provider: selectedProvider,
-          model: selectedProvider === 'runware' ? selectedModel : undefined, // Model only for Runware
+          model: selectedProvider === 'runware' ? 'sdxl' : undefined, // Always SDXL for Runware
           style: selectedStyle,
           customPrompt: customPrompt.trim() || undefined
         })
@@ -369,27 +362,6 @@
             {/each}
           </div>
         </div>
-
-        <!-- Model Selection (Runware only) -->
-        {#if selectedProvider === 'runware'}
-          <div class="section">
-            <label class="section-label">Model:</label>
-            <div class="option-list">
-              {#each models as model}
-                <label class="option-item">
-                  <input
-                    type="radio"
-                    name="model"
-                    value={model.id}
-                    bind:group={selectedModel}
-                  />
-                  <span class="option-name">{model.name}</span>
-                  <span class="option-desc">({model.desc})</span>
-                </label>
-              {/each}
-            </div>
-          </div>
-        {/if}
 
         <!-- Style Selection -->
         <div class="section">

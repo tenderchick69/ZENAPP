@@ -673,7 +673,7 @@
 
       <!-- Scrollable Card List -->
       <div class="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain" style="-webkit-overflow-scrolling: touch;">
-        <div class="p-4 md:p-6 space-y-2">
+        <div class="max-w-2xl mx-auto p-4 md:p-6 space-y-2">
           {#each [...allCards].sort((a, b) => a.state - b.state || new Date(a.due).getTime() - new Date(b.due).getTime()) as card}
             <button
               onclick={() => openGardenerModal(card)}
@@ -681,7 +681,12 @@
                <!-- Image thumbnail -->
                <div class="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-lg overflow-hidden bg-dim/20">
                  {#if getCardImageUrl(card)}
-                   <img src={getCardImageUrl(card)} alt="" class="w-full h-full object-cover" />
+                   <img
+                     src={getCardImageUrl(card)}
+                     alt=""
+                     class="w-full h-full object-cover"
+                     onerror={(e) => e.currentTarget.style.display = 'none'}
+                   />
                  {:else}
                    <div class="w-full h-full flex items-center justify-center text-dim/50 text-lg">📷</div>
                  {/if}

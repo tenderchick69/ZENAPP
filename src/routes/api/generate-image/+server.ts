@@ -25,6 +25,13 @@ export const POST: RequestHandler = async ({ request }) => {
       provider?: string; // 'runware' | 'openrouter-image'
     };
 
+    console.log('=== IMAGE GENERATION REQUEST ===');
+    console.log('Card:', card?.headword);
+    console.log('Provider requested:', requestedProvider);
+    console.log('Model:', model);
+    console.log('UserId:', userId ? 'provided' : 'MISSING');
+    console.log('CardId:', cardId);
+
     // Validate card data
     if (!card || !card.headword || !card.definition) {
       throw error(400, 'Card data with headword and definition required');
@@ -42,12 +49,16 @@ export const POST: RequestHandler = async ({ request }) => {
     // Check API key availability
     if (useOpenRouter) {
       if (!OPENROUTER_API_KEY) {
+        console.error('OPENROUTER_API_KEY not configured');
         throw error(500, 'OpenRouter API key not configured');
       }
+      console.log('Using OpenRouter with API key:', OPENROUTER_API_KEY.slice(0, 10) + '...');
     } else {
       if (!env.RUNWARE_API_KEY) {
+        console.error('RUNWARE_API_KEY not configured');
         throw error(500, 'Runware API key not configured');
       }
+      console.log('Using Runware with API key:', env.RUNWARE_API_KEY.slice(0, 10) + '...');
     }
 
     // Use custom prompt if provided, otherwise build from card
@@ -74,74 +85,90 @@ export const POST: RequestHandler = async ({ request }) => {
       }
     }
 
-    console.log('Generating image for:', card.headword);
-    console.log('Provider:', useOpenRouter ? 'openrouter-image' : 'runware');
-    console.log('Model:', model || 'sd15');
-    console.log('Prompt:', finalPrompt);
+    console.log('Final prompt:', finalPrompt.slice(0, 200));
 
     // Create provider based on selection
     const provider = useOpenRouter
       ? createOpenRouterImageProvider(OPENROUTER_API_KEY)
       : createRunwareProvider(env.RUNWARE_API_KEY);
 
+    console.log('Provider configured:', provider.name);
+
     // Generate the image
     const result = await generateImage(provider, {
       prompt: finalPrompt,
       width: 512,
       height: 512,
-      model: model || 'sd15'
+      model: model || 'sdxl' // Default to SDXL for better quality
     });
 
     if (!result.success) {
-      console.error('Image generation failed:', result.error, result.errors);
+      console.error('=== IMAGE GENERATION FAILED ===');
+      console.error('Error:', result.error);
+      console.error('Errors:', result.errors);
       return json({
         error: result.error || 'Image generation failed',
         details: result.errors || []
       }, { status: 500 });
     }
 
-    console.log(`Image generated via ${result.provider}`);
+    console.log('=== IMAGE GENERATED SUCCESSFULLY ===');
+    console.log('Provider:', result.provider);
+    console.log('Image URL type:', result.imageUrl?.startsWith('data:') ? 'base64' : 'URL');
+    console.log('Image URL length:', result.imageUrl?.length);
 
-    // Save to Supabase Storage - returns filepath for database storage
-    // Signed URLs are generated on-demand when displaying images
+    // ALWAYS try to save to Supabase Storage
     let imageUrl = result.imageUrl; // Fallback
-    if (env.SUPABASE_SERVICE_ROLE_KEY && userId) {
+    const canSaveToStorage = env.SUPABASE_SERVICE_ROLE_KEY && userId;
+
+    console.log('=== SUPABASE STORAGE CHECK ===');
+    console.log('SUPABASE_SERVICE_ROLE_KEY:', env.SUPABASE_SERVICE_ROLE_KEY ? 'configured' : 'MISSING');
+    console.log('userId:', userId || 'MISSING');
+    console.log('Can save to storage:', canSaveToStorage);
+
+    if (canSaveToStorage) {
       try {
         const uniqueCardId = cardId || `temp-${Date.now()}`;
         let filepath: string;
 
-        // OpenRouter returns base64 data URLs, Runware returns temp URLs
-        if (useOpenRouter && result.imageUrl?.startsWith('data:')) {
-          filepath = await saveBase64ToStorage(result.imageUrl, userId, uniqueCardId);
-          console.log(`Base64 image saved to Supabase Storage:`, filepath);
+        // Check if image is base64 or URL
+        const isBase64 = result.imageUrl?.startsWith('data:');
+        console.log('Image format:', isBase64 ? 'base64' : 'URL');
+
+        if (isBase64) {
+          console.log('Saving base64 image to Supabase...');
+          filepath = await saveBase64ToStorage(result.imageUrl!, userId, uniqueCardId);
         } else {
+          console.log('Downloading and saving URL image to Supabase...');
           filepath = await saveImageToStorage(result.imageUrl!, userId, uniqueCardId);
-          console.log(`Image saved to Supabase Storage:`, filepath);
         }
 
-        imageUrl = filepath; // Store filepath, not full URL
+        console.log('=== IMAGE SAVED TO SUPABASE ===');
+        console.log('Filepath:', filepath);
+        imageUrl = filepath; // Use Supabase filepath instead of temp URL
       } catch (storageError) {
-        // Log error but don't fail - return temp URL as fallback
-        console.error('Failed to save to Supabase Storage:', storageError);
-        console.log('Falling back to temporary/base64 URL');
+        console.error('=== SUPABASE STORAGE ERROR ===');
+        console.error('Error:', storageError);
+        console.log('Falling back to temporary URL (will expire!)');
+        // Keep the temp URL as fallback
       }
     } else {
-      if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.warn('SUPABASE_SERVICE_ROLE_KEY not configured - using temporary URL');
-      }
-      if (!userId) {
-        console.warn('userId not provided - using temporary URL');
-      }
+      console.warn('=== CANNOT SAVE TO SUPABASE ===');
+      console.warn('Image will use temporary URL that may expire');
     }
 
+    console.log('=== RETURNING RESPONSE ===');
+    console.log('Final imageUrl:', imageUrl?.slice(0, 100));
+
     return json({
-      imageUrl, // Either filepath (permanent) or temp URL (fallback)
+      imageUrl,
       prompt: finalPrompt,
       provider: result.provider
     });
 
   } catch (e: unknown) {
-    console.error('Generate image error:', e);
+    console.error('=== GENERATE IMAGE ERROR ===');
+    console.error('Error:', e);
 
     if (e && typeof e === 'object' && 'status' in e) {
       throw e;
