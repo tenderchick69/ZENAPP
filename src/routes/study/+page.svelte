@@ -584,67 +584,46 @@
         </div>
       </div>
 
-      <!-- Stats Grid with Cubic Buttons -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10 mb-8 md:mb-14 w-full max-w-3xl mx-auto">
-        <!-- Column 1: Wilting / Due -->
-        <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim h-[100px] md:h-[160px] text-center group hover:border-danger transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
-            <div class="text-3xl md:text-7xl font-heading text-danger leading-none">{stats.due}</div>
-            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-danger mt-2 md:mt-4">{$t.stat_due}</div>
-          </div>
-          <Tooltip text="Study cards that are due for review.">
-            <button
-              onclick={() => startSession('standard')}
-              disabled={stats.due === 0}
-              class="w-18 h-18 md:w-28 md:h-28 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-base md:text-xl cursor-pointer flex-shrink-0
-                {$theme === 'ember' ? 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black' :
-                 $theme === 'frost' ? 'border-slate-400 text-slate-300 hover:bg-slate-400 hover:text-[#1a2a3a]' :
-                 $theme === 'syndicate' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
-                 'border-[#c9a89a] text-[#c9a89a] hover:bg-[#c9a89a] hover:text-[#1c1917]'}">
-              Study
-            </button>
-          </Tooltip>
-        </div>
+      <!-- Stats Grid - Clickable Numbers -->
+      <div class="grid grid-cols-3 gap-3 md:gap-6 mb-8 md:mb-14 w-full max-w-2xl mx-auto">
+        <!-- Due/Critical - clickable -->
+        <Tooltip text="Study cards that are due for review">
+          <button
+            onclick={() => startSession('standard')}
+            disabled={stats.due === 0}
+            class="stat-box group bg-bg/50 border-2 border-dim h-[120px] md:h-[180px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+                   hover:border-danger hover:bg-danger/10 hover:-translate-y-1
+                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
+            <div class="text-4xl md:text-7xl font-heading text-danger leading-none transition-transform group-hover:scale-110">{stats.due}</div>
+            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.15em] uppercase text-danger/70 mt-3 md:mt-4">{$t.stat_due}</div>
+          </button>
+        </Tooltip>
 
-        <!-- Column 2: Garden Size / Total -->
-        <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim h-[100px] md:h-[160px] text-center group hover:border-success transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
-            <div class="text-3xl md:text-7xl font-heading text-success leading-none">{stats.total}</div>
-            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-success mt-2 md:mt-4">{$t.stat_learn}</div>
-          </div>
-          <Tooltip text="Review all cards in random order.">
-            <button
-              onclick={() => startSession('all')}
-              disabled={stats.total - stats.mastered === 0}
-              class="w-18 h-18 md:w-28 md:h-28 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-base md:text-xl cursor-pointer flex-shrink-0
-                {$theme === 'ember' ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black' :
-                 $theme === 'frost' ? 'border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-[#1a2a3a]' :
-                 $theme === 'syndicate' ? 'border-lime-400 text-lime-400 hover:bg-lime-400 hover:text-black' :
-                 'border-[#8a9a5b] text-[#8a9a5b] hover:bg-[#8a9a5b] hover:text-[#1c1917]'}">
-              All
-            </button>
-          </Tooltip>
-        </div>
+        <!-- All/Learning - clickable -->
+        <Tooltip text="Review all learning cards">
+          <button
+            onclick={() => startSession('all')}
+            disabled={stats.total - stats.mastered === 0}
+            class="stat-box group bg-bg/50 border-2 border-dim h-[120px] md:h-[180px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+                   hover:border-success hover:bg-success/10 hover:-translate-y-1
+                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
+            <div class="text-4xl md:text-7xl font-heading text-success leading-none transition-transform group-hover:scale-110">{stats.total - stats.mastered}</div>
+            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.15em] uppercase text-success/70 mt-3 md:mt-4">{$t.stat_learn}</div>
+          </button>
+        </Tooltip>
 
-        <!-- Column 3: Eternal / Mastered -->
-        <div class="flex flex-row md:flex-col items-center gap-3 md:gap-6">
-          <div class="bg-bg/50 border border-dim h-[100px] md:h-[160px] text-center group hover:border-accent transition-colors rounded-2xl cursor-default select-none flex-1 md:w-full flex flex-col items-center justify-center">
-            <div class="text-3xl md:text-7xl font-heading text-accent leading-none">{stats.mastered}</div>
-            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase text-main/70 group-hover:text-accent mt-2 md:mt-4">{$t.stat_master}</div>
-          </div>
-          <Tooltip text="Test your knowledge of mastered cards.">
-            <button
-              onclick={() => startSession('souls')}
-              disabled={stats.mastered === 0}
-              class="w-18 h-18 md:w-28 md:h-28 aspect-square rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center font-ember text-base md:text-xl cursor-pointer flex-shrink-0
-                {$theme === 'ember' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black' :
-                 $theme === 'frost' ? 'border-sky-400 text-sky-300 hover:bg-sky-400 hover:text-[#1a2a3a]' :
-                 $theme === 'syndicate' ? 'border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black' :
-                 'border-[#a8c5c5] text-[#a8c5c5] hover:bg-[#a8c5c5] hover:text-[#1c1917]'}">
-              {$theme === 'ember' ? 'Souls' : $theme === 'frost' ? 'Traces' : $theme === 'syndicate' ? 'Archive' : 'Essence'}
-            </button>
-          </Tooltip>
-        </div>
+        <!-- Mastered - clickable -->
+        <Tooltip text="Practice mastered cards">
+          <button
+            onclick={() => startSession('souls')}
+            disabled={stats.mastered === 0}
+            class="stat-box group bg-bg/50 border-2 border-dim h-[120px] md:h-[180px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+                   hover:border-accent hover:bg-accent/10 hover:-translate-y-1
+                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
+            <div class="text-4xl md:text-7xl font-heading text-accent leading-none transition-transform group-hover:scale-110">{stats.mastered}</div>
+            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.15em] uppercase text-accent/70 mt-3 md:mt-4">{$t.stat_master}</div>
+          </button>
+        </Tooltip>
       </div>
 
       <!-- Wildfire Row -->
@@ -961,7 +940,7 @@
         </div>
 
         <!-- Scrollable Form Content -->
-        <div class="flex-1 overflow-y-auto overscroll-contain px-4 md:px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+        <div class="flex-1 overflow-y-auto px-4 md:px-6 pb-4" style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
           <div class="bg-panel border-2 border-accent/50 p-4 md:p-6 rounded-2xl shadow-[0_0_60px_rgba(var(--color-accent-rgb),0.3)]">
             <div class="space-y-5">
               <!-- Headword -->
