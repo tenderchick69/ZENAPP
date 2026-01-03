@@ -4,7 +4,7 @@ export { buildImagePrompt, canGenerateImage, shouldSkipImage } from './promptBui
 export type { CardData, PromptResult } from './promptBuilder';
 
 export { createRunwareProvider, RUNWARE_MODELS } from './providers/runware';
-export { createOpenRouterImageProvider } from './providers/openrouter-image';
+export { createOpenAIImageProvider, generateWithOpenAI } from './providers/openai';
 export type { ImageProvider, ImageGenerationOptions, ImageGenerationResult, ProviderError } from './providers/types';
 
 import type { ImageProvider, ImageGenerationResult, ImageGenerationOptions, ProviderError } from './providers/types';

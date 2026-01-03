@@ -1,6 +1,6 @@
 <script lang="ts">
   import { theme } from '$lib/theme';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { getSignedImageUrls, isStoragePath } from '$lib/storage';
 
   interface Props {
@@ -70,15 +70,15 @@
 
   // Modal state
   let showModal = $state(false);
-  let selectedProvider = $state('runware'); // 'runware' | 'openrouter-image'
+  let selectedProvider = $state('runware'); // 'runware' | 'openai'
   let selectedModel = $state('sdxl'); // Default to SDXL
   let selectedStyle = $state('photorealistic');
   let customPrompt = $state('');
 
-  // Provider options - simplified
+  // Provider options - using direct OpenAI API (not OpenRouter)
   const providers = [
     { id: 'runware', name: 'Runware SDXL', desc: 'Free' },
-    { id: 'openrouter-image', name: 'GPT-5 Image Mini', desc: '~$0.03, best' }
+    { id: 'openai', name: 'GPT Image', desc: '~$0.02, best quality' }
   ];
 
   // Style options
@@ -146,11 +146,26 @@
     // Initialize custom prompt with smart default
     customPrompt = buildSmartPrompt();
     showModal = true;
+    // Prevent background scroll on mobile
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden';
+    }
   }
 
   function closeModal() {
     showModal = false;
+    // Restore background scroll
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
   }
+
+  // Cleanup on destroy
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  });
 
   async function handleGenerate() {
     localStorage.setItem('vocapp_imagegen_provider', selectedProvider);
@@ -336,14 +351,16 @@
 {#if showModal}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal-backdrop" onclick={closeModal}>
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
+  <div class="image-gen-modal-overlay" onclick={closeModal}>
+    <div class="image-gen-modal" onclick={(e) => e.stopPropagation()}>
+      <!-- Fixed Header -->
+      <div class="image-gen-modal-header">
         <h3>Generate Image</h3>
         <button class="modal-close" onclick={closeModal}>✕</button>
       </div>
 
-      <div class="modal-body">
+      <!-- Scrollable Content -->
+      <div class="image-gen-modal-content">
         <!-- Provider Selection -->
         <div class="section">
           <label class="section-label">Provider:</label>
@@ -396,7 +413,8 @@
         </div>
       </div>
 
-      <div class="modal-footer">
+      <!-- Fixed Footer -->
+      <div class="image-gen-modal-footer">
         <button class="btn-cancel" onclick={closeModal}>Cancel</button>
         <button class="btn-generate" onclick={handleGenerate}>Generate</button>
       </div>
@@ -604,47 +622,43 @@
     line-height: 1.5;
   }
 
-  /* Modal Styles - High z-index to escape parent stacking context */
-  .modal-backdrop {
+  /* Modal Styles - Fixed header/footer with scrollable content */
+  .image-gen-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 9999; /* Must be higher than parent Gardener modal (z-50) */
-    padding: 1rem;
-    padding-top: max(1rem, env(safe-area-inset-top));
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(8px);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
-  .modal {
+  .image-gen-modal {
+    display: flex;
+    flex-direction: column;
     background: var(--color-panel);
     border: 2px solid var(--color-accent);
     border-radius: 1.5rem;
     width: 100%;
     max-width: 400px;
-    max-height: 90vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 2rem);
+    margin: auto;
+    overflow: hidden;
     box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--color-accent-rgb), 0.2);
   }
 
-  .modal-header {
+  .image-gen-modal-header {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--color-dim);
-    position: sticky;
-    top: 0;
     background: var(--color-panel);
-    z-index: 1;
   }
 
-  .modal-header h3 {
+  .image-gen-modal-header h3 {
     margin: 0;
     font-size: 1.25rem;
     color: var(--color-accent);
@@ -672,8 +686,21 @@
     border-color: var(--color-accent);
   }
 
-  .modal-body {
+  .image-gen-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     padding: 1.5rem;
+  }
+
+  .image-gen-modal-footer {
+    flex-shrink: 0;
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--color-dim);
+    background: var(--color-panel);
   }
 
   .section {
@@ -797,16 +824,6 @@
   .reset-prompt-btn:hover {
     border-color: var(--color-accent);
     color: var(--color-accent);
-  }
-
-  .modal-footer {
-    display: flex;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid var(--color-dim);
-    position: sticky;
-    bottom: 0;
-    background: var(--color-panel);
   }
 
   .btn-cancel, .btn-generate {
