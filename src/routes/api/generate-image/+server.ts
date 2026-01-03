@@ -3,27 +3,43 @@ import type { RequestHandler } from './$types';
 import {
   buildImagePrompt,
   canGenerateImage,
-  generateImage,
-  createRunwareProvider,
-  createOpenAIImageProvider,
   generateWithOpenAI,
   type CardData
 } from '$lib/imagegen';
+import {
+  generateWithKie,
+  type KieModel,
+  type AspectRatio,
+  type Resolution
+} from '$lib/imagegen/providers/kie';
 import { env } from '$env/dynamic/private';
 import { saveImageToStorage, saveBase64ToStorage } from '$lib/supabase-server';
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.json();
-    const { card, model, style, customPrompt, cardId, userId, provider: requestedProvider, quality } = body as {
+    const {
+      card,
+      model,
+      style,
+      customPrompt,
+      cardId,
+      userId,
+      provider: requestedProvider,
+      quality,
+      aspectRatio,
+      resolution
+    } = body as {
       card: CardData;
       model?: string;
       style?: string;
       customPrompt?: string;
       cardId?: number | string;
       userId?: string;
-      provider?: string; // 'runware' | 'openai'
+      provider?: string; // 'kie' | 'kie-flux' | 'openai'
       quality?: 'low' | 'medium' | 'high';
+      aspectRatio?: AspectRatio;
+      resolution?: Resolution;
     };
 
     console.log('=== IMAGE GENERATION REQUEST ===');
@@ -31,6 +47,8 @@ export const POST: RequestHandler = async ({ request }) => {
     console.log('Provider requested:', requestedProvider);
     console.log('Model:', model);
     console.log('Quality:', quality);
+    console.log('Aspect Ratio:', aspectRatio);
+    console.log('Resolution:', resolution);
     console.log('UserId:', userId ? 'provided' : 'MISSING');
     console.log('CardId:', cardId);
 
@@ -47,6 +65,8 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // Determine which provider to use
     const useOpenAI = requestedProvider === 'openai' || requestedProvider === 'gpt-image';
+    const useKieFlux = requestedProvider === 'kie-flux';
+    const useKie = requestedProvider === 'kie' || (!useOpenAI && !useKieFlux); // Default to Kie Z-Image
 
     // Check API key availability
     if (useOpenAI) {
@@ -56,11 +76,11 @@ export const POST: RequestHandler = async ({ request }) => {
       }
       console.log('Using OpenAI with API key:', env.OPENAI_API_KEY.slice(0, 10) + '...');
     } else {
-      if (!env.RUNWARE_API_KEY) {
-        console.error('RUNWARE_API_KEY not configured');
-        throw error(500, 'Runware API key not configured');
+      if (!env.KIE_API_KEY) {
+        console.error('KIE_API_KEY not configured');
+        throw error(500, 'Kie.ai API key not configured');
       }
-      console.log('Using Runware with API key:', env.RUNWARE_API_KEY.slice(0, 10) + '...');
+      console.log('Using Kie.ai with API key:', env.KIE_API_KEY.slice(0, 10) + '...');
     }
 
     // Use custom prompt if provided, otherwise build from card
@@ -96,32 +116,23 @@ export const POST: RequestHandler = async ({ request }) => {
       // Use direct OpenAI API
       console.log('=== CALLING OPENAI DIRECTLY ===');
       providerName = 'openai';
-      imageUrl = await generateWithOpenAI(finalPrompt, env.OPENAI_API_KEY, quality || 'medium');
+      imageUrl = await generateWithOpenAI(finalPrompt, env.OPENAI_API_KEY!, quality || 'medium');
       console.log('OpenAI returned image');
     } else {
-      // Use Runware provider
-      console.log('=== CALLING RUNWARE ===');
-      const provider = createRunwareProvider(env.RUNWARE_API_KEY);
-      providerName = provider.name;
+      // Use Kie.ai provider
+      const kieModel: KieModel = useKieFlux ? 'flux-2/flex-text-to-image' : 'z-image';
+      console.log('=== CALLING KIE.AI ===');
+      console.log('Kie Model:', kieModel);
+      providerName = useKieFlux ? 'kie-flux' : 'kie';
 
-      const result = await generateImage(provider, {
-        prompt: finalPrompt,
-        width: 512,
-        height: 512,
-        model: model || 'sdxl'
-      });
-
-      if (!result.success) {
-        console.error('=== IMAGE GENERATION FAILED ===');
-        console.error('Error:', result.error);
-        console.error('Errors:', result.errors);
-        return json({
-          error: result.error || 'Image generation failed',
-          details: result.errors || []
-        }, { status: 500 });
-      }
-
-      imageUrl = result.imageUrl!;
+      imageUrl = await generateWithKie(
+        finalPrompt,
+        env.KIE_API_KEY!,
+        kieModel,
+        aspectRatio || '1:1',
+        kieModel === 'flux-2/flex-text-to-image' ? (resolution || '1K') : undefined
+      );
+      console.log('Kie.ai returned image');
     }
 
     console.log('=== IMAGE GENERATED SUCCESSFULLY ===');

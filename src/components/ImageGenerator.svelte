@@ -70,15 +70,25 @@
 
   // Modal state
   let showModal = $state(false);
-  let selectedProvider = $state('runware'); // 'runware' | 'openai'
-  let selectedModel = $state('sdxl'); // Default to SDXL
+  let selectedProvider = $state('kie'); // 'kie' | 'kie-flux' | 'openai'
   let selectedStyle = $state('photorealistic');
+  let selectedAspectRatio = $state('1:1');
   let customPrompt = $state('');
 
-  // Provider options - using direct OpenAI API (not OpenRouter)
+  // Provider options - Kie.ai (Z-Image & Flux) + OpenAI
   const providers = [
-    { id: 'runware', name: 'Runware SDXL', desc: 'Free' },
+    { id: 'kie', name: 'Z-Image Turbo', desc: '$0.004, fast' },
+    { id: 'kie-flux', name: 'Flux 2 Flex', desc: '~$0.02, high quality' },
     { id: 'openai', name: 'GPT Image', desc: '~$0.02, best quality' }
+  ];
+
+  // Aspect ratio options
+  const aspectRatios = [
+    { id: '1:1', name: 'Square (1:1)' },
+    { id: '4:3', name: 'Landscape (4:3)' },
+    { id: '3:4', name: 'Portrait (3:4)' },
+    { id: '16:9', name: 'Wide (16:9)' },
+    { id: '9:16', name: 'Vertical (9:16)' }
   ];
 
   // Style options
@@ -135,11 +145,11 @@
   // Load saved preferences
   onMount(() => {
     const savedProvider = localStorage.getItem('vocapp_imagegen_provider');
-    const savedModel = localStorage.getItem('vocapp_imagegen_model');
     const savedStyle = localStorage.getItem('vocapp_imagegen_style');
+    const savedAspectRatio = localStorage.getItem('vocapp_imagegen_aspect_ratio');
     if (savedProvider) selectedProvider = savedProvider;
-    if (savedModel) selectedModel = savedModel;
     if (savedStyle) selectedStyle = savedStyle;
+    if (savedAspectRatio) selectedAspectRatio = savedAspectRatio;
   });
 
   function openModal() {
@@ -169,8 +179,8 @@
 
   async function handleGenerate() {
     localStorage.setItem('vocapp_imagegen_provider', selectedProvider);
-    localStorage.setItem('vocapp_imagegen_model', selectedModel);
     localStorage.setItem('vocapp_imagegen_style', selectedStyle);
+    localStorage.setItem('vocapp_imagegen_aspect_ratio', selectedAspectRatio);
     closeModal();
     await generateImage();
   }
@@ -190,8 +200,8 @@
           cardId: card.id,
           userId, // Pass userId for user-scoped storage paths
           provider: selectedProvider,
-          model: selectedProvider === 'runware' ? 'sdxl' : undefined, // Always SDXL for Runware
           style: selectedStyle,
+          aspectRatio: selectedAspectRatio,
           customPrompt: customPrompt.trim() || undefined
         })
       });
@@ -379,6 +389,18 @@
             {/each}
           </div>
         </div>
+
+        <!-- Aspect Ratio (only for Kie.ai providers) -->
+        {#if selectedProvider === 'kie' || selectedProvider === 'kie-flux'}
+          <div class="section">
+            <label class="section-label" for="aspect-select">Aspect Ratio:</label>
+            <select id="aspect-select" class="style-select" bind:value={selectedAspectRatio}>
+              {#each aspectRatios as ratio}
+                <option value={ratio.id}>{ratio.name}</option>
+              {/each}
+            </select>
+          </div>
+        {/if}
 
         <!-- Style Selection -->
         <div class="section">

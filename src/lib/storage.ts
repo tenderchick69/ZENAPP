@@ -53,5 +53,5 @@ export async function getSignedImageUrls(filepaths: string[]): Promise<string[]>
  * Storage paths need signed URL generation.
  */
 export function isStoragePath(filepath: string): boolean {
-  return filepath && !filepath.startsWith('http');
+  return Boolean(filepath && !filepath.startsWith('http'));
 }
