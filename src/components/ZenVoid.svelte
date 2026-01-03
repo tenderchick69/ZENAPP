@@ -780,19 +780,20 @@
 
   @media (max-width: 768px) {
     .zen-card-text {
-      max-width: min(160px, 55vw);
-      font-size: 0.75rem;
-      padding: 0.35rem 0.5rem;
-      line-height: 1.3;
+      max-width: min(220px, 65vw);
+      font-size: 0.9rem;
+      padding: 0.6rem 1rem;
+      line-height: 1.4;
+      min-height: 48px;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .zen-card-text {
-      max-width: min(140px, 50vw);
-      font-size: 0.65rem;
-      padding: 0.3rem 0.4rem;
+      max-width: min(200px, 60vw);
+      font-size: 0.85rem;
+      padding: 0.5rem 0.8rem;
     }
   }
 
