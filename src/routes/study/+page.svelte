@@ -152,6 +152,7 @@
   async function loadStats() {
     if (!deckId) {
       console.error('loadStats: No deckId');
+      deckName = 'Invalid Deck';
       return;
     }
 
@@ -163,12 +164,24 @@
 
       // Fetch deck name
       const deckPromise = supabase.from('decks').select('name').eq('id', deckId).single();
-      const { data: deck } = await Promise.race([deckPromise, timeoutPromise]) as any;
-      if (deck) deckName = deck.name;
+      const { data: deck, error: deckError } = await Promise.race([deckPromise, timeoutPromise]) as any;
+
+      if (deckError) {
+        console.error('Failed to load deck:', deckError);
+        deckName = 'Deck Not Found';
+      } else if (deck) {
+        deckName = deck.name;
+      } else {
+        deckName = 'Untitled Deck';
+      }
 
       // Fetch cards
       const cardsPromise = supabase.from('cards').select('*').eq('deck_id', deckId);
-      const { data } = await Promise.race([cardsPromise, timeoutPromise]) as any;
+      const { data, error: cardsError } = await Promise.race([cardsPromise, timeoutPromise]) as any;
+
+      if (cardsError) {
+        console.error('Failed to load cards:', cardsError);
+      }
 
       if (data) {
         allCards = data;
@@ -182,11 +195,18 @@
           const lvl = Math.min(Math.max(c.state, 0), 5);
           levelDist[lvl]++;
         });
+      } else {
+        // No cards found - set defaults
+        allCards = [];
+        stats = { due: 0, learning: 0, mastered: 0, total: 0 };
+        levelDist = [0, 0, 0, 0, 0, 0];
       }
     } catch (e) {
       console.error('loadStats error:', e);
-      // Still set some default values so the UI doesn't break
-      if (!deckName) deckName = 'Unknown Deck';
+      // Set fallback values so the UI doesn't break
+      if (!deckName) deckName = 'Failed to Load';
+      allCards = [];
+      stats = { due: 0, learning: 0, mastered: 0, total: 0 };
     }
   }
 

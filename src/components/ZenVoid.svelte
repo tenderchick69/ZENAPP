@@ -217,9 +217,16 @@
     const newWordLen = newHeadword?.length || 8;
     const charWidth = isImage ? 0 : 1.2;
 
+    // Use wider margins on mobile to prevent cards from being cut off after centering
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const minX = isMobile ? 20 : 12;
+    const maxXRange = isMobile ? 60 : 76;
+    const minY = isMobile ? 18 : 15;
+    const maxYRange = isMobile ? 62 : 70;
+
     while (!safe && attempts < 200) {
-      x = 12 + Math.random() * 76;
-      y = 15 + Math.random() * 70;
+      x = minX + Math.random() * maxXRange;
+      y = minY + Math.random() * maxYRange;
 
       // Check collision with all existing words
       const hasCollision = currentWords.some(w => {
@@ -698,22 +705,23 @@
 
   /* Card text containment for long phrases */
   .zen-card-text {
-    display: inline-block;
-    max-width: min(280px, 75vw);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: min(260px, 70vw);
     padding: 0.5rem 0.75rem;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 
-    /* Text wrapping */
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
+    /* Text containment - horizontal with ellipsis */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     /* Prevent line overlap */
-    line-height: 1.5;
-    font-size: clamp(1rem, 4vw, 1.75rem);
+    line-height: 1.4;
+    font-size: clamp(0.8rem, 3.5vw, 1.5rem);
 
     /* Touch target */
     min-height: 44px;
@@ -772,18 +780,18 @@
 
   @media (max-width: 768px) {
     .zen-card-text {
-      max-width: min(180px, 65vw);
-      font-size: 0.8rem;
+      max-width: min(160px, 55vw);
+      font-size: 0.75rem;
       padding: 0.35rem 0.5rem;
-      line-height: 1.35;
+      line-height: 1.3;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .zen-card-text {
-      max-width: min(150px, 60vw);
-      font-size: 0.7rem;
+      max-width: min(140px, 50vw);
+      font-size: 0.65rem;
       padding: 0.3rem 0.4rem;
     }
   }

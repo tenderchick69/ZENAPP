@@ -95,12 +95,12 @@
     const baseHorizontalSpacing = 12;
     const charWidth = 1.2;
 
-    // Use larger margins on mobile to prevent words from floating off screen
+    // Use wider margins on mobile to prevent words from floating off screen after centering
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 15 : 8;
-    const maxXRange = isMobile ? 70 : 84;
-    const minY = isMobile ? 18 : 12;
-    const maxYRange = isMobile ? 64 : 76;
+    const minX = isMobile ? 22 : 12; // Wider margin for centering transform
+    const maxXRange = isMobile ? 56 : 76;
+    const minY = isMobile ? 20 : 14;
+    const maxYRange = isMobile ? 60 : 72;
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
@@ -375,15 +375,20 @@
 
   <!-- Session Complete Overlay -->
   {#if sessionComplete}
-    <div class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none" transition:fade>
-      <div class="text-center pointer-events-auto">
-        <h1 class="text-6xl text-yellow-500 font-ember tracking-widest mb-4 drop-shadow-[0_0_20px_gold] animate-pulse">GARDEN COMPLETE</h1>
-        <p class="text-orange-300/70 text-xl mb-8 font-light">All embers now burn eternal.</p>
-        <button
-          onclick={() => dispatch('complete')}
-          class="px-8 py-3 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-900/30 rounded transition-all uppercase tracking-widest text-sm cursor-pointer">
-          Return to Hub
-        </button>
+    <div class="absolute inset-0 z-40" transition:fade>
+      <!-- Solid backdrop to hide words -->
+      <div class="absolute inset-0 bg-black/95 backdrop-blur-sm"></div>
+      <!-- Content -->
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="text-center">
+          <h1 class="text-5xl md:text-6xl text-yellow-500 font-ember tracking-widest mb-4 drop-shadow-[0_0_20px_gold] animate-pulse">GARDEN COMPLETE</h1>
+          <p class="text-orange-300/70 text-lg md:text-xl mb-8 font-light">All embers now burn eternal.</p>
+          <button
+            onclick={() => dispatch('complete')}
+            class="px-8 py-3 border border-yellow-600/50 text-yellow-500 hover:bg-yellow-900/30 rounded transition-all uppercase tracking-widest text-sm cursor-pointer">
+            Return to Hub
+          </button>
+        </div>
       </div>
     </div>
   {/if}
@@ -517,22 +522,23 @@
 <style>
   /* Card text containment for long phrases */
   .ember-card-text {
-    display: inline-block;
-    max-width: min(280px, 75vw);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: min(260px, 70vw);
     padding: 0.5rem 0.75rem;
     background: rgba(255, 107, 53, 0.08);
     border: 1px solid rgba(255, 107, 53, 0.2);
     border-radius: 8px;
 
-    /* Text wrapping */
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
+    /* Text containment - horizontal with ellipsis */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     /* Prevent line overlap */
-    line-height: 1.5;
-    font-size: clamp(0.875rem, 3.5vw, 1.25rem);
+    line-height: 1.4;
+    font-size: clamp(0.75rem, 3.5vw, 1.2rem);
 
     /* Touch target */
     min-height: 44px;
@@ -575,18 +581,18 @@
 
   @media (max-width: 768px) {
     .ember-card-text {
-      max-width: min(180px, 65vw);
-      font-size: 0.75rem;
+      max-width: min(160px, 55vw);
+      font-size: 0.7rem;
       padding: 0.35rem 0.5rem;
-      line-height: 1.35;
+      line-height: 1.3;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .ember-card-text {
-      max-width: min(150px, 60vw);
-      font-size: 0.7rem;
+      max-width: min(140px, 50vw);
+      font-size: 0.65rem;
       padding: 0.3rem 0.4rem;
     }
   }

@@ -94,10 +94,18 @@
       let attempts = 0;
       let validPosition = null;
 
+      // Use wider margins on mobile to prevent cards from being cut off after centering
+      // Increased top margin to avoid header/toolbar overlap
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+      const minX = isMobile ? 20 : 12;
+      const maxXRange = isMobile ? 60 : 76;
+      const minY = isMobile ? 22 : 15; // Higher top margin to avoid header overlap
+      const maxYRange = isMobile ? 58 : 72;
+
       while (attempts < 50 && !validPosition) {
         const candidate = {
-          x: 10 + Math.random() * 75,
-          y: 10 + Math.random() * 70
+          x: minX + Math.random() * maxXRange,
+          y: minY + Math.random() * maxYRange
         };
 
         // Check against all existing positions
@@ -113,9 +121,10 @@
       }
 
       // Fallback if no valid position found
+      const isMobileFallback = typeof window !== 'undefined' && window.innerWidth < 768;
       positions.push(validPosition || {
-        x: 10 + Math.random() * 75,
-        y: 10 + Math.random() * 70
+        x: (isMobileFallback ? 20 : 12) + Math.random() * (isMobileFallback ? 60 : 76),
+        y: (isMobileFallback ? 22 : 15) + Math.random() * (isMobileFallback ? 58 : 72)
       });
     }
 
@@ -134,7 +143,7 @@
       y: positions[i].y,
       rotation: (Math.random() - 0.5) * 8,
       attempts: 0,
-      mastered: card.mastered || false // Preserve mastered state from parent
+      mastered: (card as any).mastered || false // Preserve mastered state from parent
     }));
 
     // Generate condensation drops
@@ -669,8 +678,10 @@
   {/if}
 
   <!-- Progress indicator -->
-  <div class="absolute bottom-4 left-4 text-white/20 text-xs font-hand">
-    <div>{masteredCount}/{words.length} clear</div>
+  <div class="fixed bottom-8 left-1/2 -translate-x-1/2 font-hand">
+    <span class="text-sm text-white/25">
+      {masteredCount}/{words.length} clear
+    </span>
   </div>
 
   <!-- Time display -->
@@ -787,22 +798,23 @@
 
   /* Card text containment for long phrases */
   .frost-card-text {
-    display: inline-block;
-    max-width: min(280px, 75vw);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: min(260px, 70vw);
     padding: 0.5rem 0.75rem;
     background: rgba(168, 216, 234, 0.1);
     border: 1px solid rgba(168, 216, 234, 0.25);
     border-radius: 8px;
 
-    /* Text wrapping */
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
+    /* Text containment - horizontal with ellipsis */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     /* Prevent line overlap */
-    line-height: 1.5;
-    font-size: clamp(1rem, 4vw, 1.75rem);
+    line-height: 1.4;
+    font-size: clamp(0.8rem, 3.5vw, 1.5rem);
 
     /* Touch target */
     min-height: 44px;
@@ -832,18 +844,18 @@
 
   @media (max-width: 768px) {
     .frost-card-text {
-      max-width: min(180px, 65vw);
-      font-size: 0.8rem;
+      max-width: min(160px, 55vw);
+      font-size: 0.75rem;
       padding: 0.35rem 0.5rem;
-      line-height: 1.35;
+      line-height: 1.3;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .frost-card-text {
-      max-width: min(150px, 60vw);
-      font-size: 0.7rem;
+      max-width: min(140px, 50vw);
+      font-size: 0.65rem;
       padding: 0.3rem 0.4rem;
     }
   }

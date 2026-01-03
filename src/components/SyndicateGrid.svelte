@@ -150,12 +150,13 @@
     const baseHorizontalSpacing = 12; // Base spacing in viewport %
     const charWidth = 1.2; // Approximate % per character
 
-    // Use larger margins on mobile to prevent cards from being pushed off screen by glitch animation
+    // Use larger margins on mobile to prevent cards from being pushed off screen
+    // Cards are centered with transform: -translate-x-1/2, so we need wider margins
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 15 : 8;
-    const maxXRange = isMobile ? 70 : 84;
-    const minY = isMobile ? 18 : 12;
-    const maxYRange = isMobile ? 64 : 76;
+    const minX = isMobile ? 22 : 12; // Wider margin to account for centering transform
+    const maxXRange = isMobile ? 56 : 76; // Reduced range to keep within bounds
+    const minY = isMobile ? 20 : 14;
+    const maxYRange = isMobile ? 60 : 72;
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
@@ -954,21 +955,23 @@
 
   /* Card text containment for long phrases */
   .syndicate-card-text {
-    display: inline-block;
-    max-width: min(280px, 75vw);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: min(260px, 70vw);
     padding: 0.5rem 0.75rem;
     background: rgba(0, 255, 242, 0.08);
     border: 1px solid rgba(0, 255, 242, 0.25);
     border-radius: 6px;
 
-    /* Text wrapping */
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
+    /* Text containment - horizontal with scroll if needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     /* Prevent line overlap */
-    line-height: 1.5;
+    line-height: 1.4;
+    font-size: clamp(0.7rem, 3.5vw, 1.1rem);
 
     /* Touch target */
     min-height: 44px;
@@ -982,19 +985,19 @@
 
   @media (max-width: 768px) {
     .syndicate-card-text {
-      max-width: min(180px, 65vw);
-      font-size: 0.75rem;
+      max-width: min(160px, 55vw);
+      font-size: 0.7rem;
       padding: 0.35rem 0.5rem;
-      line-height: 1.35;
+      line-height: 1.3;
       letter-spacing: 0.02em;
     }
   }
 
-  /* Very small screens - even smaller text */
+  /* Very small screens */
   @media (max-width: 400px) {
     .syndicate-card-text {
-      max-width: min(150px, 60vw);
-      font-size: 0.7rem;
+      max-width: min(140px, 50vw);
+      font-size: 0.65rem;
       padding: 0.3rem 0.4rem;
     }
   }
