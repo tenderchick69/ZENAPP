@@ -63,7 +63,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@400;600&family=Cormorant+Garamond:wght@300;400;600&family=Caveat:wght@700&family=Patrick+Hand&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
 </svelte:head>
 
-<div class="min-h-screen neural-grid scanline relative transition-colors duration-500">
+<div class="min-h-screen neural-grid scanline relative transition-colors duration-500 overflow-x-hidden">
   <!-- Header -->
   <header class="header-bar relative z-10 px-3 md:px-6 flex justify-between items-center border-b border-accent/20 backdrop-blur-sm">
     <a href="/" class="header-title cursor-pointer hover:opacity-80 transition-opacity flex items-center">

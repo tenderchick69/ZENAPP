@@ -152,11 +152,12 @@
 
     // Use larger margins on mobile to prevent cards from being pushed off screen
     // Cards are centered with transform: -translate-x-1/2, so we need wider margins
+    // Card max-width is 65vw on mobile, so center must be at least 32.5% from edges
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 22 : 12; // Wider margin to account for centering transform
-    const maxXRange = isMobile ? 56 : 76; // Reduced range to keep within bounds
-    const minY = isMobile ? 20 : 14;
-    const maxYRange = isMobile ? 60 : 72;
+    const minX = isMobile ? 35 : 15; // Much wider margin for centered cards
+    const maxXRange = isMobile ? 30 : 70; // Reduced range: mobile x goes 35-65%, desktop 15-85%
+    const minY = isMobile ? 22 : 14;
+    const maxYRange = isMobile ? 50 : 68;
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
@@ -512,7 +513,7 @@
 
   <!-- Exit Button & Image Toggle -->
   {#if !sessionComplete}
-    <div class="absolute top-6 right-6 z-40 flex gap-2">
+    <div class="absolute right-6 z-40 flex gap-2" style="top: max(1.5rem, env(safe-area-inset-top))">
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
@@ -557,7 +558,7 @@
 
   <!-- Reveal Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -954,20 +955,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    max-width: min(260px, 70vw);
+    max-width: min(240px, 60vw);
     padding: 0.5rem 0.75rem;
     background: rgba(0, 255, 242, 0.08);
     border: 1px solid rgba(0, 255, 242, 0.25);
     border-radius: 6px;
 
-    /* Text containment - horizontal with scroll if needed */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Text containment - allow wrapping for long phrases */
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-align: center;
 
     /* Prevent line overlap */
-    line-height: 1.4;
-    font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+    line-height: 1.3;
+    font-size: clamp(0.7rem, 3vw, 1.1rem);
 
     /* Touch target */
     min-height: 44px;

@@ -97,11 +97,12 @@
     const minHorizontalDist = isMobile ? 22 : 18; // Wider horizontal spacing
     const minVerticalDist = isMobile ? 12 : 10;   // Vertical spacing
 
-    // Positioning bounds
-    const minX = isMobile ? 25 : 12;
-    const maxXRange = isMobile ? 50 : 76;
+    // Positioning bounds - tighter on mobile to keep cards fully visible
+    // Card max-width is 65vw on mobile, so center needs 32.5%+ from edges
+    const minX = isMobile ? 35 : 15;
+    const maxXRange = isMobile ? 30 : 70; // Mobile: x 35-65%, Desktop: 15-85%
     const minY = isMobile ? 22 : 15;
-    const maxYRange = isMobile ? 56 : 72;
+    const maxYRange = isMobile ? 50 : 65;
 
     for (let i = positions.length; i < count; i++) {
       let attempts = 0;
@@ -562,7 +563,7 @@
 
   <!-- Reveal Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -672,7 +673,7 @@
 
   <!-- Toolbar -->
   {#if !sessionComplete}
-    <div class="absolute top-6 right-6 z-40 flex gap-2">
+    <div class="absolute right-6 z-40 flex gap-2" style="top: max(1.5rem, env(safe-area-inset-top))">
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
@@ -853,20 +854,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    max-width: min(260px, 70vw);
+    max-width: min(240px, 60vw);
     padding: 0.5rem 0.75rem;
     background: rgba(168, 216, 234, 0.1);
     border: 1px solid rgba(168, 216, 234, 0.25);
     border-radius: 8px;
 
-    /* Text containment - horizontal with ellipsis */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Text containment - allow wrapping for long phrases */
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-align: center;
 
     /* Prevent line overlap */
-    line-height: 1.4;
-    font-size: clamp(0.8rem, 3.5vw, 1.5rem);
+    line-height: 1.3;
+    font-size: clamp(0.75rem, 3vw, 1.4rem);
 
     /* Touch target */
     min-height: 44px;

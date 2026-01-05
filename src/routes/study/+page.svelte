@@ -562,7 +562,7 @@
   const handleSyndicateGrade = handleThemeGrade;
 </script>
 
-<div class="min-h-[80vh] flex flex-col items-center justify-center max-w-3xl mx-auto px-6">
+<div class="min-h-[80vh] flex flex-col items-center justify-center max-w-3xl mx-auto w-full overflow-x-hidden">
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
@@ -627,17 +627,17 @@
       </div>
 
       <!-- Stats Grid - Clickable Numbers (Square Boxes) -->
-      <div class="flex justify-center gap-4 md:gap-8 mb-8 md:mb-14 w-full max-w-2xl mx-auto px-4">
+      <div class="flex justify-center gap-3 md:gap-8 mb-8 md:mb-14 w-full max-w-2xl mx-auto">
         <!-- Due/Critical - clickable -->
         <Tooltip text="Study cards that are due for review">
           <button
             onclick={() => startSession('standard')}
             disabled={stats.due === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim w-[90px] h-[90px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+            class="stat-box group bg-bg/50 border-2 border-dim w-[75px] h-[75px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
                    hover:border-danger hover:bg-danger/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-3xl md:text-6xl font-heading text-danger leading-none transition-transform group-hover:scale-110">{stats.due}</div>
-            <div class="text-[8px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-danger/70 mt-2 md:mt-3">{$t.stat_due}</div>
+            <div class="text-2xl md:text-6xl font-heading text-danger leading-none transition-transform group-hover:scale-110">{stats.due}</div>
+            <div class="text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-danger/70 mt-1 md:mt-3">{$t.stat_due}</div>
           </button>
         </Tooltip>
 
@@ -646,11 +646,11 @@
           <button
             onclick={() => startSession('all')}
             disabled={stats.total - stats.mastered === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim w-[90px] h-[90px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+            class="stat-box group bg-bg/50 border-2 border-dim w-[75px] h-[75px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
                    hover:border-success hover:bg-success/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-3xl md:text-6xl font-heading text-success leading-none transition-transform group-hover:scale-110">{stats.total - stats.mastered}</div>
-            <div class="text-[8px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-success/70 mt-2 md:mt-3">{$t.stat_learn}</div>
+            <div class="text-2xl md:text-6xl font-heading text-success leading-none transition-transform group-hover:scale-110">{stats.total - stats.mastered}</div>
+            <div class="text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-success/70 mt-1 md:mt-3">{$t.stat_learn}</div>
           </button>
         </Tooltip>
 
@@ -659,11 +659,11 @@
           <button
             onclick={() => startSession('souls')}
             disabled={stats.mastered === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim w-[90px] h-[90px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+            class="stat-box group bg-bg/50 border-2 border-dim w-[75px] h-[75px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
                    hover:border-accent hover:bg-accent/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-3xl md:text-6xl font-heading text-accent leading-none transition-transform group-hover:scale-110">{stats.mastered}</div>
-            <div class="text-[8px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-accent/70 mt-2 md:mt-3">{$t.stat_master}</div>
+            <div class="text-2xl md:text-6xl font-heading text-accent leading-none transition-transform group-hover:scale-110">{stats.mastered}</div>
+            <div class="text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-accent/70 mt-1 md:mt-3">{$t.stat_master}</div>
           </button>
         </Tooltip>
       </div>

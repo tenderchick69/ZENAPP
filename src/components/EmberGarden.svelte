@@ -96,12 +96,12 @@
     const charWidth = 1.2;
 
     // Use wider margins on mobile to prevent words from floating off screen after centering
-    // Cards are centered with -translate-x-1/2, so we need extra margin
+    // Cards are centered with -translate-x-1/2, card max-width ~60vw, so center needs 30%+ from edges
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 25 : 12; // Even wider margin for mobile
-    const maxXRange = isMobile ? 50 : 76; // Tighter range to keep words visible
+    const minX = isMobile ? 35 : 15; // Much wider margin for centered cards
+    const maxXRange = isMobile ? 30 : 70; // Mobile: x 35-65%, Desktop: 15-85%
     const minY = isMobile ? 22 : 14;
-    const maxYRange = isMobile ? 56 : 72;
+    const maxYRange = isMobile ? 50 : 65;
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
@@ -398,7 +398,7 @@
 
   <!-- Toolbar (Hidden if complete) -->
   {#if !sessionComplete}
-    <div class="absolute top-6 right-6 z-40 flex gap-2">
+    <div class="absolute right-6 z-40 flex gap-2" style="top: max(1.5rem, env(safe-area-inset-top))">
       <button
         type="button"
         onclick={(e) => { e.stopPropagation(); dispatch('toggleImages'); }}
@@ -424,7 +424,7 @@
 
   <!-- Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -532,20 +532,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    max-width: min(260px, 70vw);
+    max-width: min(240px, 60vw);
     padding: 0.5rem 0.75rem;
     background: rgba(255, 107, 53, 0.08);
     border: 1px solid rgba(255, 107, 53, 0.2);
     border-radius: 8px;
 
-    /* Text containment - horizontal with ellipsis */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Text containment - allow wrapping for long phrases */
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-align: center;
 
     /* Prevent line overlap */
-    line-height: 1.4;
-    font-size: clamp(0.75rem, 3.5vw, 1.2rem);
+    line-height: 1.3;
+    font-size: clamp(0.7rem, 3vw, 1.1rem);
 
     /* Touch target */
     min-height: 44px;
