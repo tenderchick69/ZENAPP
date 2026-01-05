@@ -375,6 +375,31 @@
     }
   }
 
+  // Auto-save images when generated (no need to press Save Changes)
+  async function autoSaveImages(urls: string[], selectedIndex: number) {
+    if (!editingCard) return;
+
+    try {
+      const selectedUrl = urls[selectedIndex] || null;
+      const { error } = await supabase
+        .from('cards')
+        .update({
+          image_urls: urls,
+          selected_image_index: selectedIndex,
+          image_url: selectedUrl // backward compatibility
+        })
+        .eq('id', editingCard.id);
+
+      if (!error) {
+        showToastMessage($theme === 'ember' ? 'Vision captured!' : 'Image saved!');
+        // Also update local data so it persists if user closes without full save
+        await loadStats();
+      }
+    } catch (e) {
+      console.error('Auto-save image error:', e);
+    }
+  }
+
   async function deleteCard(cardId: number) {
     if (!confirm($theme === 'ember' ? 'Compost this seed?' : 'Delete this card permanently?')) return;
 
@@ -1033,13 +1058,14 @@
                   selectedImageIndex={gardenerForm.selected_image_index}
                   userId={$user?.id}
                   onImagesChanged={(urls, selectedIndex) => {
-                    console.log('onImagesChanged called:', { urls, selectedIndex });
+                    // Update local form state
                     gardenerForm = {
                       ...gardenerForm,
                       image_urls: [...urls],
                       selected_image_index: selectedIndex
                     };
-                    console.log('gardenerForm updated:', gardenerForm.image_urls);
+                    // Auto-save to database immediately
+                    autoSaveImages(urls, selectedIndex);
                   }}
                 />
               </div>

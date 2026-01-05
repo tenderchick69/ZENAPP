@@ -96,11 +96,12 @@
     const charWidth = 1.2;
 
     // Use wider margins on mobile to prevent words from floating off screen after centering
+    // Cards are centered with -translate-x-1/2, so we need extra margin
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 22 : 12; // Wider margin for centering transform
-    const maxXRange = isMobile ? 56 : 76;
-    const minY = isMobile ? 20 : 14;
-    const maxYRange = isMobile ? 60 : 72;
+    const minX = isMobile ? 25 : 12; // Even wider margin for mobile
+    const maxXRange = isMobile ? 50 : 76; // Tighter range to keep words visible
+    const minY = isMobile ? 22 : 14;
+    const maxYRange = isMobile ? 56 : 72;
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
@@ -133,8 +134,10 @@
     if (!safe) {
       const gridCols = isMobile ? 3 : 4; // Fewer columns on mobile
       const gridRows = isMobile ? 4 : 5;
-      const gridWidth = isMobile ? 70 : 80;
-      const gridHeight = isMobile ? 60 : 70;
+      const gridWidth = isMobile ? 50 : 80; // Tighter on mobile
+      const gridHeight = isMobile ? 56 : 70;
+      const gridStartX = isMobile ? 25 : 10; // Start further from left edge
+      const gridStartY = isMobile ? 22 : 15;
       const cellWidth = gridWidth / gridCols;
       const cellHeight = gridHeight / gridRows;
       const index = currentWords.length % (gridCols * gridRows);
@@ -316,7 +319,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class="fixed inset-0 bg-[#050505] overflow-hidden font-ember text-gray-300 cursor-crosshair select-none"
+  class="ember-main-container fixed inset-0 bg-[#050505] overflow-hidden font-ember text-gray-300 cursor-crosshair select-none"
   onclick={handleBackgroundClick}
 >
 
@@ -516,6 +519,14 @@
 </div>
 
 <style>
+  /* Main container - prevent any horizontal overflow */
+  .ember-main-container {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+  }
+
   /* Card text containment for long phrases */
   .ember-card-text {
     display: inline-flex;

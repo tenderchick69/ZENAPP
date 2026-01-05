@@ -72,7 +72,6 @@
   let showModal = $state(false);
   let selectedProvider = $state('kie'); // 'kie' | 'kie-flux' | 'openai'
   let selectedStyle = $state('photorealistic');
-  let selectedAspectRatio = $state('1:1');
   let customPrompt = $state('');
 
   // Provider options - Kie.ai (Z-Image & Flux) + OpenAI
@@ -82,14 +81,8 @@
     { id: 'openai', name: 'GPT Image', desc: '~$0.02, best quality' }
   ];
 
-  // Aspect ratio options
-  const aspectRatios = [
-    { id: '1:1', name: 'Square (1:1)' },
-    { id: '4:3', name: 'Landscape (4:3)' },
-    { id: '3:4', name: 'Portrait (3:4)' },
-    { id: '16:9', name: 'Wide (16:9)' },
-    { id: '9:16', name: 'Vertical (9:16)' }
-  ];
+  // Aspect ratio always 1:1 for consistent display everywhere
+  const selectedAspectRatio = '1:1';
 
   // Style options
   const styles = [
@@ -146,10 +139,8 @@
   onMount(() => {
     const savedProvider = localStorage.getItem('vocapp_imagegen_provider');
     const savedStyle = localStorage.getItem('vocapp_imagegen_style');
-    const savedAspectRatio = localStorage.getItem('vocapp_imagegen_aspect_ratio');
     if (savedProvider) selectedProvider = savedProvider;
     if (savedStyle) selectedStyle = savedStyle;
-    if (savedAspectRatio) selectedAspectRatio = savedAspectRatio;
   });
 
   function openModal() {
@@ -180,7 +171,6 @@
   async function handleGenerate() {
     localStorage.setItem('vocapp_imagegen_provider', selectedProvider);
     localStorage.setItem('vocapp_imagegen_style', selectedStyle);
-    localStorage.setItem('vocapp_imagegen_aspect_ratio', selectedAspectRatio);
     closeModal();
     await generateImage();
   }
@@ -389,18 +379,6 @@
             {/each}
           </div>
         </div>
-
-        <!-- Aspect Ratio (only for Kie.ai providers) -->
-        {#if selectedProvider === 'kie' || selectedProvider === 'kie-flux'}
-          <div class="section">
-            <label class="section-label" for="aspect-select">Aspect Ratio:</label>
-            <select id="aspect-select" class="style-select" bind:value={selectedAspectRatio}>
-              {#each aspectRatios as ratio}
-                <option value={ratio.id}>{ratio.name}</option>
-              {/each}
-            </select>
-          </div>
-        {/if}
 
         <!-- Style Selection -->
         <div class="section">
@@ -650,10 +628,13 @@
     inset: 0;
     z-index: 9999; /* Must be higher than parent Gardener modal (z-50) */
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     background: rgba(0, 0, 0, 0.9);
     backdrop-filter: blur(8px);
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: 1rem;
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
   .image-gen-modal {
@@ -664,8 +645,7 @@
     border-radius: 1.5rem;
     width: 100%;
     max-width: 400px;
-    max-height: calc(100vh - 2rem);
-    margin: auto;
+    max-height: min(90vh, calc(100dvh - 2rem));
     overflow: hidden;
     box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--color-accent-rgb), 0.2);
   }
@@ -721,6 +701,7 @@
     display: flex;
     gap: 1rem;
     padding: 1.25rem 1.5rem;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-dim);
     background: var(--color-panel);
   }
