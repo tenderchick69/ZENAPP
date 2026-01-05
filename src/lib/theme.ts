@@ -16,7 +16,7 @@ const DICTIONARY = {
     // Global
     title_1: 'SYNDICATE',
     title_2: '',
-    subtitle: 'Upgrade Your Software',
+    subtitle: 'Software Upgrade',
 
     // Home
     yourDecks: 'YOUR IMPLANTS',

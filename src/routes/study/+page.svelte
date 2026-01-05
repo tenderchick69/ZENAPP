@@ -573,59 +573,11 @@
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
 
-      <!-- Header -->
-      <div class="mb-6 md:mb-12 text-center">
+      <!-- Header - Title Only -->
+      <div class="mb-8 md:mb-14 text-center">
         <h1 class="text-3xl md:text-7xl font-heading text-main tracking-tight">
           {deckName || 'Loading...'}
         </h1>
-
-        <!-- Action Buttons (Below Title) -->
-        <div class="flex items-center justify-center gap-1 md:gap-2 mt-4">
-          <!-- Download Button -->
-          <Tooltip text="Download Deck">
-            <button
-              onclick={handleExportDeck}
-              disabled={isExporting}
-              class="text-dim hover:text-accent transition-colors p-2 cursor-pointer disabled:opacity-50"
-              title="Download deck">
-              {#if isExporting}
-                <span class="animate-spin text-sm">⏳</span>
-              {:else}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-              {/if}
-            </button>
-          </Tooltip>
-
-          <!-- Rename Button -->
-          <Tooltip text="Rename Deck">
-            <button
-              onclick={openRenameModal}
-              class="text-dim hover:text-accent transition-colors p-2 cursor-pointer"
-              title="Rename deck">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-          </Tooltip>
-
-          <!-- Delete Button -->
-          <Tooltip text="Delete Deck">
-            <button
-              onclick={deleteDeck}
-              class="text-dim hover:text-danger transition-colors p-2 cursor-pointer"
-              title="Delete deck">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
-          </Tooltip>
-        </div>
       </div>
 
       <!-- Stats Grid - Clickable Numbers (Square Boxes) -->
@@ -688,7 +640,7 @@
       </div>
 
       <!-- Footer - Theme-appropriate styling -->
-      <div class="flex justify-center gap-4 md:gap-8">
+      <div class="flex justify-center gap-4 md:gap-8 mb-6 md:mb-8">
          <button type="button" onclick={() => view = 'inspect'} class="text-xs md:text-sm font-body opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest
            {$theme === 'zen' ? 'tracking-[0.2em]' : ''}">
            {$theme === 'zen' ? $t.btn_inspect : `[ ${$t.btn_inspect} ]`}
@@ -697,6 +649,56 @@
            {$theme === 'zen' ? 'tracking-[0.2em]' : ''}">
            {$theme === 'zen' ? $t.btn_exit : `[ ${$t.btn_exit} ]`}
          </a>
+      </div>
+
+      <!-- Deck Management - Secondary Actions -->
+      <div class="pt-4 md:pt-6 border-t border-dim/20">
+        <div class="flex items-center justify-center gap-2 md:gap-3">
+          <!-- Download Button -->
+          <Tooltip text="Download Deck">
+            <button
+              onclick={handleExportDeck}
+              disabled={isExporting}
+              class="text-dim/60 hover:text-accent transition-colors p-2 cursor-pointer disabled:opacity-50"
+              title="Download deck">
+              {#if isExporting}
+                <span class="animate-spin text-sm">⏳</span>
+              {:else}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              {/if}
+            </button>
+          </Tooltip>
+
+          <!-- Rename Button -->
+          <Tooltip text="Rename Deck">
+            <button
+              onclick={openRenameModal}
+              class="text-dim/60 hover:text-accent transition-colors p-2 cursor-pointer"
+              title="Rename deck">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </Tooltip>
+
+          <!-- Delete Button -->
+          <Tooltip text="Delete Deck">
+            <button
+              onclick={deleteDeck}
+              class="text-dim/60 hover:text-danger transition-colors p-2 cursor-pointer"
+              title="Delete deck">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </Tooltip>
+        </div>
       </div>
     </div>
 
