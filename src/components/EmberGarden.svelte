@@ -90,28 +90,27 @@
     let x = 0, y = 0;
     let attempts = 0;
 
-    // Calculate spacing based on word length
+    // Calculate spacing based on word length - tighter for more cards
     const newWordLen = newHeadword?.length || 8;
-    const baseHorizontalSpacing = 12;
-    const charWidth = 1.2;
+    const baseHorizontalSpacing = 10;
+    const charWidth = 0.8;
 
-    // Use wider margins on mobile to prevent words from floating off screen after centering
-    // Cards are centered with -translate-x-1/2, card max-width ~60vw, so center needs 30%+ from edges
+    // Positioning bounds - use more of the screen for better distribution
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 35 : 15; // Much wider margin for centered cards
-    const maxXRange = isMobile ? 30 : 70; // Mobile: x 35-65%, Desktop: 15-85%
-    const minY = isMobile ? 22 : 14;
-    const maxYRange = isMobile ? 50 : 65;
+    const minX = isMobile ? 15 : 12;
+    const maxXRange = isMobile ? 70 : 76; // Mobile: x 15-85%, Desktop: 12-88%
+    const minY = isMobile ? 18 : 14;
+    const maxYRange = isMobile ? 64 : 70; // Mobile: y 18-82%, Desktop: 14-84%
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
       y = minY + Math.random() * maxYRange;
 
-      // Check collision with all existing words
+      // Check collision with all existing words - tighter spacing
       const hasCollision = currentWords.some(w => {
         const existingWordLen = w.headword?.length || 8;
         const requiredHSpacing = baseHorizontalSpacing + ((newWordLen + existingWordLen) / 2) * charWidth;
-        const requiredVSpacing = 8;
+        const requiredVSpacing = isMobile ? 9 : 8;
 
         const hDist = Math.abs(w.x - x);
         const vDist = Math.abs(w.y - y);
@@ -130,21 +129,17 @@
       attempts++;
     }
 
-    // Grid fallback if no safe spot found - use mobile-safe coordinates
+    // Grid fallback if no safe spot found - use full available space
     if (!safe) {
-      const gridCols = isMobile ? 3 : 4; // Fewer columns on mobile
-      const gridRows = isMobile ? 4 : 5;
-      const gridWidth = isMobile ? 50 : 80; // Tighter on mobile
-      const gridHeight = isMobile ? 56 : 70;
-      const gridStartX = isMobile ? 25 : 10; // Start further from left edge
-      const gridStartY = isMobile ? 22 : 15;
-      const cellWidth = gridWidth / gridCols;
-      const cellHeight = gridHeight / gridRows;
+      const gridCols = isMobile ? 4 : 5;
+      const gridRows = isMobile ? 6 : 7;
+      const cellWidth = maxXRange / gridCols;
+      const cellHeight = maxYRange / gridRows;
       const index = currentWords.length % (gridCols * gridRows);
       const col = index % gridCols;
       const row = Math.floor(index / gridCols);
       x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
-      y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 3;
+      y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2;
     }
 
     return { x, y };
@@ -532,21 +527,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    max-width: min(240px, 60vw);
+    max-width: min(200px, 55vw);
     padding: 0.5rem 0.75rem;
     background: rgba(255, 107, 53, 0.08);
     border: 1px solid rgba(255, 107, 53, 0.2);
     border-radius: 8px;
 
-    /* Text containment - allow wrapping for long phrases */
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    /* Text containment - no mid-word breaks */
+    white-space: nowrap;
     text-align: center;
 
-    /* Prevent line overlap */
+    /* Readable font size */
     line-height: 1.3;
-    font-size: clamp(0.7rem, 3vw, 1.1rem);
+    font-size: clamp(0.85rem, 3.5vw, 1.2rem);
 
     /* Touch target */
     min-height: 44px;
@@ -589,20 +582,20 @@
 
   @media (max-width: 768px) {
     .ember-card-text {
-      max-width: min(220px, 65vw);
-      font-size: 0.9rem;
-      padding: 0.6rem 1rem;
-      line-height: 1.4;
-      min-height: 48px;
+      max-width: min(180px, 50vw);
+      font-size: 0.95rem;
+      padding: 0.5rem 0.8rem;
+      line-height: 1.3;
+      min-height: 44px;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .ember-card-text {
-      max-width: min(200px, 60vw);
-      font-size: 0.85rem;
-      padding: 0.5rem 0.8rem;
+      max-width: min(160px, 45vw);
+      font-size: 0.9rem;
+      padding: 0.4rem 0.7rem;
     }
   }
 

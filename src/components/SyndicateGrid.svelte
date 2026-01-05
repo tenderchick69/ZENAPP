@@ -145,19 +145,16 @@
     let attempts = 0;
 
     // Calculate minimum horizontal spacing based on word length
-    // Longer words need more horizontal space
     const newWordLen = newHeadword?.length || 8;
-    const baseHorizontalSpacing = 12; // Base spacing in viewport %
-    const charWidth = 1.2; // Approximate % per character
+    const baseHorizontalSpacing = 10; // Base spacing in viewport %
+    const charWidth = 0.8; // Approximate % per character
 
-    // Use larger margins on mobile to prevent cards from being pushed off screen
-    // Cards are centered with transform: -translate-x-1/2, so we need wider margins
-    // Card max-width is 65vw on mobile, so center must be at least 32.5% from edges
+    // Positioning bounds - use more of the screen for better distribution
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 35 : 15; // Much wider margin for centered cards
-    const maxXRange = isMobile ? 30 : 70; // Reduced range: mobile x goes 35-65%, desktop 15-85%
-    const minY = isMobile ? 22 : 14;
-    const maxYRange = isMobile ? 50 : 68;
+    const minX = isMobile ? 15 : 12;
+    const maxXRange = isMobile ? 70 : 76; // Mobile: x 15-85%, Desktop: 12-88%
+    const minY = isMobile ? 18 : 14;
+    const maxYRange = isMobile ? 64 : 70; // Mobile: y 18-82%, Desktop: 14-84%
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
@@ -166,9 +163,9 @@
       // Check collision with all existing words
       const hasCollision = currentWords.some(w => {
         const existingWordLen = w.headword?.length || 8;
-        // Calculate required spacing based on both word lengths
+        // Calculate required spacing based on both word lengths - tighter for more cards
         const requiredHSpacing = baseHorizontalSpacing + ((newWordLen + existingWordLen) / 2) * charWidth;
-        const requiredVSpacing = 8; // Vertical spacing in %
+        const requiredVSpacing = isMobile ? 9 : 8; // Vertical spacing in %
 
         const hDist = Math.abs(w.x - x);
         const vDist = Math.abs(w.y - y);
@@ -190,15 +187,15 @@
 
     // If we couldn't find a safe spot after many attempts, use a grid fallback
     if (!safe) {
-      const gridCols = 4;
-      const gridRows = 5;
-      const cellWidth = 80 / gridCols;
-      const cellHeight = 70 / gridRows;
+      const gridCols = isMobile ? 4 : 5;
+      const gridRows = isMobile ? 6 : 7;
+      const cellWidth = maxXRange / gridCols;
+      const cellHeight = maxYRange / gridRows;
       const index = currentWords.length % (gridCols * gridRows);
       const col = index % gridCols;
       const row = Math.floor(index / gridCols);
-      x = 10 + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 5;
-      y = 15 + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 5;
+      x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
+      y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2;
     }
 
     return { x, y };
@@ -955,21 +952,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    max-width: min(240px, 60vw);
+    max-width: min(200px, 55vw);
     padding: 0.5rem 0.75rem;
     background: rgba(0, 255, 242, 0.08);
     border: 1px solid rgba(0, 255, 242, 0.25);
     border-radius: 6px;
 
-    /* Text containment - allow wrapping for long phrases */
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    /* Text containment - no mid-word breaks */
+    white-space: nowrap;
     text-align: center;
 
-    /* Prevent line overlap */
+    /* Readable font size */
     line-height: 1.3;
-    font-size: clamp(0.7rem, 3vw, 1.1rem);
+    font-size: clamp(0.85rem, 3.5vw, 1.2rem);
 
     /* Touch target */
     min-height: 44px;
@@ -983,11 +978,11 @@
 
   @media (max-width: 768px) {
     .syndicate-card-text {
-      max-width: min(220px, 65vw);
-      font-size: 0.9rem;
-      padding: 0.6rem 1rem;
-      line-height: 1.4;
-      min-height: 48px;
+      max-width: min(180px, 50vw);
+      font-size: 0.95rem;
+      padding: 0.5rem 0.8rem;
+      line-height: 1.3;
+      min-height: 44px;
       letter-spacing: 0.02em;
     }
   }
@@ -995,9 +990,9 @@
   /* Very small screens */
   @media (max-width: 400px) {
     .syndicate-card-text {
-      max-width: min(200px, 60vw);
-      font-size: 0.85rem;
-      padding: 0.5rem 0.8rem;
+      max-width: min(160px, 45vw);
+      font-size: 0.9rem;
+      padding: 0.4rem 0.7rem;
     }
   }
 </style>

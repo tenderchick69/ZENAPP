@@ -210,29 +210,28 @@
     let x = 0, y = 0;
     let attempts = 0;
 
-    // Calculate spacing based on content type
-    // Images need more space (they're about 80-96px = ~8-10% of viewport)
-    const baseHorizontalSpacing = isImage ? 14 : 12;
-    const baseVerticalSpacing = isImage ? 12 : 8;
+    // Calculate spacing based on content type - tighter for more cards
+    const baseHorizontalSpacing = isImage ? 12 : 10;
+    const baseVerticalSpacing = isImage ? 10 : 8;
     const newWordLen = newHeadword?.length || 8;
-    const charWidth = isImage ? 0 : 1.2;
+    const charWidth = isImage ? 0 : 0.8;
 
-    // Use wider margins on mobile to prevent cards from being cut off after centering
+    // Positioning bounds - use more of the screen for better distribution
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 20 : 12;
-    const maxXRange = isMobile ? 60 : 76;
-    const minY = isMobile ? 18 : 15;
-    const maxYRange = isMobile ? 62 : 70;
+    const minX = isMobile ? 15 : 12;
+    const maxXRange = isMobile ? 70 : 76; // Mobile: x 15-85%, Desktop: 12-88%
+    const minY = isMobile ? 18 : 14;
+    const maxYRange = isMobile ? 64 : 70; // Mobile: y 18-82%, Desktop: 14-84%
 
     while (!safe && attempts < 200) {
       x = minX + Math.random() * maxXRange;
       y = minY + Math.random() * maxYRange;
 
-      // Check collision with all existing words
+      // Check collision with all existing words - tighter spacing
       const hasCollision = currentWords.some(w => {
         const existingWordLen = w.headword?.length || 8;
         const requiredHSpacing = baseHorizontalSpacing + ((newWordLen + existingWordLen) / 2) * charWidth;
-        const requiredVSpacing = baseVerticalSpacing;
+        const requiredVSpacing = isMobile ? 9 : baseVerticalSpacing;
 
         const hDist = Math.abs(w.x - x);
         const vDist = Math.abs(w.y - y);
@@ -250,17 +249,17 @@
       attempts++;
     }
 
-    // Grid fallback if no safe spot found
+    // Grid fallback if no safe spot found - use full available space
     if (!safe) {
-      const gridCols = isImage ? 3 : 4;
-      const gridRows = isImage ? 4 : 5;
-      const cellWidth = 76 / gridCols;
-      const cellHeight = 65 / gridRows;
+      const gridCols = isMobile ? 4 : 5;
+      const gridRows = isMobile ? 6 : 7;
+      const cellWidth = maxXRange / gridCols;
+      const cellHeight = maxYRange / gridRows;
       const index = currentWords.length % (gridCols * gridRows);
       const col = index % gridCols;
       const row = Math.floor(index / gridCols);
-      x = 12 + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 5;
-      y = 15 + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 5;
+      x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
+      y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2;
     }
 
     return { x, y };
@@ -706,21 +705,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    max-width: min(280px, 75vw);
+    max-width: min(200px, 55vw);
     padding: 0.5rem 0.75rem;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 8px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 
-    /* Text containment - allow wrapping for long phrases */
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    /* Text containment - no mid-word breaks */
+    white-space: nowrap;
     text-align: center;
 
-    /* Prevent line overlap */
+    /* Readable font size */
     line-height: 1.3;
-    font-size: clamp(0.75rem, 3vw, 1.4rem);
+    font-size: clamp(0.85rem, 3.5vw, 1.3rem);
 
     /* Touch target */
     min-height: 44px;
@@ -779,20 +776,20 @@
 
   @media (max-width: 768px) {
     .zen-card-text {
-      max-width: min(220px, 65vw);
-      font-size: 0.9rem;
-      padding: 0.6rem 1rem;
-      line-height: 1.4;
-      min-height: 48px;
+      max-width: min(180px, 50vw);
+      font-size: 0.95rem;
+      padding: 0.5rem 0.8rem;
+      line-height: 1.3;
+      min-height: 44px;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .zen-card-text {
-      max-width: min(200px, 60vw);
-      font-size: 0.85rem;
-      padding: 0.5rem 0.8rem;
+      max-width: min(160px, 45vw);
+      font-size: 0.9rem;
+      padding: 0.4rem 0.7rem;
     }
   }
 

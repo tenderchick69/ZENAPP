@@ -91,18 +91,17 @@
     const positions = [...existingPositions];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Card dimensions in % of screen - cards are ~220px wide, ~48px tall on mobile
-    // On 375px phone: 220px = ~59% width, 48px = ~7% height
-    // Use separate horizontal and vertical distances
-    const minHorizontalDist = isMobile ? 22 : 18; // Wider horizontal spacing
-    const minVerticalDist = isMobile ? 12 : 10;   // Vertical spacing
+    // Collision spacing - tighter to fit more words
+    // Mobile cards are ~180px wide max, on 375px = ~48% width
+    const minHorizontalDist = isMobile ? 14 : 16;
+    const minVerticalDist = isMobile ? 9 : 10;
 
-    // Positioning bounds - tighter on mobile to keep cards fully visible
-    // Card max-width is 65vw on mobile, so center needs 32.5%+ from edges
-    const minX = isMobile ? 35 : 15;
-    const maxXRange = isMobile ? 30 : 70; // Mobile: x 35-65%, Desktop: 15-85%
-    const minY = isMobile ? 22 : 15;
-    const maxYRange = isMobile ? 50 : 65;
+    // Positioning bounds - use more of the screen
+    // Cards are centered with transform, so they can go closer to edges
+    const minX = isMobile ? 15 : 12;
+    const maxXRange = isMobile ? 70 : 76; // Mobile: x 15-85%, Desktop: 12-88%
+    const minY = isMobile ? 18 : 14;
+    const maxYRange = isMobile ? 64 : 70; // Mobile: y 18-82%, Desktop: 14-84%
 
     for (let i = positions.length; i < count; i++) {
       let attempts = 0;
@@ -126,10 +125,10 @@
         attempts++;
       }
 
-      // Grid fallback if random placement failed
+      // Grid fallback if random placement failed - use full available space
       if (!validPosition) {
-        const cols = isMobile ? 3 : 4;
-        const rows = isMobile ? 5 : 6;
+        const cols = isMobile ? 4 : 5;
+        const rows = isMobile ? 6 : 7;
         const cellWidth = maxXRange / cols;
         const cellHeight = maxYRange / rows;
         const gridIndex = i % (cols * rows);
@@ -137,8 +136,8 @@
         const row = Math.floor(gridIndex / cols);
 
         validPosition = {
-          x: minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 4,
-          y: minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 3
+          x: minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3,
+          y: minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2
         };
       }
 
@@ -854,21 +853,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    max-width: min(240px, 60vw);
+    max-width: min(200px, 55vw);
     padding: 0.5rem 0.75rem;
     background: rgba(168, 216, 234, 0.1);
     border: 1px solid rgba(168, 216, 234, 0.25);
     border-radius: 8px;
 
-    /* Text containment - allow wrapping for long phrases */
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    /* Text containment - only break on word boundaries, not mid-word */
+    white-space: nowrap;
     text-align: center;
 
-    /* Prevent line overlap */
+    /* Readable font size */
     line-height: 1.3;
-    font-size: clamp(0.75rem, 3vw, 1.4rem);
+    font-size: clamp(0.85rem, 3.5vw, 1.3rem);
 
     /* Touch target */
     min-height: 44px;
@@ -898,20 +895,20 @@
 
   @media (max-width: 768px) {
     .frost-card-text {
-      max-width: min(220px, 65vw);
-      font-size: 0.9rem;
-      padding: 0.6rem 1rem;
-      line-height: 1.4;
-      min-height: 48px;
+      max-width: min(180px, 50vw);
+      font-size: 0.95rem;
+      padding: 0.5rem 0.8rem;
+      line-height: 1.3;
+      min-height: 44px;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .frost-card-text {
-      max-width: min(200px, 60vw);
-      font-size: 0.85rem;
-      padding: 0.5rem 0.8rem;
+      max-width: min(160px, 45vw);
+      font-size: 0.9rem;
+      padding: 0.4rem 0.7rem;
     }
   }
 
