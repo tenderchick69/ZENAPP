@@ -116,11 +116,14 @@ async function pollTaskResult(
   maxAttempts: number = 60,
   intervalMs: number = 2000
 ): Promise<string> {
-  console.log('Polling for task result...');
+  console.log('Polling for task result, taskId:', taskId);
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    // Use the unified task detail endpoint
-    const response = await fetch(`${KIE_BASE_URL}/jobs/getTaskDetail?taskId=${taskId}`, {
+    // Use jobs endpoint (correct per API behavior)
+    const pollUrl = `${KIE_BASE_URL}/jobs/getTaskDetail?taskId=${encodeURIComponent(taskId)}`;
+    console.log('Poll URL:', pollUrl);
+
+    const response = await fetch(pollUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -128,32 +131,105 @@ async function pollTaskResult(
       }
     });
 
-    const result: KieTaskDetailResponse = await response.json();
-    console.log(`Poll attempt ${attempt}/${maxAttempts}:`, result.data?.status);
+    // Get raw text first to see what we're dealing with
+    const rawText = await response.text();
+    console.log(`Poll attempt ${attempt} - HTTP ${response.status}`);
+    console.log('Raw response:', rawText.substring(0, 500));
 
-    if (result.code !== 200) {
-      throw new Error(`Kie.ai poll error ${result.code}: ${result.msg}`);
+    // Parse JSON
+    let result: any;
+    try {
+      result = JSON.parse(rawText);
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+      continue;
     }
 
-    const status = result.data?.status;
+    console.log('Parsed response:', JSON.stringify(result, null, 2));
 
-    if (status === 'completed') {
-      const imageUrl = result.data?.output?.images?.[0];
+    // Handle different response structures from Kie.ai
+    const code = result.code;
+    const data = result.data || result;
+
+    // Check for API error
+    if (code && code !== 200) {
+      console.error('API returned error code:', code, result.msg);
+      throw new Error(`Kie.ai error ${code}: ${result.msg || 'Unknown error'}`);
+    }
+
+    // Extract status - try multiple possible field names
+    const status = (
+      data.status ||
+      data.taskStatus ||
+      data.state ||
+      result.status
+    )?.toString()?.toLowerCase();
+
+    console.log('Extracted status:', status);
+
+    // Check for completion
+    if (status === 'completed' || status === 'success' || status === 'finished') {
+      // Try to find image URL in various possible locations
+      const imageUrl =
+        data.output?.images?.[0] ||
+        data.output?.image ||
+        data.output?.[0] ||
+        data.result?.images?.[0] ||
+        data.result?.image ||
+        data.result?.[0] ||
+        data.images?.[0] ||
+        data.image ||
+        data.url ||
+        data.imageUrl ||
+        result.output?.images?.[0] ||
+        result.images?.[0];
+
+      console.log('Found image URL:', imageUrl);
+
       if (!imageUrl) {
-        throw new Error('Task completed but no image URL returned');
+        console.error('No image URL found in response:', JSON.stringify(result, null, 2));
+        throw new Error('Task completed but no image URL found');
       }
+
       return imageUrl;
     }
 
-    if (status === 'failed') {
-      throw new Error(`Generation failed: ${result.data?.error || 'Unknown error'}`);
+    // Check for failure
+    if (status === 'failed' || status === 'error' || status === 'cancelled') {
+      const errorMsg = data.error || data.message || data.errorMessage || result.msg || 'Unknown error';
+      throw new Error(`Generation failed: ${errorMsg}`);
     }
 
-    // Still pending/processing - wait and retry
+    // Check for still processing
+    if (status === 'pending' || status === 'processing' || status === 'running' || status === 'queued') {
+      console.log(`Still ${status}, waiting ${intervalMs}ms...`);
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+      continue;
+    }
+
+    // Unknown status - if we have no status at all, check if maybe the task isn't ready
+    if (!status) {
+      console.log('No status field found, checking if task exists...');
+
+      // Maybe the response itself indicates the task isn't ready yet
+      if (attempt < 5) {
+        console.log('Waiting for task to be queryable...');
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+        continue;
+      }
+
+      // After a few attempts, if still no status, log full response and error
+      console.error('Cannot determine task status. Full response:', JSON.stringify(result, null, 2));
+      throw new Error('Unable to determine task status from Kie.ai response');
+    }
+
+    // Unknown status value
+    console.log(`Unknown status "${status}", treating as in-progress...`);
     await new Promise(resolve => setTimeout(resolve, intervalMs));
   }
 
-  throw new Error(`Timeout after ${maxAttempts * intervalMs / 1000}s`);
+  throw new Error(`Timeout: Task did not complete after ${maxAttempts * intervalMs / 1000} seconds`);
 }
 
 // UI Options

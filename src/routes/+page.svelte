@@ -2,10 +2,11 @@
   import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase';
   import { t, theme } from '$lib/theme';
+  import { browser } from '$app/environment';
 
-  let decks: any[] = [];
-  let loading = true;
-  let totalMastered = 0;
+  let decks = $state<any[]>([]);
+  let loading = $state(true);
+  let totalMastered = $state(0);
 
   // Dynamic font sizing for deck names based on length
   function getDeckNameSize(name: string, isEmber: boolean): string {
@@ -26,40 +27,104 @@
   }
 
   async function loadDecks() {
-    const { data } = await supabase.from('decks').select('*').order('created_at', { ascending: false });
+    loading = true;
+    try {
+      const { data, error } = await supabase.from('decks').select('*').order('created_at', { ascending: false });
 
-    if (data) {
-      // Fetch due counts for each deck
-      const now = new Date().toISOString();
-      const decksWithCounts = await Promise.all(
-        data.map(async (deck) => {
-          const { count } = await supabase
-            .from('cards')
-            .select('*', { count: 'exact', head: true })
-            .eq('deck_id', deck.id)
-            .lt('state', 5)
-            .or(`state.eq.0,due.lte.${now}`);
+      if (error) {
+        console.error('Failed to load decks:', error);
+        decks = [];
+        return;
+      }
 
-          return { ...deck, dueCount: count || 0 };
-        })
-      );
-      decks = decksWithCounts;
+      if (data) {
+        // Fetch due counts and next due date for each deck
+        const now = new Date();
+        const nowISO = now.toISOString();
+        const decksWithCounts = await Promise.all(
+          data.map(async (deck) => {
+            // Get due count
+            const { count } = await supabase
+              .from('cards')
+              .select('*', { count: 'exact', head: true })
+              .eq('deck_id', deck.id)
+              .lt('state', 5)
+              .or(`state.eq.0,due.lte.${nowISO}`);
+
+            // Get next due card (for cards not currently due)
+            const { data: nextCards } = await supabase
+              .from('cards')
+              .select('due')
+              .eq('deck_id', deck.id)
+              .gt('state', 0)
+              .lt('state', 5)
+              .gt('due', nowISO)
+              .order('due', { ascending: true })
+              .limit(1);
+
+            let nextDueText = null;
+            if ((count || 0) === 0 && nextCards && nextCards.length > 0) {
+              const nextDue = new Date(nextCards[0].due);
+              const diffMs = nextDue.getTime() - now.getTime();
+              const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+              const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+              if (diffHours <= 0) {
+                nextDueText = 'due now';
+              } else if (diffHours < 24) {
+                nextDueText = `in ${diffHours}h`;
+              } else if (diffDays === 1) {
+                nextDueText = 'tomorrow';
+              } else {
+                nextDueText = `in ${diffDays}d`;
+              }
+            }
+
+            return { ...deck, dueCount: count || 0, nextDueText };
+          })
+        );
+        decks = decksWithCounts;
+      } else {
+        decks = [];
+      }
+    } catch (e) {
+      console.error('Error loading decks:', e);
+      decks = [];
+    } finally {
+      loading = false; // ALWAYS set loading to false
     }
-
-    loading = false;
   }
 
   async function loadMasteryCount() {
-    const { count } = await supabase
-      .from('cards')
-      .select('*', { count: 'exact', head: true })
-      .eq('state', 5);
-    totalMastered = count || 0;
+    try {
+      const { count } = await supabase
+        .from('cards')
+        .select('*', { count: 'exact', head: true })
+        .eq('state', 5);
+      totalMastered = count || 0;
+    } catch (e) {
+      console.error('Error loading mastery count:', e);
+      totalMastered = 0;
+    }
   }
 
   onMount(() => {
     loadDecks();
     loadMasteryCount();
+  });
+
+  // Reload when page becomes visible again (after navigating back)
+  $effect(() => {
+    if (browser) {
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          loadDecks();
+          loadMasteryCount();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
   });
 </script>
 
@@ -158,14 +223,18 @@
                {deck.name}
             </h3>
 
-            <!-- Due Count (Bottom Center) -->
-            {#if deck.dueCount > 0}
-              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+            <!-- Due Count or Next Due (Bottom Center) -->
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+              {#if deck.dueCount > 0}
                 <span class="text-orange-400 font-ember text-xl font-bold drop-shadow-[0_0_12px_rgba(255,69,0,0.8)]">
                   {deck.dueCount}
                 </span>
-              </div>
-            {/if}
+              {:else if deck.nextDueText}
+                <span class="text-orange-400/50 font-ember text-sm">
+                  {deck.nextDueText}
+                </span>
+              {/if}
+            </div>
 
           <!-- SYNDICATE / ZEN / FROST MODE STYLING -->
           {:else}
@@ -174,14 +243,18 @@
               {deck.name}
             </h3>
 
-            <!-- Due Count (Bottom Center) -->
-            {#if deck.dueCount > 0}
-              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+            <!-- Due Count or Next Due (Bottom Center) -->
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+              {#if deck.dueCount > 0}
                 <span class="text-accent font-heading text-xl font-bold drop-shadow-[0_0_8px_currentColor]">
                   {deck.dueCount}
                 </span>
-              </div>
-            {/if}
+              {:else if deck.nextDueText}
+                <span class="text-dim font-body text-sm opacity-60">
+                  {deck.nextDueText}
+                </span>
+              {/if}
+            </div>
           {/if}
         </a>
       {/each}

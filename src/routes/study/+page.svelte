@@ -477,10 +477,27 @@
     }
   }
 
-  function formatDate(iso: string) {
+  function formatDate(iso: string, state?: number) {
+    // Handle special states first
+    if (state === 0) return 'New';
+    if (state === 5) return 'Mastered';
+
     const d = new Date(iso);
     const now = new Date();
-    if (d <= now) return 'NOW';
+
+    // Due now or overdue
+    if (d <= now) return 'Due now';
+
+    // Calculate difference
+    const diffMs = d.getTime() - now.getTime();
+    const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffHours < 1) return 'Soon';
+    if (diffHours < 24) return `In ${diffHours}h`;
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays < 7) return `In ${diffDays}d`;
+
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 
@@ -584,18 +601,18 @@
         </div>
       </div>
 
-      <!-- Stats Grid - Clickable Numbers -->
-      <div class="grid grid-cols-3 gap-3 md:gap-6 mb-8 md:mb-14 w-full max-w-2xl mx-auto">
+      <!-- Stats Grid - Clickable Numbers (Square Boxes) -->
+      <div class="flex justify-center gap-4 md:gap-8 mb-8 md:mb-14 w-full max-w-2xl mx-auto px-4">
         <!-- Due/Critical - clickable -->
         <Tooltip text="Study cards that are due for review">
           <button
             onclick={() => startSession('standard')}
             disabled={stats.due === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim h-[120px] md:h-[180px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+            class="stat-box group bg-bg/50 border-2 border-dim w-[90px] h-[90px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
                    hover:border-danger hover:bg-danger/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-4xl md:text-7xl font-heading text-danger leading-none transition-transform group-hover:scale-110">{stats.due}</div>
-            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.15em] uppercase text-danger/70 mt-3 md:mt-4">{$t.stat_due}</div>
+            <div class="text-3xl md:text-6xl font-heading text-danger leading-none transition-transform group-hover:scale-110">{stats.due}</div>
+            <div class="text-[8px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-danger/70 mt-2 md:mt-3">{$t.stat_due}</div>
           </button>
         </Tooltip>
 
@@ -604,11 +621,11 @@
           <button
             onclick={() => startSession('all')}
             disabled={stats.total - stats.mastered === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim h-[120px] md:h-[180px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+            class="stat-box group bg-bg/50 border-2 border-dim w-[90px] h-[90px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
                    hover:border-success hover:bg-success/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-4xl md:text-7xl font-heading text-success leading-none transition-transform group-hover:scale-110">{stats.total - stats.mastered}</div>
-            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.15em] uppercase text-success/70 mt-3 md:mt-4">{$t.stat_learn}</div>
+            <div class="text-3xl md:text-6xl font-heading text-success leading-none transition-transform group-hover:scale-110">{stats.total - stats.mastered}</div>
+            <div class="text-[8px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-success/70 mt-2 md:mt-3">{$t.stat_learn}</div>
           </button>
         </Tooltip>
 
@@ -617,11 +634,11 @@
           <button
             onclick={() => startSession('souls')}
             disabled={stats.mastered === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim h-[120px] md:h-[180px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
+            class="stat-box group bg-bg/50 border-2 border-dim w-[90px] h-[90px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
                    hover:border-accent hover:bg-accent/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-4xl md:text-7xl font-heading text-accent leading-none transition-transform group-hover:scale-110">{stats.mastered}</div>
-            <div class="text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.15em] uppercase text-accent/70 mt-3 md:mt-4">{$t.stat_master}</div>
+            <div class="text-3xl md:text-6xl font-heading text-accent leading-none transition-transform group-hover:scale-110">{stats.mastered}</div>
+            <div class="text-[8px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-accent/70 mt-2 md:mt-3">{$t.stat_master}</div>
           </button>
         </Tooltip>
       </div>
@@ -704,9 +721,9 @@
                  <!-- Definition -->
                  <div class="text-dim truncate text-xs md:text-sm">{card.definition}</div>
                </div>
-               <!-- Due date -->
-               <div class="flex-shrink-0 text-right text-xs {new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
-                 {formatDate(card.due)}
+               <!-- Due date / Status -->
+               <div class="flex-shrink-0 text-right text-xs {card.state === 5 ? 'text-accent' : card.state === 0 ? 'text-dim' : new Date(card.due) <= new Date() ? 'text-danger' : 'text-success'}">
+                 {formatDate(card.due, card.state)}
                </div>
             </button>
           {/each}
