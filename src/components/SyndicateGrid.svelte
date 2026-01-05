@@ -557,21 +557,19 @@
 
   <!-- Reveal Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]" transition:fade>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="absolute inset-0 bg-black/95" onclick={() => revealedWord = null}></div>
 
-      <!-- Modal Content Container -->
-      <div class="relative flex flex-col h-full max-w-lg w-full mx-auto font-mono" transition:scale>
-        <!-- Header with Close Button -->
-        <div class="flex-shrink-0 flex justify-end p-4">
-          <button class="text-[#00fff2]/50 cursor-pointer hover:text-[#00fff2] bg-[#0a0a0a] border border-[#00fff2]/30 rounded w-10 h-10 flex items-center justify-center text-sm" onclick={() => revealedWord = null}>[X]</button>
-        </div>
+      <!-- Modal Content Container - Centered, content + buttons grouped -->
+      <div class="relative flex flex-col max-w-lg w-full mx-auto max-h-[90vh] font-mono" transition:scale>
+        <!-- Close Button (top right of card) -->
+        <button class="absolute -top-2 -right-2 z-10 text-[#00fff2]/50 cursor-pointer hover:text-[#00fff2] bg-[#0a0a0a] border border-[#00fff2]/30 rounded-full w-10 h-10 flex items-center justify-center text-sm" onclick={() => revealedWord = null}>[X]</button>
 
         <!-- Scrollable Content Area -->
-        <div class="flex-1 overflow-y-auto overscroll-contain px-4 md:px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overscroll-contain rounded" style="-webkit-overflow-scrolling: touch;">
           <div class="bg-[#0a0a0a] border border-[#00fff2]/50 p-6 md:p-10 text-center">
             <!-- German Gloss -->
             {#if revealedWord.gloss_de}
@@ -628,22 +626,20 @@
                 {/if}
               </div>
             {/if}
-          </div>
-        </div>
 
-        <!-- Fixed Footer with Action Buttons -->
-        <div class="flex-shrink-0 bg-gradient-to-t from-black via-black/95 to-transparent px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
-          <div class="flex gap-4 justify-center">
-            <button
-              onclick={() => handleDecision('pass')}
-              class="flex-1 max-w-[140px] py-3 bg-[#39ff14]/10 border border-[#39ff14]/50 text-[#39ff14] hover:bg-[#39ff14]/20 hover:border-[#39ff14] transition-all tracking-widest uppercase text-sm cursor-pointer">
-              [DECRYPT]
-            </button>
-            <button
-              onclick={() => handleDecision('fail')}
-              class="flex-1 max-w-[140px] py-3 bg-[#ff0040]/10 border border-[#ff0040]/50 text-[#ff0040] hover:bg-[#ff0040]/20 hover:border-[#ff0040] transition-all tracking-widest uppercase text-sm cursor-pointer">
-              [CORRUPT]
-            </button>
+            <!-- Action Buttons inside card -->
+            <div class="mt-6 pt-4 border-t border-[#00fff2]/20 flex gap-4 justify-center">
+              <button
+                onclick={() => handleDecision('pass')}
+                class="flex-1 max-w-[140px] py-3 bg-[#39ff14]/10 border border-[#39ff14]/50 text-[#39ff14] hover:bg-[#39ff14]/20 hover:border-[#39ff14] transition-all tracking-widest uppercase text-sm cursor-pointer">
+                [DECRYPT]
+              </button>
+              <button
+                onclick={() => handleDecision('fail')}
+                class="flex-1 max-w-[140px] py-3 bg-[#ff0040]/10 border border-[#ff0040]/50 text-[#ff0040] hover:bg-[#ff0040]/20 hover:border-[#ff0040] transition-all tracking-widest uppercase text-sm cursor-pointer">
+                [CORRUPT]
+              </button>
+            </div>
           </div>
         </div>
       </div>

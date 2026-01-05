@@ -68,6 +68,7 @@
   let revealedWord: WordState | null = $state(null);
   let masteredWords: number[] = $state([]);
   let fadingWords: number[] = $state([]);
+  let justKnownWords: number[] = $state([]); // For crystallization effect
 
   // Visual effects
   let condensation: CondensationDrop[] = $state([]);
@@ -308,12 +309,18 @@
     const targetId = revealedWord.id;
 
     if (rating === 'pass') {
-      // FREEZE mechanic
+      // FREEZE mechanic with crystallization effect
       playSound('clear');
+      justKnownWords = [...justKnownWords, targetId]; // Trigger crystallize animation
       words = words.map(w => w.id === targetId ? { ...w, mastered: true } : w);
       masteredWords = [...masteredWords, targetId];
       dispatch('grade', { id: targetId, rating });
       revealedWord = null;
+
+      // Remove from justKnown after animation completes
+      setTimeout(() => {
+        justKnownWords = justKnownWords.filter(id => id !== targetId);
+      }, 1200);
     } else {
       // FOG RETURN + RESPAWN mechanic
       playSound('fog');
@@ -464,6 +471,7 @@
       class="absolute cursor-pointer transition-[opacity,filter] duration-500 select-none frost-floating-card"
       class:animate-fog-return={fadingWords.includes(w.id)}
       class:frost-mastered={w.mastered}
+      class:frost-just-known={justKnownWords.includes(w.id)}
       style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%) rotate({w.rotation}deg); --delay: {(i * 0.5) + Math.random() * 1.5}s;"
       onmouseenter={() => handleHover(w.id)}
       onmouseleave={() => hoveredWord = null}
@@ -539,21 +547,19 @@
 
   <!-- Reveal Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]" transition:fade>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick={() => revealedWord = null}></div>
 
-      <!-- Modal Content Container -->
-      <div class="relative flex flex-col h-full max-w-md w-full mx-auto" transition:scale>
-        <!-- Header with Close Button -->
-        <div class="flex-shrink-0 flex justify-end p-4">
-          <button class="text-gray-600 cursor-pointer hover:text-white bg-slate-800/80 border border-[#a8d8ea]/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
-        </div>
+      <!-- Modal Content Container - Centered, content + buttons grouped -->
+      <div class="relative flex flex-col max-w-md w-full mx-auto max-h-[90vh]" transition:scale>
+        <!-- Close Button (top right of card) -->
+        <button class="absolute -top-2 -right-2 z-10 text-gray-600 cursor-pointer hover:text-white bg-slate-800/90 border border-[#a8d8ea]/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
 
         <!-- Scrollable Content Area -->
-        <div class="flex-1 overflow-y-auto overscroll-contain px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overscroll-contain rounded-lg" style="-webkit-overflow-scrolling: touch;">
           <div class="bg-slate-800/95 border border-[#a8d8ea]/30 p-6 md:p-8 rounded-lg shadow-2xl backdrop-blur-md text-center">
             <!-- German Gloss -->
             {#if revealedWord.gloss_de}
@@ -610,22 +616,20 @@
                 {/if}
               </div>
             {/if}
-          </div>
-        </div>
 
-        <!-- Fixed Footer with Action Buttons -->
-        <div class="flex-shrink-0 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
-          <div class="flex gap-4 justify-center">
-            <button
-              onclick={() => handleDecision('pass')}
-              class="flex-1 max-w-[150px] py-3 bg-[#2a4a6a]/80 hover:bg-[#2a4a6a] text-white rounded-lg transition-all font-hand text-lg cursor-pointer">
-              I knew it
-            </button>
-            <button
-              onclick={() => handleDecision('fail')}
-              class="flex-1 max-w-[150px] py-3 bg-[#a8d8ea]/20 hover:bg-[#a8d8ea]/30 text-[#a8d8ea] rounded-lg transition-all font-hand text-lg cursor-pointer">
-              Show again
-            </button>
+            <!-- Action Buttons - Inside card, below content -->
+            <div class="flex gap-4 justify-center mt-6 pt-4 border-t border-[#a8d8ea]/20">
+              <button
+                onclick={() => handleDecision('pass')}
+                class="flex-1 max-w-[150px] py-3 bg-[#2a4a6a]/80 hover:bg-[#2a4a6a] text-white rounded-lg transition-all font-hand text-lg cursor-pointer">
+                I knew it
+              </button>
+              <button
+                onclick={() => handleDecision('fail')}
+                class="flex-1 max-w-[150px] py-3 bg-[#a8d8ea]/20 hover:bg-[#a8d8ea]/30 text-[#a8d8ea] rounded-lg transition-all font-hand text-lg cursor-pointer">
+                Show again
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -726,6 +730,31 @@
     filter: drop-shadow(0 0 15px rgba(168, 216, 234, 0.6)) drop-shadow(0 0 25px rgba(168, 216, 234, 0.3)) !important;
   }
 
+  /* "I knew it" crystallization effect - ice flash + glow */
+  .frost-just-known {
+    animation: frost-crystallize 1.2s ease-out forwards !important;
+    z-index: 100;
+  }
+
+  @keyframes frost-crystallize {
+    0% {
+      filter: brightness(1) drop-shadow(0 0 0 rgba(168, 216, 234, 0));
+      transform: translate(-50%, -50%) scale(1);
+    }
+    15% {
+      filter: brightness(2.5) drop-shadow(0 0 30px rgba(168, 216, 234, 1)) drop-shadow(0 0 60px rgba(255, 255, 255, 0.8));
+      transform: translate(-50%, -50%) scale(1.15);
+    }
+    40% {
+      filter: brightness(1.8) drop-shadow(0 0 25px rgba(168, 216, 234, 0.9)) drop-shadow(0 0 50px rgba(200, 230, 255, 0.6));
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+      filter: brightness(1) drop-shadow(0 0 15px rgba(168, 216, 234, 0.5));
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
   /* Existing animations from app.css that may be missing */
   .animate-breath-fade {
     animation: breath-fade 2s ease-out forwards;
@@ -743,20 +772,28 @@
   }
 
   .animate-fog-return {
-    animation: fog-return 1.5s ease-out forwards;
+    animation: fog-return 1.5s ease-out;
+    /* No 'forwards' - let it return to normal animation state after */
   }
 
   @keyframes fog-return {
     0% {
       opacity: 1;
+      filter: blur(0.5px);
     }
-    50% {
+    30% {
+      opacity: 0;
+      filter: blur(15px);
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    60% {
       opacity: 0;
       filter: blur(10px);
     }
     100% {
       opacity: 1;
-      filter: blur(3px);
+      filter: blur(0.5px);
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 

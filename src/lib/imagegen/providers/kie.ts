@@ -41,18 +41,11 @@ export async function generateWithKie(
   aspectRatio: AspectRatio = '1:1',
   resolution?: Resolution  // Only for Flux-2
 ): Promise<string> {
-  console.log('=== KIE.AI IMAGE GENERATION ===');
-  console.log('Model:', model);
-  console.log('Prompt:', prompt.substring(0, 100) + '...');
-  console.log('Aspect Ratio:', aspectRatio);
-
   // Step 1: Create task
   const taskId = await createTask(apiKey, model, prompt, aspectRatio, resolution);
-  console.log('Task ID:', taskId);
 
-  // Step 2: Poll for result
+  // Step 2: Poll for result using /jobs/recordInfo endpoint
   const imageUrl = await pollTaskResult(apiKey, taskId);
-  console.log('Image URL:', imageUrl);
 
   return imageUrl;
 }
@@ -86,10 +79,7 @@ async function createTask(
   const body = {
     model: model,
     input: input
-    // Note: callBackUrl omitted - we'll poll instead
   };
-
-  console.log('Request body:', JSON.stringify(body, null, 2));
 
   const response = await fetch(`${KIE_BASE_URL}/jobs/createTask`, {
     method: 'POST',
@@ -100,10 +90,17 @@ async function createTask(
     body: JSON.stringify(body)
   });
 
-  const result: KieTaskResponse = await response.json();
-  console.log('Create task response:', JSON.stringify(result, null, 2));
+  const rawText = await response.text();
+  let result: KieTaskResponse;
+  try {
+    result = JSON.parse(rawText);
+  } catch (e) {
+    console.error('Kie.ai createTask JSON parse error:', response.status, rawText.substring(0, 500));
+    throw new Error('Kie.ai createTask failed: Invalid JSON response');
+  }
 
   if (result.code !== 200) {
+    console.error('Kie.ai createTask error:', result.code, result.msg);
     throw new Error(`Kie.ai error ${result.code}: ${result.msg}`);
   }
 
@@ -112,16 +109,22 @@ async function createTask(
 
 async function pollTaskResult(
   apiKey: string,
-  taskId: string,
-  maxAttempts: number = 60,
-  intervalMs: number = 2000
+  taskId: string
 ): Promise<string> {
-  console.log('Polling for task result, taskId:', taskId);
+  // Polling strategy: 2s intervals for first 15 attempts (~30s), then backoff to 5s, then 10s, then 15s
+  // Max total wait: ~10 minutes
+  const maxAttempts = 80;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    // Use jobs endpoint (correct per API behavior)
-    const pollUrl = `${KIE_BASE_URL}/jobs/getTaskDetail?taskId=${encodeURIComponent(taskId)}`;
-    console.log('Poll URL:', pollUrl);
+    // Calculate interval with backoff
+    let intervalMs: number;
+    if (attempt <= 15) intervalMs = 2000;       // First 30s: 2s intervals
+    else if (attempt <= 30) intervalMs = 5000;  // Next 75s: 5s intervals
+    else if (attempt <= 50) intervalMs = 10000; // Next 200s: 10s intervals
+    else intervalMs = 15000;                    // Rest: 15s intervals
+
+    // Correct endpoint per Kie Market docs: /jobs/recordInfo
+    const pollUrl = `${KIE_BASE_URL}/jobs/recordInfo?taskId=${encodeURIComponent(taskId)}`;
 
     const response = await fetch(pollUrl, {
       method: 'GET',
@@ -131,105 +134,77 @@ async function pollTaskResult(
       }
     });
 
-    // Get raw text first to see what we're dealing with
     const rawText = await response.text();
-    console.log(`Poll attempt ${attempt} - HTTP ${response.status}`);
-    console.log('Raw response:', rawText.substring(0, 500));
 
     // Parse JSON
     let result: any;
     try {
       result = JSON.parse(rawText);
     } catch (e) {
-      console.error('JSON parse error:', e);
+      console.error('Kie.ai poll JSON parse error:', rawText.substring(0, 500));
       await new Promise(resolve => setTimeout(resolve, intervalMs));
       continue;
     }
 
-    console.log('Parsed response:', JSON.stringify(result, null, 2));
-
-    // Handle different response structures from Kie.ai
-    const code = result.code;
-    const data = result.data || result;
-
-    // Check for API error
-    if (code && code !== 200) {
-      console.error('API returned error code:', code, result.msg);
-      throw new Error(`Kie.ai error ${code}: ${result.msg || 'Unknown error'}`);
+    // Check API response code
+    if (result.code !== 200) {
+      console.error('Kie.ai API error:', response.status, rawText.substring(0, 500));
+      throw new Error(`Kie.ai error ${result.code}: ${result.message || result.msg || 'Unknown error'}`);
     }
 
-    // Extract status - try multiple possible field names
-    const status = (
-      data.status ||
-      data.taskStatus ||
-      data.state ||
-      result.status
-    )?.toString()?.toLowerCase();
+    const data = result.data;
+    if (!data) {
+      console.error('Kie.ai no data in response:', rawText.substring(0, 500));
+      throw new Error('Kie.ai response missing data field');
+    }
 
-    console.log('Extracted status:', status);
+    const state = data.state?.toLowerCase();
 
-    // Check for completion
-    if (status === 'completed' || status === 'success' || status === 'finished') {
-      // Try to find image URL in various possible locations
+    // Still processing states
+    if (state === 'waiting' || state === 'queuing' || state === 'generating') {
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+      continue;
+    }
+
+    // Failure state
+    if (state === 'fail') {
+      throw new Error(`Kie.ai task failed: ${data.failCode || ''} ${data.failMsg || 'Unknown error'}`);
+    }
+
+    // Success state - extract URL from resultJson
+    if (state === 'success') {
+      let resultData: any = {};
+      try {
+        resultData = JSON.parse(data.resultJson || '{}');
+      } catch (e) {
+        console.error('Kie.ai resultJson parse error:', data.resultJson);
+      }
+
       const imageUrl =
-        data.output?.images?.[0] ||
-        data.output?.image ||
-        data.output?.[0] ||
-        data.result?.images?.[0] ||
-        data.result?.image ||
-        data.result?.[0] ||
-        data.images?.[0] ||
-        data.image ||
-        data.url ||
-        data.imageUrl ||
-        result.output?.images?.[0] ||
-        result.images?.[0];
-
-      console.log('Found image URL:', imageUrl);
+        resultData?.resultUrls?.[0] ||
+        resultData?.resultImageUrl ||
+        resultData?.images?.[0] ||
+        resultData?.url;
 
       if (!imageUrl) {
-        console.error('No image URL found in response:', JSON.stringify(result, null, 2));
-        throw new Error('Task completed but no image URL found');
+        console.error('Kie.ai success but no URL in resultJson:', data.resultJson);
+        throw new Error('Kie.ai task succeeded but no image URL found in resultJson');
       }
 
       return imageUrl;
     }
 
-    // Check for failure
-    if (status === 'failed' || status === 'error' || status === 'cancelled') {
-      const errorMsg = data.error || data.message || data.errorMessage || result.msg || 'Unknown error';
-      throw new Error(`Generation failed: ${errorMsg}`);
-    }
-
-    // Check for still processing
-    if (status === 'pending' || status === 'processing' || status === 'running' || status === 'queued') {
-      console.log(`Still ${status}, waiting ${intervalMs}ms...`);
+    // Unknown state - treat as in-progress for a few attempts
+    if (attempt < 5) {
       await new Promise(resolve => setTimeout(resolve, intervalMs));
       continue;
     }
 
-    // Unknown status - if we have no status at all, check if maybe the task isn't ready
-    if (!status) {
-      console.log('No status field found, checking if task exists...');
-
-      // Maybe the response itself indicates the task isn't ready yet
-      if (attempt < 5) {
-        console.log('Waiting for task to be queryable...');
-        await new Promise(resolve => setTimeout(resolve, intervalMs));
-        continue;
-      }
-
-      // After a few attempts, if still no status, log full response and error
-      console.error('Cannot determine task status. Full response:', JSON.stringify(result, null, 2));
-      throw new Error('Unable to determine task status from Kie.ai response');
-    }
-
-    // Unknown status value
-    console.log(`Unknown status "${status}", treating as in-progress...`);
-    await new Promise(resolve => setTimeout(resolve, intervalMs));
+    console.error('Kie.ai unknown state:', state, rawText.substring(0, 500));
+    throw new Error(`Kie.ai unknown task state: ${state}`);
   }
 
-  throw new Error(`Timeout: Task did not complete after ${maxAttempts * intervalMs / 1000} seconds`);
+  throw new Error('Kie.ai timeout: Task did not complete after ~10 minutes');
 }
 
 // UI Options

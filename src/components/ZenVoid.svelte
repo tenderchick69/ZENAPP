@@ -568,21 +568,19 @@
 
   <!-- Reveal Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]" transition:fade>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="absolute inset-0 bg-black/95" onclick={() => revealedWord = null}></div>
 
-      <!-- Modal Content Container -->
-      <div class="relative flex flex-col h-full max-w-lg w-full mx-auto" transition:scale>
-        <!-- Header with Close Button -->
-        <div class="flex-shrink-0 flex justify-end p-4">
-          <button class="text-[#333] cursor-pointer hover:text-[#666] bg-[#111] border border-[#222] rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>×</button>
-        </div>
+      <!-- Modal Content Container - Centered, content + buttons grouped -->
+      <div class="relative flex flex-col max-w-lg w-full mx-auto max-h-[90vh]" transition:scale>
+        <!-- Close Button (top right of card) -->
+        <button class="absolute -top-2 -right-2 z-10 text-[#333] cursor-pointer hover:text-[#666] bg-[#111] border border-[#222] rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>×</button>
 
         <!-- Scrollable Content Area -->
-        <div class="flex-1 overflow-y-auto overscroll-contain px-4 md:px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overscroll-contain rounded-lg" style="-webkit-overflow-scrolling: touch;">
           <div class="bg-[#080808] border border-[#222] p-6 md:p-10 rounded-lg text-center">
             <!-- German Gloss -->
             {#if revealedWord.gloss_de}

@@ -421,21 +421,19 @@
 
   <!-- Modal -->
   {#if revealedWord}
-    <div class="fixed inset-0 z-50 flex flex-col h-[100dvh]" transition:fade>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom));" transition:fade>
       <!-- Backdrop -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="absolute inset-0 bg-black/95 backdrop-blur-[2px]" onclick={() => revealedWord = null}></div>
 
-      <!-- Modal Content Container -->
-      <div class="relative flex flex-col h-full max-w-lg w-full mx-auto" transition:scale>
-        <!-- Header with Close Button -->
-        <div class="flex-shrink-0 flex justify-end p-4">
-          <button class="text-gray-600 cursor-pointer hover:text-white bg-black/50 border border-orange-900/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
-        </div>
+      <!-- Modal Content Container - Centered, content + buttons grouped -->
+      <div class="relative flex flex-col max-w-lg w-full mx-auto max-h-[90vh]" transition:scale>
+        <!-- Close Button (top right of card) -->
+        <button class="absolute -top-2 -right-2 z-10 text-gray-600 cursor-pointer hover:text-white bg-black/80 border border-orange-900/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
 
         <!-- Scrollable Content Area -->
-        <div class="flex-1 overflow-y-auto overscroll-contain px-6 pb-4" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overscroll-contain rounded-xl" style="-webkit-overflow-scrolling: touch;">
           <div class="bg-gradient-to-b from-[#121212] to-black border border-orange-900/40 p-6 md:p-10 rounded-xl text-center shadow-[0_0_100px_rgba(255,69,0,0.15)]">
             <!-- German Gloss -->
             {#if revealedWord.gloss_de}
@@ -498,20 +496,18 @@
                   </div>
                {/if}
             </div>
-          </div>
-        </div>
 
-        <!-- Fixed Footer with Action Buttons -->
-        <div class="flex-shrink-0 bg-gradient-to-t from-black via-black/95 to-transparent px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
-          <div class="flex gap-4 justify-center">
-            <button onclick={() => handleDecision('pass')}
-              class="flex-1 max-w-[160px] py-4 bg-yellow-900/10 border border-yellow-600/30 text-yellow-500 hover:bg-yellow-500/20 hover:border-yellow-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,215,0,0.05)] cursor-pointer">
-              I knew it
-            </button>
-            <button onclick={() => handleDecision('fail')}
-              class="flex-1 max-w-[160px] py-4 bg-orange-900/10 border border-orange-600/30 text-orange-500 hover:bg-orange-500/20 hover:border-orange-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,69,0,0.05)] cursor-pointer">
-              Show again
-            </button>
+            <!-- Action Buttons - Inside card, below content -->
+            <div class="flex gap-4 justify-center mt-6 pt-4 border-t border-orange-900/30">
+              <button onclick={() => handleDecision('pass')}
+                class="flex-1 max-w-[160px] py-4 bg-yellow-900/10 border border-yellow-600/30 text-yellow-500 hover:bg-yellow-500/20 hover:border-yellow-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,215,0,0.05)] cursor-pointer">
+                I knew it
+              </button>
+              <button onclick={() => handleDecision('fail')}
+                class="flex-1 max-w-[160px] py-4 bg-orange-900/10 border border-orange-600/30 text-orange-500 hover:bg-orange-500/20 hover:border-orange-500 rounded-lg transition-all tracking-widest uppercase text-sm shadow-[0_0_20px_rgba(255,69,0,0.05)] cursor-pointer">
+                Show again
+              </button>
+            </div>
           </div>
         </div>
       </div>
