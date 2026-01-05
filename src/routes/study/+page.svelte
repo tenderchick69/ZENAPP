@@ -21,7 +21,7 @@
   let deckId = $derived(page.url.searchParams.get('id'));
 
   let view = $state<'lobby' | 'study' | 'summary' | 'inspect'>('lobby');
-  let cramAmount = $state(20);
+  let cramAmount = $state(10);
   let sessionMode = $state<'standard' | 'all' | 'souls' | 'overclock'>('standard');
 
   // Data
@@ -535,8 +535,9 @@
     if (rating === 'fail') {
       sessionStats.wrong++;
 
-      // Only demote if this is the FIRST fail for this card in this session
-      if (!failedInSession.has(id)) {
+      // Only demote if: 1) standard mode, 2) first fail for this card in session
+      // Non-standard modes (all, overclock, souls) are practice-only - no SRS updates
+      if (sessionMode === 'standard' && !failedInSession.has(id)) {
         failedInSession = new Set([...failedInSession, id]); // Add to failed set
         const updates = calculateNextReview(card, 'fail');
         await supabase.from('cards').update({ state: updates.state }).eq('id', id);
@@ -547,7 +548,8 @@
       // Mark as mastered in queue so theme switch preserves state
       queue = queue.map(c => c.id === id ? { ...c, mastered: true } : c);
 
-      // Only promote if card was NOT failed in this session
+      // Only promote if: 1) standard mode, 2) card was NOT failed in this session
+      // Non-standard modes (all, overclock, souls) are practice-only - no SRS updates
       if (sessionMode === 'standard' && !failedInSession.has(id)) {
         const updates = calculateNextReview(card, 'pass');
         await supabase.from('cards').update(updates).eq('id', id);
@@ -637,7 +639,7 @@
                    hover:border-danger hover:bg-danger/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
             <div class="text-2xl md:text-6xl font-heading text-danger leading-none transition-transform group-hover:scale-110">{stats.due}</div>
-            <div class="text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-danger/70 mt-1 md:mt-3">{$t.stat_due}</div>
+            <div class="text-[9px] md:text-xs tracking-[0.05em] md:tracking-[0.15em] uppercase text-danger/80 mt-1 md:mt-3 font-medium">{$t.stat_due}</div>
           </button>
         </Tooltip>
 
@@ -650,7 +652,7 @@
                    hover:border-success hover:bg-success/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
             <div class="text-2xl md:text-6xl font-heading text-success leading-none transition-transform group-hover:scale-110">{stats.total - stats.mastered}</div>
-            <div class="text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-success/70 mt-1 md:mt-3">{$t.stat_learn}</div>
+            <div class="text-[9px] md:text-xs tracking-[0.05em] md:tracking-[0.05em] uppercase text-success/80 mt-1 md:mt-3 font-medium">{$t.stat_learn}</div>
           </button>
         </Tooltip>
 
@@ -663,7 +665,7 @@
                    hover:border-accent hover:bg-accent/10 hover:-translate-y-1
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
             <div class="text-2xl md:text-6xl font-heading text-accent leading-none transition-transform group-hover:scale-110">{stats.mastered}</div>
-            <div class="text-[7px] md:text-xs tracking-[0.1em] md:tracking-[0.15em] uppercase text-accent/70 mt-1 md:mt-3">{$t.stat_master}</div>
+            <div class="text-[9px] md:text-xs tracking-[0.05em] md:tracking-[0.15em] uppercase text-accent/80 mt-1 md:mt-3 font-medium">{$t.stat_master}</div>
           </button>
         </Tooltip>
       </div>

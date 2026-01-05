@@ -351,7 +351,10 @@
 {#if showModal}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="image-gen-modal-overlay" onclick={closeModal}>
+  <div
+    class="image-gen-modal-overlay"
+    onclick={closeModal}
+    onwheel={(e) => e.stopPropagation()}>
     <div class="image-gen-modal" onclick={(e) => e.stopPropagation()}>
       <!-- Fixed Header -->
       <div class="image-gen-modal-header">
@@ -635,6 +638,9 @@
     padding: 1rem;
     padding-top: max(1rem, env(safe-area-inset-top));
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    /* Prevent scroll bleed-through to parent modals */
+    overscroll-behavior: contain;
+    overflow: hidden;
   }
 
   .image-gen-modal {
