@@ -89,44 +89,59 @@
     existingPositions: { x: number; y: number }[] = []
   ) {
     const positions = [...existingPositions];
-    const minDistance = 15; // 15% screen distance
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Card dimensions in % of screen - cards are ~220px wide, ~48px tall on mobile
+    // On 375px phone: 220px = ~59% width, 48px = ~7% height
+    // Use separate horizontal and vertical distances
+    const minHorizontalDist = isMobile ? 22 : 18; // Wider horizontal spacing
+    const minVerticalDist = isMobile ? 12 : 10;   // Vertical spacing
+
+    // Positioning bounds
+    const minX = isMobile ? 25 : 12;
+    const maxXRange = isMobile ? 50 : 76;
+    const minY = isMobile ? 22 : 15;
+    const maxYRange = isMobile ? 56 : 72;
 
     for (let i = positions.length; i < count; i++) {
       let attempts = 0;
       let validPosition = null;
 
-      // Use wider margins on mobile to prevent cards from being cut off after centering
-      // Increased top margin to avoid header/toolbar overlap
-      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-      const minX = isMobile ? 20 : 12;
-      const maxXRange = isMobile ? 60 : 76;
-      const minY = isMobile ? 22 : 15; // Higher top margin to avoid header overlap
-      const maxYRange = isMobile ? 58 : 72;
-
-      while (attempts < 50 && !validPosition) {
+      while (attempts < 100 && !validPosition) {
         const candidate = {
           x: minX + Math.random() * maxXRange,
           y: minY + Math.random() * maxYRange
         };
 
-        // Check against all existing positions
+        // Check against all existing positions using box collision
         const isValid = !positions.some(pos => {
-          const dx = candidate.x - pos.x;
-          const dy = candidate.y - pos.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < minDistance;
+          const hDist = Math.abs(candidate.x - pos.x);
+          const vDist = Math.abs(candidate.y - pos.y);
+          // Overlap if within both horizontal AND vertical minimum distances
+          return hDist < minHorizontalDist && vDist < minVerticalDist;
         });
 
         if (isValid) validPosition = candidate;
         attempts++;
       }
 
-      // Fallback if no valid position found
-      const isMobileFallback = typeof window !== 'undefined' && window.innerWidth < 768;
-      positions.push(validPosition || {
-        x: (isMobileFallback ? 20 : 12) + Math.random() * (isMobileFallback ? 60 : 76),
-        y: (isMobileFallback ? 22 : 15) + Math.random() * (isMobileFallback ? 58 : 72)
-      });
+      // Grid fallback if random placement failed
+      if (!validPosition) {
+        const cols = isMobile ? 3 : 4;
+        const rows = isMobile ? 5 : 6;
+        const cellWidth = maxXRange / cols;
+        const cellHeight = maxYRange / rows;
+        const gridIndex = i % (cols * rows);
+        const col = gridIndex % cols;
+        const row = Math.floor(gridIndex / cols);
+
+        validPosition = {
+          x: minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 4,
+          y: minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 3
+        };
+      }
+
+      positions.push(validPosition);
     }
 
     return positions;
