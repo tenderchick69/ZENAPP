@@ -76,85 +76,106 @@
     };
   });
 
-  // Generate non-overlapping positions with ADAPTIVE DENSITY
-  // ≤10 words: Random positioning (organic feel)
-  // 11-15 words: Tighter spacing with random positioning
-  // 16-20 words: Deterministic grid layout (guaranteed no overlap)
+  // Generate non-overlapping positions - SEQUENTIAL CENTER-OUTWARD
+  // Places words one by one, starting from center, expanding outward
+  // NO GRID PATTERNS - always sequential with collision detection
   function generateNonOverlappingPositions(count: number, existingPositions: { x: number; y: number; headword?: string }[] = []) {
     const positions: { x: number; y: number }[] = [];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Positioning bounds - account for card width (cards use transform: translate(-50%, -50%))
-    // Mobile cards are up to ~50vw wide, so center must be 25%+ from edge
-    const minX = isMobile ? 20 : 12;
-    const maxX = isMobile ? 80 : 88;
+    // Safe positioning bounds (cards have boxes, ~25% wide on mobile)
+    const minX = isMobile ? 18 : 12;
+    const maxX = isMobile ? 82 : 88;
     const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 85 : 88;
-    const maxXRange = maxX - minX;
-    const maxYRange = maxY - minY;
+    const maxY = isMobile ? 82 : 85;
 
-    // Determine layout mode based on total word count
-    const useGridLayout = count > 15;
-    const densityFactor = count > 10 ? 0.7 : 1.0; // Tighter spacing for 11-15 words
+    // Center of available area
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
 
-    if (useGridLayout) {
-      // DETERMINISTIC GRID for 16+ words - guaranteed no overlap
-      const cols = isMobile ? 4 : 5;
-      const rows = Math.ceil(count / cols);
-      const cellWidth = maxXRange / cols;
-      const cellHeight = maxYRange / Math.min(rows, isMobile ? 6 : 7);
+    // Spacing between word centers - Ember cards have boxes (~25% wide)
+    const spacingX = isMobile ? 22 : 18;
+    const spacingY = isMobile ? 14 : 12;
 
-      for (let i = 0; i < count; i++) {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        // Add small random jitter within cell for organic feel
-        const jitterX = (Math.random() - 0.5) * cellWidth * 0.3;
-        const jitterY = (Math.random() - 0.5) * cellHeight * 0.3;
-        positions.push({
-          x: minX + col * cellWidth + cellWidth / 2 + jitterX,
-          y: minY + row * cellHeight + cellHeight / 2 + jitterY
-        });
-      }
-    } else {
-      // RANDOM positioning for ≤15 words
-      const baseHSpacing = (isMobile ? 14 : 12) * densityFactor;
-      const baseVSpacing = (isMobile ? 11 : 9) * densityFactor;
-      const allPositions = [...existingPositions];
+    const allPositions = [...existingPositions];
 
-      for (let i = 0; i < count; i++) {
-        let x = 0, y = 0;
-        let safe = false;
-        let attempts = 0;
+    function hasCollision(x: number, y: number): boolean {
+      return allPositions.some(p => {
+        const hDist = Math.abs(p.x - x);
+        const vDist = Math.abs(p.y - y);
+        return hDist < spacingX && vDist < spacingY;
+      });
+    }
 
-        while (!safe && attempts < 150) {
-          x = minX + Math.random() * maxXRange;
-          y = minY + Math.random() * maxYRange;
+    function inBounds(x: number, y: number): boolean {
+      return x >= minX && x <= maxX && y >= minY && y <= maxY;
+    }
 
-          const hasCollision = allPositions.some(p => {
-            const hDist = Math.abs(p.x - x);
-            const vDist = Math.abs(p.y - y);
-            return hDist < baseHSpacing && vDist < baseVSpacing;
-          });
+    // Place each word sequentially from center outward
+    for (let i = 0; i < count; i++) {
+      let placed = false;
+      let x = centerX;
+      let y = centerY;
 
-          if (!hasCollision) safe = true;
-          attempts++;
+      // First word at center
+      if (i === 0) {
+        x = centerX + (Math.random() - 0.5) * 5;
+        y = centerY + (Math.random() - 0.5) * 5;
+        if (!hasCollision(x, y) && inBounds(x, y)) {
+          placed = true;
         }
-
-        // Grid fallback for this word if random failed
-        if (!safe) {
-          const cols = isMobile ? 4 : 5;
-          const cellWidth = maxXRange / cols;
-          const cellHeight = maxYRange / 6;
-          const idx = allPositions.length % (cols * 6);
-          const col = idx % cols;
-          const row = Math.floor(idx / cols);
-          x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
-          y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2;
-        }
-
-        positions.push({ x, y });
-        allPositions.push({ x, y });
       }
+
+      // Search outward in expanding rectangles
+      if (!placed) {
+        for (let layer = 1; layer <= 15 && !placed; layer++) {
+          const layerOffsetX = layer * spacingX * 0.7;
+          const layerOffsetY = layer * spacingY * 0.7;
+
+          const candidates: { x: number; y: number }[] = [];
+
+          for (let dx = -layer; dx <= layer; dx++) {
+            candidates.push({ x: centerX + dx * spacingX * 0.7, y: centerY - layerOffsetY });
+            candidates.push({ x: centerX + dx * spacingX * 0.7, y: centerY + layerOffsetY });
+          }
+          for (let dy = -layer + 1; dy < layer; dy++) {
+            candidates.push({ x: centerX - layerOffsetX, y: centerY + dy * spacingY * 0.7 });
+            candidates.push({ x: centerX + layerOffsetX, y: centerY + dy * spacingY * 0.7 });
+          }
+
+          // Shuffle for organic feel
+          for (let j = candidates.length - 1; j > 0; j--) {
+            const k = Math.floor(Math.random() * (j + 1));
+            [candidates[j], candidates[k]] = [candidates[k], candidates[j]];
+          }
+
+          for (const candidate of candidates) {
+            const jitterX = (Math.random() - 0.5) * spacingX * 0.25;
+            const jitterY = (Math.random() - 0.5) * spacingY * 0.25;
+            const testX = candidate.x + jitterX;
+            const testY = candidate.y + jitterY;
+
+            if (inBounds(testX, testY) && !hasCollision(testX, testY)) {
+              x = testX;
+              y = testY;
+              placed = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Emergency fallback
+      if (!placed) {
+        for (let attempt = 0; attempt < 100; attempt++) {
+          x = minX + Math.random() * (maxX - minX);
+          y = minY + Math.random() * (maxY - minY);
+          if (!hasCollision(x, y)) break;
+        }
+      }
+
+      positions.push({ x, y });
+      allPositions.push({ x, y });
     }
 
     return positions;
@@ -167,54 +188,55 @@
     avoidX?: number,
     avoidY?: number
   ) {
-    let safe = false;
-    let x = 0, y = 0;
-    let attempts = 0;
-
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    // Same bounds as generateNonOverlappingPositions
-    const minX = isMobile ? 20 : 12;
-    const maxX = isMobile ? 80 : 88;
-    const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 85 : 88;
-    const maxXRange = maxX - minX;
-    const maxYRange = maxY - minY;
-    const baseHSpacing = isMobile ? 14 : 12;
-    const baseVSpacing = isMobile ? 10 : 8;
 
-    while (!safe && attempts < 150) {
-      x = minX + Math.random() * maxXRange;
-      y = minY + Math.random() * maxYRange;
+    const minX = isMobile ? 18 : 12;
+    const maxX = isMobile ? 82 : 88;
+    const minY = isMobile ? 12 : 10;
+    const maxY = isMobile ? 82 : 85;
+
+    const spacingX = isMobile ? 22 : 18;
+    const spacingY = isMobile ? 14 : 12;
+
+    // Try random positions with collision detection
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const x = minX + Math.random() * (maxX - minX);
+      const y = minY + Math.random() * (maxY - minY);
 
       const hasCollision = currentWords.some(w => {
         const hDist = Math.abs(w.x - x);
         const vDist = Math.abs(w.y - y);
-        return hDist < baseHSpacing && vDist < baseVSpacing;
+        return hDist < spacingX && vDist < spacingY;
       });
 
-      let tooCloseToAvoid = false;
+      let tooCloseToOld = false;
       if (avoidX !== undefined && avoidY !== undefined) {
         const dist = Math.sqrt(Math.pow(x - avoidX, 2) + Math.pow(y - avoidY, 2));
-        if (dist < 25) tooCloseToAvoid = true;
+        if (dist < 20) tooCloseToOld = true;
       }
 
-      if (!hasCollision && !tooCloseToAvoid) safe = true;
-      attempts++;
+      if (!hasCollision && !tooCloseToOld) {
+        return { x, y };
+      }
     }
 
-    // Grid fallback
-    if (!safe) {
-      const cols = isMobile ? 4 : 5;
-      const cellWidth = maxXRange / cols;
-      const cellHeight = maxYRange / 6;
-      const idx = currentWords.length % (cols * 6);
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-      x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
-      y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2;
+    // Fallback: ignore avoid constraint
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const x = minX + Math.random() * (maxX - minX);
+      const y = minY + Math.random() * (maxY - minY);
+
+      const hasCollision = currentWords.some(w => {
+        const hDist = Math.abs(w.x - x);
+        const vDist = Math.abs(w.y - y);
+        return hDist < spacingX && vDist < spacingY;
+      });
+
+      if (!hasCollision) {
+        return { x, y };
+      }
     }
 
-    return { x, y };
+    return { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
   }
 
   function spawnEmber(golden = false, x?: number, y?: number, permanent = false) {

@@ -83,94 +83,109 @@
   const masteredCount = $derived(masteredWords.length);
   const progressPercent = $derived((masteredCount / (words.length || 1)) * 100);
 
-  // Generate non-overlapping positions with ADAPTIVE DENSITY
-  // ≤10 words: Random positioning (organic feel)
-  // 11-15 words: Tighter spacing with random positioning
-  // 16-20 words: Deterministic grid layout (guaranteed no overlap)
+  // Generate non-overlapping positions - SEQUENTIAL CENTER-OUTWARD
+  // Places words one by one, starting from center, expanding outward
+  // NO GRID PATTERNS - always sequential with collision detection
   function generateNonOverlappingPositions(
     count: number,
     existingPositions: { x: number; y: number }[] = []
   ) {
-    const positions = [...existingPositions];
+    const positions: { x: number; y: number }[] = [];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Positioning bounds - account for card width (cards use transform: translate(-50%, -50%))
-    // Mobile cards are up to ~50vw wide, so center must be 25%+ from edge
-    const minX = isMobile ? 20 : 12;
-    const maxX = isMobile ? 80 : 88;
+    // Safe positioning bounds (Frost cards have boxes, ~25% wide on mobile)
+    const minX = isMobile ? 18 : 12;
+    const maxX = isMobile ? 82 : 88;
     const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 85 : 88;
-    const maxXRange = maxX - minX;
-    const maxYRange = maxY - minY;
+    const maxY = isMobile ? 82 : 85;
 
-    // ADAPTIVE DENSITY: Use grid layout for 16+ words
-    const useGridLayout = count > 15;
+    // Center of available area
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
 
-    if (useGridLayout) {
-      // Deterministic grid for many words - guaranteed no overlap
-      const cols = isMobile ? 4 : 5;
-      const rows = Math.ceil(count / cols);
-      const cellWidth = maxXRange / cols;
-      const cellHeight = maxYRange / Math.min(rows, isMobile ? 6 : 7);
+    // Spacing between word centers - Frost cards have boxes (~25% wide)
+    const spacingX = isMobile ? 22 : 18;
+    const spacingY = isMobile ? 14 : 12;
 
-      for (let i = positions.length; i < count; i++) {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        // Small random offset within cell for visual interest
-        const jitterX = (Math.random() - 0.5) * (cellWidth * 0.3);
-        const jitterY = (Math.random() - 0.5) * (cellHeight * 0.3);
+    const allPositions = [...existingPositions];
 
-        positions.push({
-          x: minX + col * cellWidth + cellWidth / 2 + jitterX,
-          y: minY + row * cellHeight + cellHeight / 2 + jitterY
-        });
-      }
-    } else {
-      // Random positioning for fewer words
-      // Adjust spacing based on word count
-      const densityFactor = count > 10 ? 0.8 : 1.0;
-      const minHorizontalDist = (isMobile ? 14 : 16) * densityFactor;
-      const minVerticalDist = (isMobile ? 10 : 11) * densityFactor;
+    function hasCollision(x: number, y: number): boolean {
+      return allPositions.some(p => {
+        const hDist = Math.abs(p.x - x);
+        const vDist = Math.abs(p.y - y);
+        return hDist < spacingX && vDist < spacingY;
+      });
+    }
 
-      for (let i = positions.length; i < count; i++) {
-        let attempts = 0;
-        let validPosition = null;
-        const maxAttempts = count > 10 ? 150 : 100;
+    function inBounds(x: number, y: number): boolean {
+      return x >= minX && x <= maxX && y >= minY && y <= maxY;
+    }
 
-        while (attempts < maxAttempts && !validPosition) {
-          const candidate = {
-            x: minX + Math.random() * maxXRange,
-            y: minY + Math.random() * maxYRange
-          };
+    // Place each word sequentially from center outward
+    for (let i = 0; i < count; i++) {
+      let placed = false;
+      let x = centerX;
+      let y = centerY;
 
-          const isValid = !positions.some(pos => {
-            const hDist = Math.abs(candidate.x - pos.x);
-            const vDist = Math.abs(candidate.y - pos.y);
-            return hDist < minHorizontalDist && vDist < minVerticalDist;
-          });
-
-          if (isValid) validPosition = candidate;
-          attempts++;
+      // First word at center
+      if (i === 0 && allPositions.length === 0) {
+        x = centerX + (Math.random() - 0.5) * 5;
+        y = centerY + (Math.random() - 0.5) * 5;
+        if (!hasCollision(x, y) && inBounds(x, y)) {
+          placed = true;
         }
-
-        // Grid fallback if random failed
-        if (!validPosition) {
-          const cols = isMobile ? 4 : 5;
-          const rows = isMobile ? 6 : 7;
-          const cellWidth = maxXRange / cols;
-          const cellHeight = maxYRange / rows;
-          const gridIndex = i % (cols * rows);
-          const col = gridIndex % cols;
-          const row = Math.floor(gridIndex / cols);
-
-          validPosition = {
-            x: minX + col * cellWidth + cellWidth / 2,
-            y: minY + row * cellHeight + cellHeight / 2
-          };
-        }
-
-        positions.push(validPosition);
       }
+
+      // Search outward in expanding rectangles
+      if (!placed) {
+        for (let layer = 1; layer <= 15 && !placed; layer++) {
+          const layerOffsetX = layer * spacingX * 0.7;
+          const layerOffsetY = layer * spacingY * 0.7;
+
+          const candidates: { x: number; y: number }[] = [];
+
+          for (let dx = -layer; dx <= layer; dx++) {
+            candidates.push({ x: centerX + dx * spacingX * 0.7, y: centerY - layerOffsetY });
+            candidates.push({ x: centerX + dx * spacingX * 0.7, y: centerY + layerOffsetY });
+          }
+          for (let dy = -layer + 1; dy < layer; dy++) {
+            candidates.push({ x: centerX - layerOffsetX, y: centerY + dy * spacingY * 0.7 });
+            candidates.push({ x: centerX + layerOffsetX, y: centerY + dy * spacingY * 0.7 });
+          }
+
+          // Shuffle for organic feel
+          for (let j = candidates.length - 1; j > 0; j--) {
+            const k = Math.floor(Math.random() * (j + 1));
+            [candidates[j], candidates[k]] = [candidates[k], candidates[j]];
+          }
+
+          for (const candidate of candidates) {
+            const jitterX = (Math.random() - 0.5) * spacingX * 0.25;
+            const jitterY = (Math.random() - 0.5) * spacingY * 0.25;
+            const testX = candidate.x + jitterX;
+            const testY = candidate.y + jitterY;
+
+            if (inBounds(testX, testY) && !hasCollision(testX, testY)) {
+              x = testX;
+              y = testY;
+              placed = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Emergency fallback
+      if (!placed) {
+        for (let attempt = 0; attempt < 100; attempt++) {
+          x = minX + Math.random() * (maxX - minX);
+          y = minY + Math.random() * (maxY - minY);
+          if (!hasCollision(x, y)) break;
+        }
+      }
+
+      positions.push({ x, y });
+      allPositions.push({ x, y });
     }
 
     return positions;
