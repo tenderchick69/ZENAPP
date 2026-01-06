@@ -39,22 +39,12 @@ export const POST: RequestHandler = async ({ request }) => {
     const systemPrompt = buildSystemPrompt(params.nativeLanguage);
     const userPrompt = buildUserPrompt(params);
 
-    console.log('Generating deck with params:', {
-      nativeLanguage: params.nativeLanguage,
-      targetLanguage: params.targetLanguage,
-      category: params.category,
-      level: params.level,
-      cardCount: params.cardCount,
-    });
-
     // Call OpenRouter API
     const result = await generateDeckContent(
       systemPrompt,
       userPrompt,
       OPENROUTER_API_KEY
     );
-
-    console.log(`Successfully generated deck: "${result.deckName}" with ${result.cards.length} cards`);
 
     // Return generated deck
     return json({

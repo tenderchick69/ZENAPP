@@ -160,8 +160,7 @@
           } else {
             sessionStorage.removeItem('unsavedDeck');
           }
-        } catch (e) {
-          console.error('Failed to restore saved deck:', e);
+        } catch (_) {
           sessionStorage.removeItem('unsavedDeck');
         }
       }
@@ -204,7 +203,6 @@
         }));
       }
     } catch (e: any) {
-      console.error('Generation error:', e);
       error = e.message || 'Failed to generate deck';
       state = 'input';
     } finally {

@@ -61,8 +61,6 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
           steps: modelKey === 'flux' ? 4 : 20 // FLUX needs fewer steps
         }];
 
-        console.log('Runware request:', JSON.stringify(requestBody, null, 2));
-
         const response = await fetch(`${RUNWARE_API_URL}/images/generations`, {
           method: 'POST',
           headers: {
@@ -92,7 +90,6 @@ export function createRunwareProvider(apiKey: string): ImageProvider {
         }
 
         const data = await response.json();
-        console.log('Runware success response:', JSON.stringify(data, null, 2));
 
         // Response is an array, find the imageInference result
         const imageResult = Array.isArray(data)

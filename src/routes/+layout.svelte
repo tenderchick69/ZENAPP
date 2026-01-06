@@ -1,9 +1,9 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import '../app.css';
   import { theme, t } from '$lib/theme';
   import { helpMode } from '$lib/tooltip';
-  import { initAuth, user, userPreferences, authInitialized, signInWithGoogle, signOut } from '$lib/auth';
+  import { initAuth, cleanupAuth, user, userPreferences, authInitialized, signInWithGoogle, signOut } from '$lib/auth';
   import Onboarding from '../components/Onboarding.svelte';
 
   let showOnboarding = false;
@@ -12,19 +12,9 @@
   // Only show onboarding ONCE for new users (when preferences don't exist at all)
   // IMPORTANT: Wait for authInitialized to be true before checking, to avoid race condition
   $: {
-    console.log('🎯 [ONBOARDING] Reactive check triggered');
-    console.log('   authInitialized:', $authInitialized);
-    console.log('   User ID:', $user?.id);
-    console.log('   Preferences:', $userPreferences);
-    console.log('   hasCheckedOnboarding:', hasCheckedOnboarding);
-
-    // Only check AFTER auth is fully initialized (preferences loaded)
     if ($authInitialized && !hasCheckedOnboarding) {
       if ($user && $userPreferences === null) {
-        console.log('✅ [ONBOARDING] Showing onboarding modal (new user)');
         showOnboarding = true;
-      } else if ($userPreferences !== null) {
-        console.log('✅ [ONBOARDING] User has preferences, hiding onboarding');
       }
       hasCheckedOnboarding = true;
     }
@@ -32,6 +22,10 @@
 
   onMount(async () => {
     await initAuth();
+  });
+
+  onDestroy(() => {
+    cleanupAuth();
   });
 
   function toggleTheme() {

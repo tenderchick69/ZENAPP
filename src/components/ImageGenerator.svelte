@@ -33,15 +33,9 @@
   // Sync with props when a NEW card is opened (detected by headword change)
   $effect(() => {
     if (card.headword !== initializedFor) {
-      console.log('ImageGenerator: NEW card detected, syncing from props', {
-        cardHeadword: card.headword,
-        imageUrls,
-        selectedImageIndex
-      });
       images = [...imageUrls];
       currentIndex = selectedImageIndex;
       initializedFor = card.headword;
-      // Refresh display URLs for new card
       refreshDisplayUrls();
     }
   });
@@ -54,8 +48,7 @@
     }
     try {
       displayUrls = await getSignedImageUrls(images);
-    } catch (e) {
-      console.error('Failed to get signed URLs:', e);
+    } catch (_) {
       // Fallback: use images directly (works for legacy full URLs)
       displayUrls = [...images];
     }
@@ -252,7 +245,6 @@
   }
 
   function notifyChange() {
-    console.log('ImageGenerator: notifyChange called', { images, currentIndex });
     if (onImagesChanged) {
       onImagesChanged([...images], currentIndex);
     }

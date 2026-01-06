@@ -32,7 +32,6 @@
       const { data, error } = await supabase.from('decks').select('*').order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Failed to load decks:', error);
         decks = [];
         return;
       }
@@ -87,8 +86,7 @@
       } else {
         decks = [];
       }
-    } catch (e) {
-      console.error('Error loading decks:', e);
+    } catch (_) {
       decks = [];
     } finally {
       loading = false; // ALWAYS set loading to false
@@ -102,8 +100,7 @@
         .select('*', { count: 'exact', head: true })
         .eq('state', 5);
       totalMastered = count || 0;
-    } catch (e) {
-      console.error('Error loading mastery count:', e);
+    } catch (_) {
       totalMastered = 0;
     }
   }

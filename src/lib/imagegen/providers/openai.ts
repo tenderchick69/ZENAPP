@@ -10,12 +10,6 @@ export async function generateWithOpenAI(
   apiKey: string,
   quality: 'low' | 'medium' | 'high' = 'medium'
 ): Promise<string> {
-  console.log('=== OpenAI Image Generation ===');
-  console.log('Prompt:', prompt.slice(0, 100) + '...');
-  console.log('Quality:', quality);
-  console.log('API Key present:', !!apiKey);
-  console.log('API Key prefix:', apiKey?.slice(0, 10) + '...');
-
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
     headers: {
@@ -31,8 +25,6 @@ export async function generateWithOpenAI(
     }),
   });
 
-  console.log('OpenAI Response status:', response.status);
-
   if (!response.ok) {
     const errorText = await response.text();
     console.error('OpenAI Error response:', errorText);
@@ -40,8 +32,6 @@ export async function generateWithOpenAI(
   }
 
   const data = await response.json();
-  console.log('OpenAI Response received, checking data structure...');
-  console.log('Response keys:', Object.keys(data));
 
   // OpenAI returns: { data: [{ url: "...", b64_json: "..." }] }
   const imageData = data.data?.[0];
@@ -51,17 +41,13 @@ export async function generateWithOpenAI(
     throw new Error('No image data in OpenAI response');
   }
 
-  console.log('Image data keys:', Object.keys(imageData));
-
   // Return the URL (temporary) - we'll upload to Supabase after
   if (imageData.url) {
-    console.log('Returning URL:', imageData.url.slice(0, 80) + '...');
     return imageData.url;
   }
 
   // Or return base64 if that's what we got
   if (imageData.b64_json) {
-    console.log('Returning base64 data (length:', imageData.b64_json.length, ')');
     return `data:image/png;base64,${imageData.b64_json}`;
   }
 
@@ -81,9 +67,6 @@ export function createOpenAIImageProvider(apiKey: string): ImageProvider {
 
     async generate(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
       try {
-        console.log('OpenAI Provider: generate() called');
-        console.log('Options:', JSON.stringify(options, null, 2));
-
         const imageUrl = await generateWithOpenAI(
           options.prompt,
           apiKey,

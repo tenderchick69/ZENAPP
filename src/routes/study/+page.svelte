@@ -63,6 +63,7 @@
   // Toast Notifications
   let toastMessage = $state('');
   let showToast = $state(false);
+  let toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Image Mode Toggle
   let showImages = $state(false);
@@ -81,9 +82,7 @@
   // React to deckId changes (when switching decks without full page reload)
   $effect(() => {
     if (deckId && deckId !== prevDeckId && prevDeckId !== null) {
-      console.log('Deck ID changed from', prevDeckId, 'to', deckId);
       prevDeckId = deckId;
-      // Reset view and reload data
       view = 'lobby';
       queue = [];
       currentCard = null;
@@ -92,23 +91,15 @@
     }
   });
 
-  // Track previous theme - no longer restarts session, just logs
-  // Theme components will re-mount but queue persists with mastered state
+  // Track previous theme for potential future use
   let prevTheme = $state<string | null>(null);
 
   $effect(() => {
-    const currentTheme = $theme;
-    if (prevTheme !== null && currentTheme !== prevTheme && view === 'study') {
-      console.log('Theme changed during study:', prevTheme, '->', currentTheme);
-      // Queue and mastered state persist - new theme component will initialize from it
-    }
-    prevTheme = currentTheme;
+    prevTheme = $theme;
   });
 
   // Handler for exiting study mode back to lobby
   async function exitToLobby() {
-    console.log('exitToLobby called');
-
     // Close all modals first
     editingCard = null;
     showRenameModal = false;
@@ -118,13 +109,13 @@
     queue = [];
     currentCard = null;
     sessionStats = { correct: 0, wrong: 0 };
-    failedInSession = new Set(); // Reset failed cards tracking
+    failedInSession = new Set();
 
     // Reload stats to reflect any changes made during study
     try {
       await loadStats();
-    } catch (e) {
-      console.error('Failed to load stats on exit:', e);
+    } catch (_) {
+      // Stats reload failed - UI will show last known state
     }
   }
 
@@ -151,23 +142,19 @@
 
   async function loadStats() {
     if (!deckId) {
-      console.error('loadStats: No deckId');
       deckName = 'Invalid Deck';
       return;
     }
 
     try {
-      // Add timeout to prevent infinite hanging
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Load stats timed out')), 10000)
-      );
-
       // Fetch deck name
-      const deckPromise = supabase.from('decks').select('name').eq('id', deckId).single();
-      const { data: deck, error: deckError } = await Promise.race([deckPromise, timeoutPromise]) as any;
+      const { data: deck, error: deckError } = await supabase
+        .from('decks')
+        .select('name')
+        .eq('id', deckId)
+        .single();
 
       if (deckError) {
-        console.error('Failed to load deck:', deckError);
         deckName = 'Deck Not Found';
       } else if (deck) {
         deckName = deck.name;
@@ -176,12 +163,10 @@
       }
 
       // Fetch cards
-      const cardsPromise = supabase.from('cards').select('*').eq('deck_id', deckId);
-      const { data, error: cardsError } = await Promise.race([cardsPromise, timeoutPromise]) as any;
-
-      if (cardsError) {
-        console.error('Failed to load cards:', cardsError);
-      }
+      const { data } = await supabase
+        .from('cards')
+        .select('*')
+        .eq('deck_id', deckId);
 
       if (data) {
         allCards = data;
@@ -196,14 +181,11 @@
           levelDist[lvl]++;
         });
       } else {
-        // No cards found - set defaults
         allCards = [];
         stats = { due: 0, learning: 0, mastered: 0, total: 0 };
         levelDist = [0, 0, 0, 0, 0, 0];
       }
     } catch (e) {
-      console.error('loadStats error:', e);
-      // Set fallback values so the UI doesn't break
       if (!deckName) deckName = 'Failed to Load';
       allCards = [];
       stats = { due: 0, learning: 0, mastered: 0, total: 0 };
@@ -259,30 +241,28 @@
 
   // Toast Notification System
   function showToastMessage(message: string) {
+    if (toastTimeout) clearTimeout(toastTimeout);
     toastMessage = message;
     showToast = true;
-    setTimeout(() => {
+    toastTimeout = setTimeout(() => {
       showToast = false;
+      toastTimeout = null;
     }, 2000);
   }
 
   // Gardener Modal Functions
   function openGardenerModal(card: Card) {
-    console.log('openGardenerModal called with card:', card);
     editingCard = card;
     isSaving = false;
     saveButtonText = 'Save Changes';
-    // Handle both old (image_url) and new (image_urls) formats
+
     const cardAny = card as any;
     let urls: string[] = [];
     if (cardAny.image_urls && Array.isArray(cardAny.image_urls)) {
-      urls = [...cardAny.image_urls]; // Create a copy to avoid mutation issues
+      urls = [...cardAny.image_urls];
     } else if (cardAny.image_url) {
       urls = [cardAny.image_url];
     }
-
-    console.log('Image URLs found:', urls);
-    console.log('Selected index:', cardAny.selected_image_index || 0);
 
     gardenerForm = {
       headword: card.headword,
@@ -293,8 +273,6 @@
       image_urls: urls,
       selected_image_index: cardAny.selected_image_index || 0
     };
-
-    console.log('gardenerForm after set:', gardenerForm);
   }
 
   function closeGardenerModal() {
@@ -302,25 +280,12 @@
   }
 
   async function saveCardEdits() {
-    console.log('=== SAVE STARTED ===');
-
-    // Prevent double-clicks
-    if (isSaving) {
-      console.log('Already saving, ignoring click');
-      return;
-    }
-
-    if (!editingCard) {
-      console.error('No editingCard!');
-      alert('Save failed: No card selected');
-      return;
-    }
+    if (isSaving || !editingCard) return;
 
     isSaving = true;
     saveButtonText = 'Saving...';
 
     try {
-      // Get the selected image for backward compatibility
       const selectedUrl = gardenerForm.image_urls[gardenerForm.selected_image_index] || null;
 
       const updateData = {
@@ -331,44 +296,29 @@
         gloss_de: gardenerForm.gloss_de || null,
         image_urls: gardenerForm.image_urls,
         selected_image_index: gardenerForm.selected_image_index,
-        image_url: selectedUrl // backward compatibility
+        image_url: selectedUrl
       };
-      console.log('Saving card:', editingCard.id, updateData);
 
-      // Add timeout to prevent infinite hanging
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Save timed out after 10 seconds')), 10000)
-      );
-
-      const savePromise = supabase
+      const { error: updateError } = await supabase
         .from('cards')
         .update(updateData)
-        .eq('id', editingCard.id)
-        .select()
-        .single();
-
-      const { data, error: updateError } = await Promise.race([savePromise, timeoutPromise]) as any;
+        .eq('id', editingCard.id);
 
       if (updateError) {
-        console.error('=== SAVE FAILED ===', updateError);
         saveButtonText = 'Save Failed!';
         showToastMessage('Save failed: ' + updateError.message);
         return;
       }
 
-      console.log('=== SAVE SUCCESS ===', data);
       saveButtonText = 'Saved ✓';
-
-      await loadStats(); // Reload all cards
+      await loadStats();
       closeGardenerModal();
       showToastMessage($theme === 'ember' ? 'Changes burned in.' : 'Changes saved.');
     } catch (error: any) {
-      console.error('=== SAVE EXCEPTION ===', error);
       saveButtonText = 'Error!';
       showToastMessage('Save error: ' + (error.message || 'Unknown error'));
     } finally {
       isSaving = false;
-      // Reset button text after a delay so user sees the result
       setTimeout(() => {
         saveButtonText = 'Save Changes';
       }, 1500);
@@ -1082,11 +1032,7 @@
           <div class="flex justify-center items-center gap-4">
             <button
               type="button"
-              onclick={(e) => {
-                e.preventDefault();
-                console.log('Save button clicked!');
-                saveCardEdits();
-              }}
+              onclick={saveCardEdits}
               disabled={isSaving}
               class="flex-1 max-w-[200px] py-4 bg-accent text-bg font-heading text-base font-bold hover:shadow-[0_0_20px_var(--color-accent)] transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
               class:cursor-pointer={!isSaving}>

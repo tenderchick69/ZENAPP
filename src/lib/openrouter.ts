@@ -72,13 +72,6 @@ export async function generateDeckContent(
     throw new Error('No content in OpenRouter response');
   }
 
-  // Log raw AI response for debugging
-  console.log('=== RAW AI RESPONSE START ===');
-  console.log('Length:', content.length);
-  console.log('First 1000 chars:', content.substring(0, 1000));
-  console.log('Last 200 chars:', content.substring(content.length - 200));
-  console.log('=== RAW AI RESPONSE END ===');
-
   // Clean up JSON response - strip markdown blocks and extra text
   let cleanedContent = content.trim();
 
@@ -146,10 +139,6 @@ export async function generateDeckContent(
   // Extract just the JSON portion
   cleanedContent = cleanedContent.slice(startIndex, endIndex + 1);
 
-  console.log('=== CLEANED JSON ===');
-  console.log('Length:', cleanedContent.length);
-  console.log('First 500 chars:', cleanedContent.substring(0, 500));
-
   // Parse JSON response
   let parsed: any;
   try {
@@ -171,7 +160,6 @@ export async function generateDeckContent(
 
     try {
       parsed = JSON.parse(fixedContent);
-      console.log('JSON parsed successfully after fixes');
     } catch (e2) {
       console.error('Still failed after fixes. Final attempt content:', fixedContent.substring(0, 500));
       throw new Error(`AI returned invalid JSON format: ${e.message}`);
@@ -220,8 +208,6 @@ export function validateCard(card: CardData): boolean {
 
 // Clean and prepare cards for Supabase insertion
 export function prepareCardsForDb(cards: CardData[], deckId: number) {
-  console.log('prepareCardsForDb called with', cards.length, 'cards for deck', deckId);
-
   const prepared = cards
     .filter(validateCard)
     .map((card, index) => {
@@ -250,6 +236,5 @@ export function prepareCardsForDb(cards: CardData[], deckId: number) {
       }
     });
 
-  console.log('Prepared', prepared.length, 'valid cards');
   return prepared;
 }

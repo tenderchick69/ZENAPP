@@ -136,7 +136,6 @@ export function speak(text: string, language: string = 'English'): void {
 
     if (matchingVoice) {
       utterance.voice = matchingVoice;
-      console.log(`TTS: Using voice "${matchingVoice.name}" for language ${targetLang}`);
     } else {
       console.warn(`TTS: No voice found for ${targetLang}, using default. Available voices:`,
         voices.map(v => `${v.name} (${v.lang})`).join(', '));

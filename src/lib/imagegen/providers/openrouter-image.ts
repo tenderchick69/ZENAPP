@@ -22,9 +22,6 @@ export function createOpenRouterImageProvider(apiKey: string): ImageProvider {
       }
 
       try {
-        console.log('OpenRouter Image: Starting generation');
-        console.log('OpenRouter Image: Prompt:', options.prompt.slice(0, 150));
-
         const response = await fetch(OPENROUTER_API_URL, {
           method: 'POST',
           headers: {
@@ -45,11 +42,9 @@ export function createOpenRouterImageProvider(apiKey: string): ImageProvider {
           }),
         });
 
-        console.log('OpenRouter Image: Response status:', response.status);
-
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('OpenRouter Image: Error response:', errorText);
+          console.error('OpenRouter Image error:', errorText);
 
           let errorMessage = `HTTP ${response.status}`;
           try {
@@ -67,8 +62,6 @@ export function createOpenRouterImageProvider(apiKey: string): ImageProvider {
         }
 
         const data = await response.json();
-        console.log('OpenRouter Image: Full response:', JSON.stringify(data, null, 2).slice(0, 1000));
-
         const message = data.choices?.[0]?.message;
 
         if (!message) {
@@ -87,7 +80,6 @@ export function createOpenRouterImageProvider(apiKey: string): ImageProvider {
         if (message.images && Array.isArray(message.images) && message.images.length > 0) {
           const imageUrl = message.images[0]?.image_url?.url;
           if (imageUrl) {
-            console.log('OpenRouter Image: Found image in message.images[0].image_url.url');
             imageData = imageUrl;
           }
         }
@@ -99,29 +91,19 @@ export function createOpenRouterImageProvider(apiKey: string): ImageProvider {
           );
 
           if (imageContent?.source?.data) {
-            console.log('OpenRouter Image: Found image in content[].source.data');
             imageData = imageContent.source.data;
           } else if (imageContent?.image_url?.url) {
-            console.log('OpenRouter Image: Found image in content[].image_url.url');
             imageData = imageContent.image_url.url;
           }
         }
 
         // Format 3: Direct base64 in content
         if (!imageData && typeof message.content === 'string' && message.content.startsWith('data:image')) {
-          console.log('OpenRouter Image: Found base64 directly in content');
           imageData = message.content;
         }
 
         if (!imageData) {
-          console.error('OpenRouter Image: No image found in any format');
-          console.error('OpenRouter Image: message keys:', Object.keys(message));
-          if (message.content) {
-            console.error('OpenRouter Image: content type:', typeof message.content);
-            if (Array.isArray(message.content)) {
-              console.error('OpenRouter Image: content items:', message.content.map((c: any) => c.type));
-            }
-          }
+          console.error('OpenRouter Image: No image found in response');
           return {
             success: false,
             error: 'No image returned from OpenRouter - check response format',
@@ -134,8 +116,6 @@ export function createOpenRouterImageProvider(apiKey: string): ImageProvider {
           imageData = `data:image/png;base64,${imageData}`;
         }
 
-        console.log('OpenRouter Image: Successfully extracted base64 image, length:', imageData.length);
-
         return {
           success: true,
           imageUrl: imageData,
@@ -143,7 +123,7 @@ export function createOpenRouterImageProvider(apiKey: string): ImageProvider {
           cost: 0.03
         };
       } catch (error) {
-        console.error('OpenRouter Image: Exception:', error);
+        console.error('OpenRouter Image exception:', error);
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',

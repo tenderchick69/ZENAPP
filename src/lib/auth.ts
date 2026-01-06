@@ -15,39 +15,59 @@ export interface UserPreferences {
   is_approved: boolean;
 }
 
+// Store the auth listener unsubscribe function
+let authUnsubscribe: (() => void) | null = null;
+
 // Initialize auth state
 export async function initAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
-  user.set(session?.user ?? null);
-
-  if (session?.user) {
-    await loadPreferences(session.user.id);
+  // Prevent multiple initializations - unsubscribe existing listener first
+  if (authUnsubscribe) {
+    authUnsubscribe();
+    authUnsubscribe = null;
   }
 
-  // Mark auth as fully initialized (preferences loaded)
-  authInitialized.set(true);
-
-  // Listen for auth changes
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
     user.set(session?.user ?? null);
+
     if (session?.user) {
       await loadPreferences(session.user.id);
-    } else {
-      userPreferences.set(null);
     }
-  });
+
+    // Listen for auth changes - store unsubscribe function
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      user.set(session?.user ?? null);
+      if (session?.user) {
+        await loadPreferences(session.user.id);
+      } else {
+        userPreferences.set(null);
+      }
+    });
+
+    authUnsubscribe = () => subscription.unsubscribe();
+  } catch (error) {
+    console.error('Auth initialization failed:', error);
+  } finally {
+    // Mark auth as fully initialized (even on error, so UI doesn't hang)
+    authInitialized.set(true);
+  }
+}
+
+// Cleanup function for when the app unmounts (useful for tests/HMR)
+export function cleanupAuth() {
+  if (authUnsubscribe) {
+    authUnsubscribe();
+    authUnsubscribe = null;
+  }
 }
 
 async function loadPreferences(userId: string) {
-  console.log('🔍 [AUTH] Loading preferences for user:', userId);
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('user_preferences')
     .select('*')
     .eq('id', userId)
     .single();
 
-  console.log('✅ [AUTH] Loaded preferences:', data);
-  console.log('❌ [AUTH] Error (if any):', error);
   userPreferences.set(data);
 }
 
@@ -68,12 +88,8 @@ export async function signOut() {
 }
 
 export async function savePreferences(prefs: Partial<UserPreferences>) {
-  console.log('💾 [AUTH] Saving preferences:', prefs);
   const { data: { user: currentUser } } = await supabase.auth.getUser();
-  if (!currentUser) {
-    console.log('❌ [AUTH] No current user, cannot save preferences');
-    return;
-  }
+  if (!currentUser) return;
 
   const { error } = await supabase
     .from('user_preferences')
@@ -83,10 +99,7 @@ export async function savePreferences(prefs: Partial<UserPreferences>) {
       updated_at: new Date().toISOString()
     });
 
-  console.log('💾 [AUTH] Save result - Error:', error);
-
   if (!error) {
-    // Reload preferences from database to get full object
     await loadPreferences(currentUser.id);
   }
 }
