@@ -54,20 +54,16 @@
   onMount(() => {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-    // Accumulate placed words to prevent overlap
-    const placedWords: { x: number; y: number; headword: string }[] = [];
-    words = queue.map((card) => {
-      const pos = findSafeSpot(placedWords, card.headword);
-      placedWords.push({ x: pos.x, y: pos.y, headword: card.headword });
-      return {
-        ...card,
-        x: pos.x,
-        y: pos.y,
-        drift: Math.random() * Math.PI * 2,
-        mastered: card.mastered || false, // Preserve mastered state from parent
-        burning: false
-      };
-    });
+    // Generate all positions at once using adaptive density algorithm
+    const positions = generateNonOverlappingPositions(queue.length);
+    words = queue.map((card, i) => ({
+      ...card,
+      x: positions[i].x,
+      y: positions[i].y,
+      drift: Math.random() * Math.PI * 2,
+      mastered: card.mastered || false,
+      burning: false
+    }));
 
     for (let i = 0; i < 150; i++) spawnEmber();
     loop();
@@ -80,6 +76,88 @@
     };
   });
 
+  // Generate non-overlapping positions with ADAPTIVE DENSITY
+  // ≤10 words: Random positioning (organic feel)
+  // 11-15 words: Tighter spacing with random positioning
+  // 16-20 words: Deterministic grid layout (guaranteed no overlap)
+  function generateNonOverlappingPositions(count: number, existingPositions: { x: number; y: number; headword?: string }[] = []) {
+    const positions: { x: number; y: number }[] = [];
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Positioning bounds
+    const minX = isMobile ? 12 : 10;
+    const maxXRange = isMobile ? 76 : 80;
+    const minY = isMobile ? 15 : 12;
+    const maxYRange = isMobile ? 70 : 76;
+
+    // Determine layout mode based on total word count
+    const useGridLayout = count > 15;
+    const densityFactor = count > 10 ? 0.7 : 1.0; // Tighter spacing for 11-15 words
+
+    if (useGridLayout) {
+      // DETERMINISTIC GRID for 16+ words - guaranteed no overlap
+      const cols = isMobile ? 4 : 5;
+      const rows = Math.ceil(count / cols);
+      const cellWidth = maxXRange / cols;
+      const cellHeight = maxYRange / Math.min(rows, isMobile ? 6 : 7);
+
+      for (let i = 0; i < count; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        // Add small random jitter within cell for organic feel
+        const jitterX = (Math.random() - 0.5) * cellWidth * 0.3;
+        const jitterY = (Math.random() - 0.5) * cellHeight * 0.3;
+        positions.push({
+          x: minX + col * cellWidth + cellWidth / 2 + jitterX,
+          y: minY + row * cellHeight + cellHeight / 2 + jitterY
+        });
+      }
+    } else {
+      // RANDOM positioning for ≤15 words
+      const baseHSpacing = (isMobile ? 14 : 12) * densityFactor;
+      const baseVSpacing = (isMobile ? 11 : 9) * densityFactor;
+      const allPositions = [...existingPositions];
+
+      for (let i = 0; i < count; i++) {
+        let x = 0, y = 0;
+        let safe = false;
+        let attempts = 0;
+
+        while (!safe && attempts < 150) {
+          x = minX + Math.random() * maxXRange;
+          y = minY + Math.random() * maxYRange;
+
+          const hasCollision = allPositions.some(p => {
+            const hDist = Math.abs(p.x - x);
+            const vDist = Math.abs(p.y - y);
+            return hDist < baseHSpacing && vDist < baseVSpacing;
+          });
+
+          if (!hasCollision) safe = true;
+          attempts++;
+        }
+
+        // Grid fallback for this word if random failed
+        if (!safe) {
+          const cols = isMobile ? 4 : 5;
+          const cellWidth = maxXRange / cols;
+          const cellHeight = maxYRange / 6;
+          const idx = allPositions.length % (cols * 6);
+          const col = idx % cols;
+          const row = Math.floor(idx / cols);
+          x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
+          y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2;
+        }
+
+        positions.push({ x, y });
+        allPositions.push({ x, y });
+      }
+    }
+
+    return positions;
+  }
+
+  // Single word repositioning (for fail case)
   function findSafeSpot(
     currentWords: { x: number; y: number; headword?: string }[],
     newHeadword?: string,
@@ -90,35 +168,24 @@
     let x = 0, y = 0;
     let attempts = 0;
 
-    // Calculate spacing based on word length - tighter for more cards
-    const newWordLen = newHeadword?.length || 8;
-    const baseHorizontalSpacing = 10;
-    const charWidth = 0.8;
-
-    // Positioning bounds - use more of the screen for better distribution
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 15 : 12;
-    const maxXRange = isMobile ? 70 : 76; // Mobile: x 15-85%, Desktop: 12-88%
-    const minY = isMobile ? 18 : 14;
-    const maxYRange = isMobile ? 64 : 70; // Mobile: y 18-82%, Desktop: 14-84%
+    const minX = isMobile ? 12 : 10;
+    const maxXRange = isMobile ? 76 : 80;
+    const minY = isMobile ? 15 : 12;
+    const maxYRange = isMobile ? 70 : 76;
+    const baseHSpacing = isMobile ? 12 : 10;
+    const baseVSpacing = isMobile ? 10 : 8;
 
-    while (!safe && attempts < 200) {
+    while (!safe && attempts < 150) {
       x = minX + Math.random() * maxXRange;
       y = minY + Math.random() * maxYRange;
 
-      // Check collision with all existing words - tighter spacing
       const hasCollision = currentWords.some(w => {
-        const existingWordLen = w.headword?.length || 8;
-        const requiredHSpacing = baseHorizontalSpacing + ((newWordLen + existingWordLen) / 2) * charWidth;
-        const requiredVSpacing = isMobile ? 9 : 8;
-
         const hDist = Math.abs(w.x - x);
         const vDist = Math.abs(w.y - y);
-
-        return hDist < requiredHSpacing && vDist < requiredVSpacing;
+        return hDist < baseHSpacing && vDist < baseVSpacing;
       });
 
-      // Check distance from Old Spot (for teleporting on fail)
       let tooCloseToAvoid = false;
       if (avoidX !== undefined && avoidY !== undefined) {
         const dist = Math.sqrt(Math.pow(x - avoidX, 2) + Math.pow(y - avoidY, 2));
@@ -129,15 +196,14 @@
       attempts++;
     }
 
-    // Grid fallback if no safe spot found - use full available space
+    // Grid fallback
     if (!safe) {
-      const gridCols = isMobile ? 4 : 5;
-      const gridRows = isMobile ? 6 : 7;
-      const cellWidth = maxXRange / gridCols;
-      const cellHeight = maxYRange / gridRows;
-      const index = currentWords.length % (gridCols * gridRows);
-      const col = index % gridCols;
-      const row = Math.floor(index / gridCols);
+      const cols = isMobile ? 4 : 5;
+      const cellWidth = maxXRange / cols;
+      const cellHeight = maxYRange / 6;
+      const idx = currentWords.length % (cols * 6);
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
       x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 3;
       y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 2;
     }
@@ -426,13 +492,13 @@
       <div class="absolute inset-0 bg-black/95 backdrop-blur-[2px]" onclick={() => revealedWord = null}></div>
 
       <!-- Modal Content Container - Centered, content + buttons grouped -->
-      <div class="relative flex flex-col max-w-lg w-full mx-auto max-h-[90vh]" transition:scale>
-        <!-- Close Button (top right of card) -->
-        <button class="absolute -top-2 -right-2 z-10 text-gray-600 cursor-pointer hover:text-white bg-black/80 border border-orange-900/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
+      <div class="relative flex flex-col max-w-lg w-full mx-auto max-h-[85vh]" transition:scale>
+        <!-- Close Button (fixed to modal, inside bounds) -->
+        <button class="absolute top-2 right-2 z-20 text-gray-600 cursor-pointer hover:text-white bg-black/80 border border-orange-900/30 rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>✕</button>
 
         <!-- Scrollable Content Area -->
         <div class="overflow-y-auto overscroll-contain rounded-xl" style="-webkit-overflow-scrolling: touch;">
-          <div class="bg-gradient-to-b from-[#121212] to-black border border-orange-900/40 p-6 md:p-10 rounded-xl text-center shadow-[0_0_100px_rgba(255,69,0,0.15)]">
+          <div class="bg-gradient-to-b from-[#121212] to-black border border-orange-900/40 p-6 md:p-10 pt-12 rounded-xl text-center shadow-[0_0_100px_rgba(255,69,0,0.15)]">
             <!-- German Gloss -->
             {#if revealedWord.gloss_de}
               <div class="text-orange-500 text-lg font-serif mb-2 text-center">{revealedWord.gloss_de}</div>
