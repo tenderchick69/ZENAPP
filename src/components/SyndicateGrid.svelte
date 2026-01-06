@@ -131,46 +131,46 @@
   });
 
   // Generate non-overlapping positions with ADAPTIVE DENSITY
-  // ≤10 words: Random positioning (organic feel)
-  // 11-15 words: Tighter spacing with random positioning
-  // 16-20 words: Deterministic grid layout (guaranteed no overlap)
+  // MOBILE: Always use grid layout (cards are too wide for random positioning)
+  // DESKTOP: Random for ≤15, grid for 16+
   function generateNonOverlappingPositions(count: number, existingPositions: { x: number; y: number; headword?: string }[] = []) {
     const positions: { x: number; y: number }[] = [];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Positioning bounds - MOBILE needs larger margins because word cards can be ~50vw wide
-    // With translate-50%, we need at least 25% margin from edges
-    const minX = isMobile ? 18 : 10;
-    const maxXRange = isMobile ? 64 : 80;  // 18% to 82% on mobile
-    const minY = isMobile ? 18 : 12;
-    const maxYRange = isMobile ? 64 : 76;  // 18% to 82% on mobile
+    // Positioning bounds
+    const minX = isMobile ? 15 : 10;
+    const maxXRange = isMobile ? 70 : 80;
+    const minY = isMobile ? 12 : 12;
+    const maxYRange = isMobile ? 76 : 76;
 
-    // Determine layout mode based on total word count
-    const useGridLayout = count > 15;
-    const densityFactor = count > 10 ? 0.7 : 1.0; // Tighter spacing for 11-15 words
+    // MOBILE: Always use grid - cards are ~50vw wide, random positioning causes overlap
+    // DESKTOP: Use grid only for 16+ words
+    const useGridLayout = isMobile || count > 15;
 
     if (useGridLayout) {
-      // DETERMINISTIC GRID for 16+ words - guaranteed no overlap
-      const cols = isMobile ? 4 : 5;
+      // GRID LAYOUT - guaranteed no overlap
+      // Mobile: 3 columns max (cards are wide), Desktop: 5 columns
+      const cols = isMobile ? 3 : 5;
       const rows = Math.ceil(count / cols);
       const cellWidth = maxXRange / cols;
-      const cellHeight = maxYRange / Math.min(rows, isMobile ? 6 : 7);
+      const cellHeight = maxYRange / Math.min(rows, isMobile ? 7 : 7);
 
       for (let i = 0; i < count; i++) {
         const col = i % cols;
         const row = Math.floor(i / cols);
-        // Add small random jitter within cell for organic feel
-        const jitterX = (Math.random() - 0.5) * cellWidth * 0.3;
-        const jitterY = (Math.random() - 0.5) * cellHeight * 0.3;
+        // Small jitter for organic feel (less on mobile to prevent edge overflow)
+        const jitterX = (Math.random() - 0.5) * cellWidth * (isMobile ? 0.15 : 0.3);
+        const jitterY = (Math.random() - 0.5) * cellHeight * (isMobile ? 0.15 : 0.3);
         positions.push({
           x: minX + col * cellWidth + cellWidth / 2 + jitterX,
           y: minY + row * cellHeight + cellHeight / 2 + jitterY
         });
       }
     } else {
-      // RANDOM positioning for ≤15 words
-      const baseHSpacing = (isMobile ? 14 : 12) * densityFactor;
-      const baseVSpacing = (isMobile ? 11 : 9) * densityFactor;
+      // RANDOM positioning for desktop ≤15 words
+      const densityFactor = count > 10 ? 0.7 : 1.0;
+      const baseHSpacing = 12 * densityFactor;
+      const baseVSpacing = 9 * densityFactor;
       const allPositions = [...existingPositions];
 
       for (let i = 0; i < count; i++) {
@@ -194,7 +194,7 @@
 
         // Grid fallback for this word if random failed
         if (!safe) {
-          const cols = isMobile ? 4 : 5;
+          const cols = 5;
           const cellWidth = maxXRange / cols;
           const cellHeight = maxYRange / 6;
           const idx = allPositions.length % (cols * 6);
@@ -219,18 +219,53 @@
     avoidX?: number,
     avoidY?: number
   ) {
-    let safe = false;
     let x = 0, y = 0;
-    let attempts = 0;
 
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    // Same bounds as generateNonOverlappingPositions - larger margins on mobile
-    const minX = isMobile ? 18 : 10;
-    const maxXRange = isMobile ? 64 : 80;
-    const minY = isMobile ? 18 : 12;
-    const maxYRange = isMobile ? 64 : 76;
-    const baseHSpacing = isMobile ? 12 : 10;
-    const baseVSpacing = isMobile ? 10 : 8;
+    const minX = isMobile ? 15 : 10;
+    const maxXRange = isMobile ? 70 : 80;
+    const minY = isMobile ? 12 : 12;
+    const maxYRange = isMobile ? 76 : 76;
+
+    // MOBILE: Use grid-based repositioning to prevent overlap
+    if (isMobile) {
+      const cols = 3;
+      const cellWidth = maxXRange / cols;
+      const cellHeight = maxYRange / 7;
+      // Find an empty-ish cell by checking existing word positions
+      let bestCell = { col: 0, row: 0, dist: 0 };
+      for (let row = 0; row < 7; row++) {
+        for (let col = 0; col < cols; col++) {
+          const cellX = minX + col * cellWidth + cellWidth / 2;
+          const cellY = minY + row * cellHeight + cellHeight / 2;
+          // Check distance from existing words
+          const minDist = Math.min(...currentWords.map(w =>
+            Math.sqrt(Math.pow(w.x - cellX, 2) + Math.pow(w.y - cellY, 2))
+          ), 100);
+          // Also check distance from avoid position
+          let avoidDist = 100;
+          if (avoidX !== undefined && avoidY !== undefined) {
+            avoidDist = Math.sqrt(Math.pow(cellX - avoidX, 2) + Math.pow(cellY - avoidY, 2));
+          }
+          // Prefer cells far from existing words AND far from avoid position
+          const score = minDist + avoidDist * 0.5;
+          if (score > bestCell.dist) {
+            bestCell = { col, row, dist: score };
+          }
+        }
+      }
+      const jitterX = (Math.random() - 0.5) * cellWidth * 0.15;
+      const jitterY = (Math.random() - 0.5) * cellHeight * 0.15;
+      x = minX + bestCell.col * cellWidth + cellWidth / 2 + jitterX;
+      y = minY + bestCell.row * cellHeight + cellHeight / 2 + jitterY;
+      return { x, y };
+    }
+
+    // DESKTOP: Random positioning with collision detection
+    let safe = false;
+    let attempts = 0;
+    const baseHSpacing = 10;
+    const baseVSpacing = 8;
 
     while (!safe && attempts < 150) {
       x = minX + Math.random() * maxXRange;
@@ -1044,21 +1079,21 @@
 
   @media (max-width: 768px) {
     .syndicate-card-text {
-      max-width: min(180px, 50vw);
-      font-size: 0.95rem;
-      padding: 0.5rem 0.8rem;
-      line-height: 1.3;
-      min-height: 44px;
-      letter-spacing: 0.02em;
+      max-width: min(160px, 30vw);
+      font-size: 0.85rem;
+      padding: 0.4rem 0.6rem;
+      line-height: 1.2;
+      min-height: 40px;
+      letter-spacing: 0.01em;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .syndicate-card-text {
-      max-width: min(160px, 45vw);
-      font-size: 0.9rem;
-      padding: 0.4rem 0.7rem;
+      max-width: min(140px, 28vw);
+      font-size: 0.8rem;
+      padding: 0.35rem 0.5rem;
     }
   }
 </style>
