@@ -138,11 +138,12 @@
     const positions: { x: number; y: number }[] = [];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Positioning bounds
-    const minX = isMobile ? 12 : 10;
-    const maxXRange = isMobile ? 76 : 80;
-    const minY = isMobile ? 15 : 12;
-    const maxYRange = isMobile ? 70 : 76;
+    // Positioning bounds - MOBILE needs larger margins because word cards can be ~50vw wide
+    // With translate-50%, we need at least 25% margin from edges
+    const minX = isMobile ? 18 : 10;
+    const maxXRange = isMobile ? 64 : 80;  // 18% to 82% on mobile
+    const minY = isMobile ? 18 : 12;
+    const maxYRange = isMobile ? 64 : 76;  // 18% to 82% on mobile
 
     // Determine layout mode based on total word count
     const useGridLayout = count > 15;
@@ -223,10 +224,11 @@
     let attempts = 0;
 
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const minX = isMobile ? 12 : 10;
-    const maxXRange = isMobile ? 76 : 80;
-    const minY = isMobile ? 15 : 12;
-    const maxYRange = isMobile ? 70 : 76;
+    // Same bounds as generateNonOverlappingPositions - larger margins on mobile
+    const minX = isMobile ? 18 : 10;
+    const maxXRange = isMobile ? 64 : 80;
+    const minY = isMobile ? 18 : 12;
+    const maxYRange = isMobile ? 64 : 76;
     const baseHSpacing = isMobile ? 12 : 10;
     const baseVSpacing = isMobile ? 10 : 8;
 
