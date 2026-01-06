@@ -25,7 +25,7 @@
     targetLanguage: '',
     category: '',
     level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
-    cardCount: 20,
+    cardCount: 10,
   };
 
   async function sendMessage() {
@@ -71,16 +71,16 @@
     else if (lower.includes('intermediate')) conversationContext.level = 'intermediate';
     else if (lower.includes('advanced') || lower.includes('fluent')) conversationContext.level = 'advanced';
 
-    // Extract card count hints
+    // Extract card count hints (max 20 cards per deck)
     const numberMatch = userMessage.match(/\d+/);
     if (numberMatch) {
-      conversationContext.cardCount = Math.min(50, Math.max(5, parseInt(numberMatch[0])));
+      conversationContext.cardCount = Math.min(20, Math.max(5, parseInt(numberMatch[0])));
     }
 
     // Generate contextual questions
     const questions = [
       "Interesting! What's your level - beginner, intermediate, or advanced?",
-      "How many cards would you like? I'd suggest 15-30 for a good study session.",
+      "How many cards would you like? I'd suggest 10-15 for a good study session (max 20).",
       "Any specific context? Like for travel, making friends, or impressing someone special? 😏"
     ];
 

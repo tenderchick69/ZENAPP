@@ -53,6 +53,7 @@ QUALITY GUIDELINES:
 10. **If category is "Random Mix"**: Include variety from different categories and difficulty levels
 
 CRITICAL RULES:
+- MAXIMUM 20 CARDS PER DECK - Never generate more than 20 cards, even if asked. If user requests more, generate exactly 20.
 - NO boring textbook phrases
 - Prefer vocabulary that makes learners sound fluent and natural
 - Include cultural nuance and real-world context
@@ -65,13 +66,15 @@ CRITICAL: Your response must be ONLY valid JSON. No markdown, no \`\`\`json bloc
 }
 
 export function buildUserPrompt(params: GenerationParams): string {
-  const { targetLanguage, category, level, cardCount, customRequest } = params;
+  const { targetLanguage, category, level, customRequest } = params;
+  // Enforce max 20 cards
+  const cardCount = Math.min(20, Math.max(1, params.cardCount));
 
   if (customRequest) {
     // Chat mode - use the full conversation context
     return `${customRequest}
 
-Based on this conversation, generate ${cardCount} vocabulary cards. Extract the target language, category, and level from the context above.`;
+Based on this conversation, generate ${cardCount} vocabulary cards (maximum 20). Extract the target language, category, and level from the context above.`;
   }
 
   // Quick Generate mode - structured request

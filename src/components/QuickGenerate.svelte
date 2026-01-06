@@ -12,7 +12,7 @@
   let targetLanguage = $userPreferences?.target_language || 'Korean';
   let category = 'random';
   let level: 'beginner' | 'intermediate' | 'advanced' = ($userPreferences?.experience_level as 'beginner' | 'intermediate' | 'advanced') || 'beginner';
-  let cardCount = 20;
+  let cardCount = 10;
 
   function handleGenerate() {
     onGenerate({
@@ -66,14 +66,15 @@
         id="card-count"
         type="range"
         min="5"
-        max="50"
-        step="5"
+        max="20"
+        step="1"
         bind:value={cardCount}
       />
       <div class="range-labels">
         <span>5</span>
-        <span>25</span>
-        <span>50</span>
+        <span>10</span>
+        <span>15</span>
+        <span>20</span>
       </div>
     </div>
 

@@ -31,8 +31,8 @@ export const POST: RequestHandler = async ({ request }) => {
       throw error(400, 'Category is required for Quick Generate mode');
     }
 
-    if (!params.cardCount || params.cardCount < 1 || params.cardCount > 50) {
-      throw error(400, 'Card count must be between 1 and 50');
+    if (!params.cardCount || params.cardCount < 1 || params.cardCount > 20) {
+      throw error(400, 'Card count must be between 1 and 20');
     }
 
     // Build prompts
