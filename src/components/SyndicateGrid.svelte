@@ -130,187 +130,150 @@
     };
   });
 
-  // Generate non-overlapping positions using PIXEL-BASED collision detection
-  // Calculates actual card sizes and screen dimensions, then converts to percentages
+  // Generate non-overlapping positions - ORGANIC RANDOM like Ember
+  // Uses percentage-based positioning with collision detection
   function generateNonOverlappingPositions(count: number, existingPositions: { x: number; y: number; headword?: string }[] = []) {
     const positions: { x: number; y: number }[] = [];
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Get actual screen dimensions
-    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 375;
-    const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 667;
-    const isMobile = screenWidth < 768;
+    // Safe positioning bounds (percentage of screen)
+    // Keep words within visible mobile area
+    const minX = isMobile ? 10 : 8;
+    const maxX = isMobile ? 90 : 92;
+    const minY = isMobile ? 10 : 8;
+    const maxY = isMobile ? 85 : 88; // Leave room for progress bar
 
-    // Calculate ACTUAL card dimensions in pixels based on CSS
-    // Mobile: max-width: min(160px, 30vw), min-height: 40px
-    // Desktop: max-width: min(200px, 55vw)
-    const cardWidth = isMobile
-      ? Math.min(160, screenWidth * 0.30)
-      : Math.min(200, screenWidth * 0.15);
-    const cardHeight = isMobile ? 48 : 56; // Approximate with padding
+    const rangeX = maxX - minX;
+    const rangeY = maxY - minY;
 
-    // Safe margins from screen edges (card is centered, so need half-width margin)
-    const marginX = cardWidth / 2 + 15; // Half card + padding
-    const marginTop = isMobile ? 60 : 50; // Space for top UI
-    const marginBottom = isMobile ? 80 : 60; // Space for bottom progress bar
+    // Determine layout mode based on word count
+    const useGridLayout = count > 15;
+    const densityFactor = count > 10 ? 0.75 : 1.0;
 
-    // Available area in pixels
-    const availableWidth = screenWidth - (marginX * 2);
-    const availableHeight = screenHeight - marginTop - marginBottom;
+    if (useGridLayout) {
+      // GRID with jitter for 16+ words
+      const cols = isMobile ? 4 : 5;
+      const rows = Math.ceil(count / cols);
+      const cellWidth = rangeX / cols;
+      const cellHeight = rangeY / Math.min(rows, isMobile ? 7 : 8);
 
-    // Calculate grid spacing that guarantees no overlap
-    const gapX = 12; // Horizontal gap between cards
-    const gapY = isMobile ? 8 : 10; // Vertical gap between cards
-    const cellWidth = cardWidth + gapX;
-    const cellHeight = cardHeight + gapY;
+      for (let i = 0; i < count; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        // Add random jitter within cell for organic feel
+        const jitterX = (Math.random() - 0.5) * cellWidth * 0.4;
+        const jitterY = (Math.random() - 0.5) * cellHeight * 0.4;
+        positions.push({
+          x: minX + col * cellWidth + cellWidth / 2 + jitterX,
+          y: minY + row * cellHeight + cellHeight / 2 + jitterY
+        });
+      }
+    } else {
+      // RANDOM organic positioning for ≤15 words
+      // Syndicate has no boxes, just text - so spacing can be tighter
+      const baseHSpacing = (isMobile ? 16 : 14) * densityFactor;
+      const baseVSpacing = (isMobile ? 10 : 8) * densityFactor;
+      const allPositions = [...existingPositions];
 
-    // Calculate how many columns can fit
-    const maxCols = Math.max(2, Math.floor(availableWidth / cellWidth));
-    const cols = Math.min(maxCols, isMobile ? 3 : 5); // Cap columns
+      for (let i = 0; i < count; i++) {
+        let x = 0, y = 0;
+        let safe = false;
+        let attempts = 0;
 
-    // Calculate rows needed
-    const rowsNeeded = Math.ceil(count / cols);
+        while (!safe && attempts < 200) {
+          x = minX + Math.random() * rangeX;
+          y = minY + Math.random() * rangeY;
 
-    // Check if all rows fit, if not reduce card count per row
-    let finalCols = cols;
-    let finalRows = rowsNeeded;
-    if (rowsNeeded * cellHeight > availableHeight) {
-      // Try to fit by using more columns if possible
-      const maxRowsThatFit = Math.floor(availableHeight / cellHeight);
-      finalCols = Math.ceil(count / maxRowsThatFit);
-      finalRows = Math.ceil(count / finalCols);
-    }
+          const hasCollision = allPositions.some(p => {
+            const hDist = Math.abs(p.x - x);
+            const vDist = Math.abs(p.y - y);
+            return hDist < baseHSpacing && vDist < baseVSpacing;
+          });
 
-    // Calculate actual grid dimensions
-    const gridWidth = (finalCols - 1) * cellWidth;
-    const gridHeight = (finalRows - 1) * cellHeight;
+          if (!hasCollision) safe = true;
+          attempts++;
+        }
 
-    // Center the grid in available space
-    const startX = marginX + (availableWidth - gridWidth) / 2;
-    const startY = marginTop + (availableHeight - gridHeight) / 2;
+        // Grid fallback if random positioning failed
+        if (!safe) {
+          const cols = isMobile ? 4 : 5;
+          const cellWidth = rangeX / cols;
+          const cellHeight = rangeY / 6;
+          const idx = allPositions.length % (cols * 6);
+          const col = idx % cols;
+          const row = Math.floor(idx / cols);
+          x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 4;
+          y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 3;
+        }
 
-    // Place each word
-    for (let i = 0; i < count; i++) {
-      const col = i % finalCols;
-      const row = Math.floor(i / finalCols);
-
-      // Calculate pixel position
-      const pixelX = startX + col * cellWidth;
-      const pixelY = startY + row * cellHeight;
-
-      // Add small jitter (max 5px to prevent overlap)
-      const jitterX = (Math.random() - 0.5) * 8;
-      const jitterY = (Math.random() - 0.5) * 6;
-
-      // Convert to percentage for CSS positioning
-      const x = ((pixelX + jitterX) / screenWidth) * 100;
-      const y = ((pixelY + jitterY) / screenHeight) * 100;
-
-      // Clamp to safe bounds
-      const safeX = Math.max(marginX / screenWidth * 100, Math.min(x, (screenWidth - marginX) / screenWidth * 100));
-      const safeY = Math.max(marginTop / screenHeight * 100, Math.min(y, (screenHeight - marginBottom) / screenHeight * 100));
-
-      positions.push({ x: safeX, y: safeY });
+        positions.push({ x, y });
+        allPositions.push({ x, y });
+      }
     }
 
     return positions;
   }
 
-  // Single word repositioning (for fail case) - PIXEL-BASED
+  // Single word repositioning (for fail case) - ORGANIC like generateNonOverlappingPositions
   function findSafeSpot(
     currentWords: { x: number; y: number; headword?: string }[],
     newHeadword?: string,
     avoidX?: number,
     avoidY?: number
   ) {
-    // Get actual screen dimensions
-    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 375;
-    const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 667;
-    const isMobile = screenWidth < 768;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Calculate ACTUAL card dimensions in pixels (must match generateNonOverlappingPositions)
-    const cardWidth = isMobile
-      ? Math.min(160, screenWidth * 0.30)
-      : Math.min(200, screenWidth * 0.15);
-    const cardHeight = isMobile ? 48 : 56;
+    // Same bounds as generateNonOverlappingPositions
+    const minX = isMobile ? 10 : 8;
+    const maxX = isMobile ? 90 : 92;
+    const minY = isMobile ? 10 : 8;
+    const maxY = isMobile ? 85 : 88;
+    const rangeX = maxX - minX;
+    const rangeY = maxY - minY;
 
-    // Safe margins from screen edges
-    const marginX = cardWidth / 2 + 15;
-    const marginTop = isMobile ? 60 : 50;
-    const marginBottom = isMobile ? 80 : 60;
+    // Spacing for collision detection
+    const baseHSpacing = isMobile ? 16 : 14;
+    const baseVSpacing = isMobile ? 10 : 8;
 
-    // Available area in pixels
-    const availableWidth = screenWidth - (marginX * 2);
-    const availableHeight = screenHeight - marginTop - marginBottom;
+    let x = 0, y = 0;
+    let safe = false;
+    let attempts = 0;
 
-    // Grid spacing
-    const gapX = 12;
-    const gapY = isMobile ? 8 : 10;
-    const cellWidth = cardWidth + gapX;
-    const cellHeight = cardHeight + gapY;
+    while (!safe && attempts < 200) {
+      x = minX + Math.random() * rangeX;
+      y = minY + Math.random() * rangeY;
 
-    // Calculate grid dimensions
-    const cols = Math.max(2, Math.min(Math.floor(availableWidth / cellWidth), isMobile ? 3 : 5));
-    const rows = Math.max(2, Math.floor(availableHeight / cellHeight));
+      // Check collision with existing words
+      const hasCollision = currentWords.some(w => {
+        const hDist = Math.abs(w.x - x);
+        const vDist = Math.abs(w.y - y);
+        return hDist < baseHSpacing && vDist < baseVSpacing;
+      });
 
-    // Convert existing word positions to pixel coordinates
-    const existingPixelPositions = currentWords.map(w => ({
-      x: (w.x / 100) * screenWidth,
-      y: (w.y / 100) * screenHeight
-    }));
-
-    // Convert avoid position to pixels
-    const avoidPixelX = avoidX !== undefined ? (avoidX / 100) * screenWidth : undefined;
-    const avoidPixelY = avoidY !== undefined ? (avoidY / 100) * screenHeight : undefined;
-
-    // Find the best empty cell
-    let bestCell = { col: 0, row: 0, score: -Infinity };
-    const startX = marginX + (availableWidth - (cols - 1) * cellWidth) / 2;
-    const startY = marginTop + (availableHeight - (rows - 1) * cellHeight) / 2;
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const pixelX = startX + col * cellWidth;
-        const pixelY = startY + row * cellHeight;
-
-        // Check minimum distance from existing words
-        const minDistToOthers = Math.min(
-          ...existingPixelPositions.map(w =>
-            Math.sqrt(Math.pow(w.x - pixelX, 2) + Math.pow(w.y - pixelY, 2))
-          ),
-          1000
-        );
-
-        // Check distance from avoid position (where card was before)
-        let avoidDist = 1000;
-        if (avoidPixelX !== undefined && avoidPixelY !== undefined) {
-          avoidDist = Math.sqrt(Math.pow(pixelX - avoidPixelX, 2) + Math.pow(pixelY - avoidPixelY, 2));
-        }
-
-        // Prefer cells far from existing words AND far from avoid position
-        // Weight avoid distance more to ensure card moves noticeably
-        const score = minDistToOthers + avoidDist * 0.7;
-
-        if (score > bestCell.score) {
-          bestCell = { col, row, score };
-        }
+      // Check if too close to old position (want card to move noticeably)
+      let tooCloseToOld = false;
+      if (avoidX !== undefined && avoidY !== undefined) {
+        const dist = Math.sqrt(Math.pow(x - avoidX, 2) + Math.pow(y - avoidY, 2));
+        if (dist < 15) tooCloseToOld = true;
       }
+
+      if (!hasCollision && !tooCloseToOld) safe = true;
+      attempts++;
     }
 
-    // Calculate final pixel position with small jitter
-    const jitterX = (Math.random() - 0.5) * 8;
-    const jitterY = (Math.random() - 0.5) * 6;
-    const finalPixelX = startX + bestCell.col * cellWidth + jitterX;
-    const finalPixelY = startY + bestCell.row * cellHeight + jitterY;
+    // Grid fallback if random failed
+    if (!safe) {
+      const cols = isMobile ? 4 : 5;
+      const cellWidth = rangeX / cols;
+      const cellHeight = rangeY / 6;
+      const idx = currentWords.length % (cols * 6);
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      x = minX + col * cellWidth + cellWidth / 2 + (Math.random() - 0.5) * 4;
+      y = minY + row * cellHeight + cellHeight / 2 + (Math.random() - 0.5) * 3;
+    }
 
-    // Convert to percentage for CSS
-    const x = (finalPixelX / screenWidth) * 100;
-    const y = (finalPixelY / screenHeight) * 100;
-
-    // Clamp to safe bounds
-    const safeX = Math.max(marginX / screenWidth * 100, Math.min(x, (screenWidth - marginX) / screenWidth * 100));
-    const safeY = Math.max(marginTop / screenHeight * 100, Math.min(y, (screenHeight - marginBottom) / screenHeight * 100));
-
-    return { x: safeX, y: safeY };
+    return { x, y };
   }
 
   function spawnDataDrop() {
@@ -1059,52 +1022,35 @@
     }
   }
 
-  /* Card text containment for long phrases */
+  /* Card text - NO box, just text with brackets (cyberpunk floating text) */
   .syndicate-card-text {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    max-width: min(200px, 55vw);
-    padding: 0.5rem 0.75rem;
-    background: rgba(0, 255, 242, 0.08);
-    border: 1px solid rgba(0, 255, 242, 0.25);
-    border-radius: 6px;
-
-    /* Text containment - no mid-word breaks */
+    display: inline-block;
     white-space: nowrap;
     text-align: center;
-
-    /* Readable font size */
     line-height: 1.3;
-    font-size: clamp(0.85rem, 3.5vw, 1.2rem);
-
-    /* Touch target */
-    min-height: 44px;
-    min-width: 60px;
+    font-size: clamp(0.9rem, 4vw, 1.3rem);
+    /* No background, no border, no padding - just floating text */
+    padding: 0.3rem 0.4rem; /* Small padding for touch target */
+    min-height: 40px;
+    min-width: 50px;
   }
 
   .syndicate-card-text:hover {
-    background: rgba(0, 255, 242, 0.15);
-    border-color: rgba(0, 255, 242, 0.5);
+    transform: scale(1.05);
   }
 
   @media (max-width: 768px) {
     .syndicate-card-text {
-      max-width: min(160px, 30vw);
-      font-size: 0.85rem;
-      padding: 0.4rem 0.6rem;
+      font-size: 0.9rem;
       line-height: 1.2;
-      min-height: 40px;
-      letter-spacing: 0.01em;
+      min-height: 36px;
     }
   }
 
   /* Very small screens */
   @media (max-width: 400px) {
     .syndicate-card-text {
-      max-width: min(140px, 28vw);
-      font-size: 0.8rem;
-      padding: 0.35rem 0.5rem;
+      font-size: 0.85rem;
     }
   }
 </style>

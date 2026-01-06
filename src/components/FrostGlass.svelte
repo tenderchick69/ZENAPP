@@ -94,11 +94,14 @@
     const positions = [...existingPositions];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Positioning bounds
-    const minX = isMobile ? 12 : 10;
-    const maxXRange = isMobile ? 76 : 80;
-    const minY = isMobile ? 15 : 12;
-    const maxYRange = isMobile ? 70 : 76;
+    // Positioning bounds - account for card width (cards use transform: translate(-50%, -50%))
+    // Mobile cards are up to ~50vw wide, so center must be 25%+ from edge
+    const minX = isMobile ? 20 : 12;
+    const maxX = isMobile ? 80 : 88;
+    const minY = isMobile ? 12 : 10;
+    const maxY = isMobile ? 85 : 88;
+    const maxXRange = maxX - minX;
+    const maxYRange = maxY - minY;
 
     // ADAPTIVE DENSITY: Use grid layout for 16+ words
     const useGridLayout = count > 15;
