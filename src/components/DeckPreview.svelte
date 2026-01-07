@@ -7,6 +7,7 @@
 
   export let cards: CardData[];
   export let deckName: string;
+  export let deckId: number | null = null;  // Set if deck was auto-saved
   export let onRegenerate: () => void;
   export let onRename: (name: string) => void;
   export let onImportStart: (() => void) | undefined = undefined;
@@ -86,6 +87,11 @@
     onRename(editName);
     isEditing = false;
   }
+
+  function goToDeck() {
+    // Navigate to home where all decks are shown
+    goto('/');
+  }
 </script>
 
 <div class="deck-preview" data-theme={$theme}>
@@ -107,6 +113,10 @@
     {/if}
     <span class="card-count">{cards.length} cards</span>
   </div>
+
+  {#if deckId}
+    <div class="success-banner">✅ Deck automatically saved to your account!</div>
+  {/if}
 
   {#if error}
     <div class="error-banner">{error}</div>
@@ -147,16 +157,24 @@
     <button onclick={onRegenerate} class="regenerate-btn">
       🔄 Regenerate
     </button>
-    <button
-      onclick={handleImport}
-      class="import-btn"
-      disabled={isImporting}>
-      {#if isImporting}
-        Importing...
-      {:else}
-        ✅ Import Deck
-      {/if}
-    </button>
+    {#if deckId}
+      <!-- Deck already saved - show "Go to Deck" -->
+      <button onclick={goToDeck} class="import-btn saved">
+        ✅ Deck Saved - Go to Home
+      </button>
+    {:else}
+      <!-- Deck not saved yet - show "Import" -->
+      <button
+        onclick={handleImport}
+        class="import-btn"
+        disabled={isImporting}>
+        {#if isImporting}
+          Importing...
+        {:else}
+          ✅ Import Deck
+        {/if}
+      </button>
+    {/if}
   </div>
 </div>
 
@@ -211,6 +229,16 @@
     color: var(--color-accent);
     font-size: 0.9rem;
     margin-left: auto;
+  }
+
+  .success-banner {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--color-success);
+    color: var(--color-bg);
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 600;
   }
 
   .error-banner {
@@ -320,6 +348,10 @@
   .import-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .import-btn.saved {
+    background: var(--color-accent);
   }
 
   @media (max-width: 640px) {

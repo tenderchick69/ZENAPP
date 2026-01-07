@@ -18,6 +18,7 @@
   let state: State = 'input';
   let generatedCards: CardData[] = [];
   let deckName = '';
+  let deckId: number | null = null;  // Set when deck is auto-saved
   let error: string | null = null;
   let isImporting = false;
 
@@ -90,8 +91,8 @@
 
   // Navigation guard for unsaved decks
   beforeNavigate((navigation) => {
-    // Don't warn if we're importing (isImporting flag) or if preview is cleared
-    if (state === 'preview' && generatedCards.length > 0 && !isImporting) {
+    // Don't warn if deck is already saved (deckId set), we're importing (isImporting flag), or preview is cleared
+    if (state === 'preview' && generatedCards.length > 0 && !isImporting && !deckId) {
       if (!confirm('You have an unsaved deck! Leave anyway?')) {
         navigation.cancel();
       }
@@ -175,13 +176,17 @@
   async function handleGenerate(params: GenerationParams) {
     state = 'loading';
     error = null;
+    deckId = null;
     startLoadingAnimation();
 
     try {
       const response = await fetch('/api/generate-deck', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          ...params,
+          userId: $user?.id  // Pass userId for auto-save
+        }),
       });
 
       if (!response.ok) {
@@ -192,15 +197,19 @@
       const data = await response.json();
       generatedCards = data.cards;
       deckName = data.deckName;
+      deckId = data.deckId;  // Will be set if auto-save succeeded
       state = 'preview';
 
-      // Auto-save to sessionStorage as backup
-      if (typeof sessionStorage !== 'undefined') {
+      // Only save to sessionStorage if auto-save failed (deckId is null)
+      if (!deckId && typeof sessionStorage !== 'undefined') {
         sessionStorage.setItem('unsavedDeck', JSON.stringify({
           cards: generatedCards,
           deckName: deckName,
           timestamp: Date.now()
         }));
+      } else if (deckId && typeof sessionStorage !== 'undefined') {
+        // Clear any old unsaved deck since this one is now saved
+        sessionStorage.removeItem('unsavedDeck');
       }
     } catch (e: any) {
       error = e.message || 'Failed to generate deck';
@@ -213,6 +222,7 @@
   function handleRegenerate() {
     state = 'input';
     generatedCards = [];
+    deckId = null;
     error = null;
   }
 
@@ -322,6 +332,7 @@
       <DeckPreview
         cards={generatedCards}
         {deckName}
+        {deckId}
         onRegenerate={handleRegenerate}
         onRename={handleRename}
         onImportStart={handleImportStart}
