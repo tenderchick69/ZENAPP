@@ -47,6 +47,8 @@
     mastered: boolean;
     decrypting: boolean;
     glitching: boolean;
+    glitchX?: number; // Random glitch direction X
+    glitchY?: number; // Random glitch direction Y
     imageFailed?: boolean;
   };
 
@@ -491,8 +493,17 @@
       const oldY = targetWord?.y;
       const headword = targetWord?.headword;
 
-      // Mark as glitching
-      words = words.map(w => w.id === targetId ? { ...w, glitching: true } : w);
+      // Generate random glitch direction (can go any of 4 directions)
+      const glitchDirX = (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 5);
+      const glitchDirY = (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 5);
+
+      // Mark as glitching with random direction
+      words = words.map(w => w.id === targetId ? {
+        ...w,
+        glitching: true,
+        glitchX: glitchDirX,
+        glitchY: glitchDirY
+      } : w);
 
       setTimeout(() => {
         const others = words.filter(w => w.id !== targetId).map(w => ({ x: w.x, y: w.y, headword: w.headword }));
@@ -591,7 +602,7 @@
                {w.decrypting ? 'syndicate-decrypt' : ''}
                {w.glitching ? 'syndicate-glitch' : ''}
                {!w.decrypting && !w.glitching ? 'syndicate-idle-glitch' : ''}"
-        style="left: {w.x}%; top: {w.y}%; --glitch-delay: {(i * 0.7) + Math.random() * 2}s; touch-action: manipulation;"
+        style="left: {w.x}%; top: {w.y}%; --glitch-delay: {(i * 0.7) + Math.random() * 2}s; --glitch-x: {w.glitchX || 5}px; --glitch-y: {w.glitchY || -5}px; touch-action: manipulation;"
         onclick={(e) => handleWordClick(w, e)}>
         {#if showImages && getCardImageUrl(w) && !w.imageFailed}
           <img
@@ -953,7 +964,7 @@
     }
   }
 
-  /* Glitch animation (when failing) */
+  /* Glitch animation (when failing) - uses random CSS custom properties */
   .syndicate-glitch {
     animation: syndicate-fail-glitch 0.6s ease-out forwards;
   }
@@ -964,11 +975,11 @@
     }
     10%, 30%, 50%, 70%, 90% {
       opacity: 0;
-      transform: translate(-50%, -50%) translate(5px, -5px);
+      transform: translate(-50%, -50%) translate(var(--glitch-x, 5px), var(--glitch-y, -5px));
     }
     20%, 40%, 60%, 80% {
       opacity: 1;
-      transform: translate(-50%, -50%) translate(-5px, 5px);
+      transform: translate(-50%, -50%) translate(calc(var(--glitch-x, 5px) * -1), calc(var(--glitch-y, -5px) * -1));
     }
   }
 

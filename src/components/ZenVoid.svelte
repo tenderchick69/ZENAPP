@@ -358,12 +358,66 @@
   }
 
   function loop() {
-    // Float words gently
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Bounds for containment
+    const minX = isMobile ? 18 : 12;
+    const maxX = isMobile ? 82 : 88;
+    const minY = isMobile ? 12 : 10;
+    const maxY = isMobile ? 82 : 85;
+
+    // Minimum distance between words (percentage)
+    const minDistX = isMobile ? 20 : 16;
+    const minDistY = isMobile ? 12 : 10;
+
+    // Float words gently with repulsion
     words = words.map(w => {
       if (w.mastered || w.dissolving) return w;
+
+      // Natural vertical float
+      let newX = w.x;
+      let newY = w.y + Math.sin(w.drift) * 0.008;
+
+      // Apply repulsion from other words
+      let repelX = 0;
+      let repelY = 0;
+
+      words.forEach(other => {
+        if (other.id === w.id || other.mastered || other.dissolving) return;
+
+        const dx = newX - other.x;
+        const dy = newY - other.y;
+        const distX = Math.abs(dx);
+        const distY = Math.abs(dy);
+
+        // Check if within collision zone
+        if (distX < minDistX && distY < minDistY) {
+          // Calculate repulsion force
+          const overlapX = minDistX - distX;
+          const overlapY = minDistY - distY;
+
+          // Push away proportionally
+          if (distX > 0.1) {
+            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.02;
+          }
+          if (distY > 0.1) {
+            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.02;
+          }
+        }
+      });
+
+      // Apply repulsion
+      newX += repelX;
+      newY += repelY;
+
+      // Keep within bounds
+      newX = Math.max(minX, Math.min(maxX, newX));
+      newY = Math.max(minY, Math.min(maxY, newY));
+
       return {
         ...w,
-        y: w.y + Math.sin(w.drift) * 0.008,
+        x: newX,
+        y: newY,
         drift: w.drift + 0.003
       };
     });
