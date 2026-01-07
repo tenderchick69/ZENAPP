@@ -114,34 +114,34 @@
   --font-heading: "Caveat", "Segoe Script", "Bradley Hand", cursive;
   --font-body: "Patrick Hand", "Segoe Script", "Bradley Hand", cursive;
 
-  /* Glass tint */
-  --color-main: #e8f4f8;
+  /* Ice blue text - HIGH CONTRAST for readability */
+  --color-main: #b8e4f5;
 
-  /* Frost blue */
-  --color-accent: #a8d8ea;
+  /* Bright cyan accent */
+  --color-accent: #4fc3f7;
 
-  /* Clear (dark blue) */
-  --color-danger: #2a4a6a;
+  /* Deep navy for danger/contrast */
+  --color-danger: #3a5a7a;
 
-  /* Frost glow */
-  --color-success: #a8d8ea;
+  /* Bright ice glow for success */
+  --color-success: #64d8ff;
 
-  /* Outside (dark winter) */
-  --color-bg: #1a2a3a;
+  /* Dark winter background */
+  --color-bg: #0f1a28;
 
-  /* Glass panel (translucent) */
-  --color-panel: rgba(232, 244, 248, 0.05);
+  /* Glass panel - more visible */
+  --color-panel: rgba(20, 45, 70, 0.7);
 
-  /* Dim frost */
-  --color-dim: rgba(255, 255, 255, 0.2);
+  /* Dim frost - more visible */
+  --color-dim: rgba(79, 195, 247, 0.4);
 
   /* Breath spot color */
-  --color-breath: #f0f8ff;
+  --color-breath: #e0f4ff;
 }
 
-/* Frost background - winter outside the window */
+/* Frost background - deep winter night for contrast */
 body[data-theme='frost'] {
-  background: linear-gradient(180deg, #1a2a3a 0%, #0f1a25 100%);
+  background: linear-gradient(180deg, #0f1a28 0%, #081018 100%);
 }
 
 body[data-theme='frost'] .neural-grid {

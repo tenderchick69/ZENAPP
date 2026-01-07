@@ -528,23 +528,23 @@
     if (isMastered) {
       // Sharp, crystal clear - strong glow
       return {
-        color: 'rgba(200, 235, 255, 1)',
+        color: '#d0f0ff',
         filter: 'none',
-        textShadow: '0 0 15px rgba(168, 216, 234, 0.8), 0 0 30px rgba(168, 216, 234, 0.4), 0 0 4px rgba(255,255,255,0.5)'
+        textShadow: '0 0 15px rgba(79, 195, 247, 0.9), 0 0 30px rgba(79, 195, 247, 0.5), 0 0 4px rgba(255,255,255,0.6)'
       };
     } else if (isHovered) {
-      // Readable through cleared breath
+      // Readable through cleared breath - bright ice blue
       return {
-        color: 'rgba(220, 240, 255, 0.95)',
+        color: '#b8e4f5',
         filter: 'none',
-        textShadow: '0 0 10px rgba(168, 216, 234, 0.5), 0 0 3px rgba(255,255,255,0.3)'
+        textShadow: '0 0 12px rgba(79, 195, 247, 0.7), 0 0 4px rgba(255,255,255,0.4)'
       };
     } else {
-      // Default - READABLE with subtle frost effect (no heavy blur!)
+      // Default - BOLD ICE BLUE, NO BLUR for readability
       return {
-        color: 'rgba(180, 210, 235, 0.7)',
-        filter: 'blur(0.5px)',
-        textShadow: '0 0 8px rgba(168, 216, 234, 0.3)'
+        color: '#8dd0e8',
+        filter: 'none',
+        textShadow: '0 0 10px rgba(79, 195, 247, 0.4), 0 0 2px rgba(255,255,255,0.2)'
       };
     }
   }
@@ -554,7 +554,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class="fixed inset-0 bg-gradient-to-b from-[#1a2a3a] via-[#1a2a3a] to-slate-900 overflow-hidden font-hand text-gray-300 cursor-default select-none"
+  class="fixed inset-0 bg-gradient-to-b from-[#0f1a28] via-[#152535] to-[#0a1520] overflow-hidden font-hand text-[#a8d8f0] cursor-default select-none"
   onclick={handleContainerClick}>
 
   <!-- Outside scene - distant lights through window -->
@@ -966,24 +966,26 @@
     }
   }
 
-  /* Card text containment for long phrases */
+  /* Card text containment for long phrases - BOLD READABLE STYLE */
   .frost-card-text {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     max-width: min(200px, 55vw);
-    padding: 0.5rem 0.75rem;
-    background: rgba(168, 216, 234, 0.1);
-    border: 1px solid rgba(168, 216, 234, 0.25);
-    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    background: rgba(15, 35, 55, 0.85);
+    border: 2px solid rgba(79, 195, 247, 0.5);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(79, 195, 247, 0.2), inset 0 0 20px rgba(79, 195, 247, 0.05);
 
     /* Text containment - only break on word boundaries, not mid-word */
     white-space: nowrap;
     text-align: center;
 
-    /* Readable font size */
+    /* Readable font size - slightly larger for better readability */
     line-height: 1.3;
-    font-size: clamp(0.85rem, 3.5vw, 1.3rem);
+    font-size: clamp(0.9rem, 3.8vw, 1.4rem);
+    font-weight: 600;
 
     /* Touch target */
     min-height: 44px;
@@ -991,23 +993,24 @@
   }
 
   .frost-card-text:hover {
-    background: rgba(168, 216, 234, 0.15);
-    border-color: rgba(168, 216, 234, 0.4);
+    background: rgba(20, 45, 70, 0.9);
+    border-color: rgba(79, 195, 247, 0.8);
+    box-shadow: 0 0 25px rgba(79, 195, 247, 0.4), inset 0 0 25px rgba(79, 195, 247, 0.1);
   }
 
-  /* Mastered frost cards - crystal clear with ice glow */
+  /* Mastered frost cards - crystal clear with strong ice glow */
   .frost-mastered .frost-card-text {
-    background: rgba(168, 216, 234, 0.2);
-    border-color: rgba(168, 216, 234, 0.6);
+    background: rgba(25, 55, 85, 0.9);
+    border-color: rgba(79, 195, 247, 0.9);
     animation: frost-mastered-shimmer 3s ease-in-out infinite;
   }
 
   @keyframes frost-mastered-shimmer {
     0%, 100% {
-      box-shadow: 0 0 15px rgba(168, 216, 234, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 20px rgba(79, 195, 247, 0.5), 0 0 40px rgba(79, 195, 247, 0.2), inset 0 0 15px rgba(79, 195, 247, 0.1);
     }
     50% {
-      box-shadow: 0 0 25px rgba(168, 216, 234, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 30px rgba(79, 195, 247, 0.7), 0 0 60px rgba(79, 195, 247, 0.3), inset 0 0 25px rgba(79, 195, 247, 0.15);
     }
   }
 
@@ -1030,25 +1033,25 @@
     }
   }
 
-  /* Frost Hue Variations - Ice blue palette */
+  /* Frost Hue Variations - Bolder Ice blue palette */
   .frost-hue-0 {
-    border-color: rgba(168, 216, 234, 0.3); /* Classic frost */
-    background: rgba(168, 216, 234, 0.12);
+    border-color: rgba(79, 195, 247, 0.55); /* Classic frost - cyan */
+    background: rgba(15, 40, 60, 0.85);
   }
   .frost-hue-1 {
-    border-color: rgba(180, 230, 250, 0.3); /* Light ice */
-    background: rgba(180, 230, 250, 0.12);
+    border-color: rgba(100, 210, 255, 0.55); /* Light ice - sky blue */
+    background: rgba(15, 35, 55, 0.85);
   }
   .frost-hue-2 {
-    border-color: rgba(150, 200, 220, 0.3); /* Deep winter */
-    background: rgba(150, 200, 220, 0.12);
+    border-color: rgba(60, 180, 230, 0.55); /* Deep winter - steel blue */
+    background: rgba(20, 40, 60, 0.85);
   }
   .frost-hue-3 {
-    border-color: rgba(190, 220, 240, 0.3); /* Crystal blue */
-    background: rgba(190, 220, 240, 0.12);
+    border-color: rgba(120, 200, 250, 0.55); /* Crystal blue */
+    background: rgba(15, 38, 58, 0.85);
   }
   .frost-hue-4 {
-    border-color: rgba(160, 210, 230, 0.3); /* Glacier */
-    background: rgba(160, 210, 230, 0.12);
+    border-color: rgba(80, 190, 240, 0.55); /* Glacier */
+    background: rgba(18, 42, 62, 0.85);
   }
 </style>

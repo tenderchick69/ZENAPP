@@ -1,7 +1,7 @@
 <script lang="ts">
   import { theme } from '$lib/theme';
   import { onMount, onDestroy } from 'svelte';
-  import { getSignedImageUrls, isStoragePath } from '$lib/storage';
+  import { getSignedImageUrls } from '$lib/storage';
 
   interface Props {
     card: {
@@ -66,6 +66,15 @@
   let selectedProvider = $state('kie'); // 'kie' | 'kie-flux' | 'openai'
   let selectedStyle = $state('photorealistic');
   let customPrompt = $state('');
+  let modalElement: HTMLDivElement | null = $state(null);
+
+  // Teleport modal to body when it appears (escapes parent modal's overflow)
+  $effect(() => {
+    if (showModal && modalElement && typeof document !== 'undefined') {
+      // Move modal to body to escape any parent overflow/containment
+      document.body.appendChild(modalElement);
+    }
+  });
 
   // Provider options - Kie.ai (Z-Image & Flux) + OpenAI
   const providers = [
@@ -158,6 +167,10 @@
   onDestroy(() => {
     if (typeof document !== 'undefined') {
       document.body.style.overflow = '';
+      // Remove teleported modal from body if it exists
+      if (modalElement && modalElement.parentNode === document.body) {
+        document.body.removeChild(modalElement);
+      }
     }
   });
 
@@ -339,11 +352,12 @@
   {/if}
 </div>
 
-<!-- Model/Style Selection Modal - MUST render above parent modals -->
+<!-- Model/Style Selection Modal - Teleported to body to escape parent modal overflow -->
 {#if showModal}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
+    bind:this={modalElement}
     class="image-gen-modal-overlay"
     onclick={closeModal}
     onwheel={(e) => e.stopPropagation()}>
