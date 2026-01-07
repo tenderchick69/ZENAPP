@@ -351,6 +351,68 @@
   }
 
   function loop() {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Bounds for containment
+    const minX = isMobile ? 15 : 10;
+    const maxX = isMobile ? 85 : 90;
+    const minY = isMobile ? 12 : 10;
+    const maxY = isMobile ? 82 : 85;
+
+    // Minimum distance between words (percentage) - same as generateNonOverlappingPositions
+    const minDistX = isMobile ? 18 : 15;
+    const minDistY = isMobile ? 12 : 10;
+
+    // Apply repulsion physics to words (like EmberGarden)
+    words = words.map(w => {
+      if (w.mastered || w.decrypting || w.glitching) return w;
+
+      let newX = w.x;
+      let newY = w.y;
+
+      // Apply repulsion from other words
+      let repelX = 0;
+      let repelY = 0;
+
+      words.forEach(other => {
+        if (other.id === w.id || other.mastered) return;
+
+        const dx = newX - other.x;
+        const dy = newY - other.y;
+        const distX = Math.abs(dx);
+        const distY = Math.abs(dy);
+
+        // Check if within collision zone
+        if (distX < minDistX && distY < minDistY) {
+          // Calculate repulsion force (stronger when closer)
+          const overlapX = minDistX - distX;
+          const overlapY = minDistY - distY;
+
+          // Push away proportionally
+          if (distX > 0.1) {
+            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.05;
+          }
+          if (distY > 0.1) {
+            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.05;
+          }
+        }
+      });
+
+      // Apply repulsion
+      newX += repelX;
+      newY += repelY;
+
+      // Keep within bounds
+      newX = Math.max(minX, Math.min(maxX, newX));
+      newY = Math.max(minY, Math.min(maxY, newY));
+
+      return {
+        ...w,
+        x: newX,
+        y: newY
+      };
+    });
+
     // Animate data rain
     dataRain = dataRain.map(drop => ({
       ...drop,
