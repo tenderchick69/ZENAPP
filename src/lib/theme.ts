@@ -4,6 +4,9 @@ import { browser } from '$app/environment';
 const storedTheme = browser ? localStorage.getItem('vocapp_theme') : 'syndicate';
 export const theme = writable(storedTheme || 'syndicate');
 
+// Help mode - when enabled, hovering shows explanatory tooltips
+export const helpMode = writable(false);
+
 if (browser) {
   theme.subscribe(val => {
     localStorage.setItem('vocapp_theme', val);

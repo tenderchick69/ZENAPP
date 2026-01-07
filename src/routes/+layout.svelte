@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import '../app.css';
-  import { theme, t } from '$lib/theme';
+  import { theme, t, helpMode } from '$lib/theme';
   import { initAuth, cleanupAuth, user, userPreferences, authInitialized, signInWithGoogle, signOut } from '$lib/auth';
   import Onboarding from '../components/Onboarding.svelte';
 
@@ -65,6 +65,15 @@
     </a>
 
     <div class="flex items-center gap-2 md:gap-3" style="justify-content: flex-end;">
+      <!-- HELP MODE TOGGLE - Desktop only (hover tooltips don't work on touch) -->
+      <button
+        onclick={() => helpMode.update(v => !v)}
+        class="hidden md:flex w-8 h-8 items-center justify-center border text-sm font-body transition-all cursor-pointer select-none rounded-full
+          {$helpMode ? 'border-accent text-accent bg-accent/10' : 'border-dim text-dim hover:border-accent hover:text-accent'}"
+        title={$helpMode ? 'Disable help tooltips' : 'Enable help tooltips'}>
+        ?
+      </button>
+
       <!-- THEME TOGGLE - 3 letter abbreviation, 44px touch target on mobile -->
       <button
         onclick={toggleTheme}
