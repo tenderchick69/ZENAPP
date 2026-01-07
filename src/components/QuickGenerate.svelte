@@ -187,8 +187,45 @@
     border-color: rgba(168, 216, 234, 0.3);
   }
 
+  /* Zen theme - elegant sanctuary aesthetic */
   [data-theme="zen"] .quick-generate {
+    background: transparent;
+    border: 1px solid rgba(168, 197, 197, 0.15);
+  }
+
+  [data-theme="zen"] .form-group label {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    text-transform: none;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--color-dim);
+  }
+
+  [data-theme="zen"] .form-group select {
+    font-family: "Zen Kaku Gothic New", "Inter", sans-serif;
     border-color: rgba(168, 197, 197, 0.2);
+    background: rgba(168, 197, 197, 0.05);
+  }
+
+  [data-theme="zen"] .form-group select:focus {
+    border-color: var(--color-accent);
+    box-shadow: none;
+  }
+
+  [data-theme="zen"] .generate-btn {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    background: rgba(168, 197, 197, 0.15);
+    color: var(--color-main);
+    border: 1px solid rgba(168, 197, 197, 0.2);
+    font-size: 1.2rem;
+    font-weight: 400;
+  }
+
+  [data-theme="zen"] .generate-btn:hover {
+    background: rgba(168, 197, 197, 0.25);
+    box-shadow: none;
+    transform: none;
   }
 
   @media (max-width: 640px) {

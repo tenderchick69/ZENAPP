@@ -319,8 +319,59 @@
     backdrop-filter: blur(10px);
   }
 
+  /* Zen theme - elegant sanctuary aesthetic */
+  [data-theme="zen"] .ai-chat {
+    background: transparent;
+    border-color: rgba(168, 197, 197, 0.15);
+  }
+
+  [data-theme="zen"] .messages {
+    background: transparent;
+  }
+
   [data-theme="zen"] .message.assistant .bubble {
-    border-color: rgba(168, 197, 197, 0.3);
+    background: rgba(168, 197, 197, 0.08);
+    border-color: rgba(168, 197, 197, 0.2);
+  }
+
+  [data-theme="zen"] .message.user .bubble {
+    background: rgba(168, 197, 197, 0.15);
+    color: var(--color-main);
+  }
+
+  [data-theme="zen"] .input-area input {
+    background: rgba(168, 197, 197, 0.05);
+    border-color: rgba(168, 197, 197, 0.2);
+  }
+
+  [data-theme="zen"] .input-area input:focus {
+    border-color: var(--color-accent);
+    box-shadow: none;
+  }
+
+  [data-theme="zen"] .send-btn {
+    background: rgba(168, 197, 197, 0.15);
+    color: var(--color-main);
+    border: 1px solid rgba(168, 197, 197, 0.2);
+  }
+
+  [data-theme="zen"] .send-btn:hover:not(:disabled) {
+    background: rgba(168, 197, 197, 0.25);
+    transform: none;
+  }
+
+  [data-theme="zen"] .create-deck-btn {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    background: rgba(138, 154, 91, 0.2);
+    color: var(--color-main);
+    border: 1px solid rgba(138, 154, 91, 0.3);
+    animation: none;
+  }
+
+  [data-theme="zen"] .create-deck-btn:hover {
+    background: rgba(138, 154, 91, 0.3);
+    box-shadow: none;
+    transform: none !important;
   }
 
   @media (max-width: 640px) {

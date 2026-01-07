@@ -354,6 +354,53 @@
     background: var(--color-accent);
   }
 
+  /* Zen theme - elegant sanctuary aesthetic */
+  [data-theme="zen"] .preview-header h2 {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    font-weight: 400;
+  }
+
+  [data-theme="zen"] .preview-table-container {
+    border-color: rgba(168, 197, 197, 0.15);
+  }
+
+  [data-theme="zen"] .preview-table th {
+    background: rgba(168, 197, 197, 0.08);
+    text-transform: none;
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    font-weight: 400;
+    font-size: 0.95rem;
+  }
+
+  [data-theme="zen"] .regenerate-btn {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    background: transparent;
+    border-color: rgba(168, 197, 197, 0.2);
+  }
+
+  [data-theme="zen"] .regenerate-btn:hover {
+    background: rgba(168, 197, 197, 0.15);
+    color: var(--color-main);
+  }
+
+  [data-theme="zen"] .import-btn {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    background: rgba(138, 154, 91, 0.2);
+    color: var(--color-main);
+    border: 1px solid rgba(138, 154, 91, 0.3);
+  }
+
+  [data-theme="zen"] .import-btn:hover:not(:disabled) {
+    background: rgba(138, 154, 91, 0.3);
+    transform: none;
+  }
+
+  [data-theme="zen"] .success-banner {
+    background: rgba(138, 154, 91, 0.2);
+    color: var(--color-main);
+    border: 1px solid rgba(138, 154, 91, 0.3);
+  }
+
   @media (max-width: 640px) {
     .preview-actions {
       flex-direction: column;

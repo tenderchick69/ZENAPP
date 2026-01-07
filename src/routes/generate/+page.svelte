@@ -488,8 +488,35 @@
     backdrop-filter: blur(10px);
   }
 
+  /* Zen theme - elegant, minimal sanctuary aesthetic */
+  [data-theme="zen"] .page-title {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--color-main);
+  }
+
   [data-theme="zen"] .mode-toggle {
-    border-color: rgba(168, 197, 197, 0.2);
+    background: transparent;
+    border: 1px solid rgba(168, 197, 197, 0.15);
+    border-radius: 8px;
+    padding: 0.4rem;
+  }
+
+  [data-theme="zen"] .mode-btn {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    font-size: 1.05rem;
+    border-radius: 6px;
+  }
+
+  [data-theme="zen"] .mode-btn.active {
+    background: rgba(168, 197, 197, 0.15);
+    color: var(--color-main);
+    border-color: transparent;
+  }
+
+  [data-theme="zen"] .mode-btn:hover:not(.active) {
+    background: rgba(168, 197, 197, 0.08);
   }
 
   /* Theme-specific loading messages */
@@ -515,9 +542,35 @@
   }
 
   [data-theme="zen"] .loading-text {
+    font-family: "Cormorant Garamond", "Georgia", serif;
     color: var(--color-accent);
-    font-weight: 500;
+    font-weight: 400;
+    font-size: 1.3rem;
     letter-spacing: 0.03em;
+  }
+
+  /* Zen password gate styling */
+  [data-theme="zen"] .password-box {
+    background: transparent;
+    border: 1px solid rgba(168, 197, 197, 0.15);
+    box-shadow: none;
+  }
+
+  [data-theme="zen"] .gate-title {
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    font-weight: 400;
+  }
+
+  [data-theme="zen"] .unlock-btn {
+    background: rgba(168, 197, 197, 0.15);
+    color: var(--color-main);
+    border: 1px solid rgba(168, 197, 197, 0.2);
+  }
+
+  [data-theme="zen"] .unlock-btn:hover:not(:disabled) {
+    background: rgba(168, 197, 197, 0.25);
+    box-shadow: none;
+    transform: none;
   }
 
   /* Password Gate Styles */
