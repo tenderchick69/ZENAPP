@@ -48,7 +48,7 @@ const DICTIONARY = {
     mode_weak: 'REINFORCE WEAKNESS',
     mode_cram: 'OVERCLOCK',
     unit_cram: 'SHARDS',
-    btn_exit: 'ABORT / JACK OUT',
+    btn_exit: 'ABORT',
 
     // Study
     lbl_mode: 'MODE',
@@ -75,7 +75,7 @@ const DICTIONARY = {
     btn_audio: 'AUDIO_OUT',
 
     // Inspector
-    btn_inspect: 'INSPECT NEURAL PATHWAYS',
+    btn_inspect: 'INSPECT NEURALS',
     inspect_title: 'NEURAL MATRIX',
     col_word: 'SHARD',
     col_lvl: 'LVL',
