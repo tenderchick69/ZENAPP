@@ -597,12 +597,10 @@
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
-        class="syndicate-word-card absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer
-               transition-all duration-300 z-20
+        class="syndicate-word-card absolute cursor-pointer z-20
                {w.decrypting ? 'syndicate-decrypt' : ''}
-               {w.glitching ? 'syndicate-glitch' : ''}
-               {!w.decrypting && !w.glitching ? 'syndicate-idle-glitch' : ''}"
-        style="left: {w.x}%; top: {w.y}%; --glitch-delay: {(i * 0.7) + Math.random() * 2}s; --glitch-x: {w.glitchX || 5}px; --glitch-y: {w.glitchY || -5}px; touch-action: manipulation;"
+               {w.glitching ? 'syndicate-glitch' : ''}"
+        style="left: {w.x}%; top: {w.y}%; transform: translate(-50%, -50%); --glitch-delay: {(i * 0.7) + Math.random() * 2}s; --glitch-x: {w.glitchX || 5}px; --glitch-y: {w.glitchY || -5}px; touch-action: manipulation;"
         onclick={(e) => handleWordClick(w, e)}>
         {#if showImages && getCardImageUrl(w) && !w.imageFailed}
           <img
@@ -613,8 +611,7 @@
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
-          <span class="syndicate-card-text text-sm md:text-lg lg:text-xl tracking-wider syndicate-text-glitch text-center syndicate-hue-{i % 5}
-                       {!w.decrypting && !w.glitching ? 'syndicate-glow-visible' : ''}">
+          <span class="syndicate-card-text text-sm md:text-lg lg:text-xl tracking-wider syndicate-text-glitch text-center syndicate-hue-{i % 5}">
             <span class="opacity-60">[</span>{w.headword}<span class="opacity-60">]</span>
           </span>
         {/if}
@@ -767,75 +764,51 @@
 </div>
 
 <style>
-  /* Syndicate idle glitch animation - cyberpunk digital glitch with RGB split */
-  @keyframes syndicate-idle-glitch-anim {
-    0%, 85%, 100% {
-      transform: translate(-50%, -50%) translate(0, 0);
-    }
-    86% {
-      transform: translate(-50%, -50%) translate(-3px, 1px);
-    }
-    88% {
-      transform: translate(-50%, -50%) translate(3px, -1px);
-    }
-    90% {
-      transform: translate(-50%, -50%) translate(-1px, -2px);
-    }
-    92% {
-      transform: translate(-50%, -50%) translate(0, 0);
-    }
+  /* Syndicate word card base - NO animation on transform to prevent conflicts */
+  .syndicate-word-card {
+    /* Transform is set inline via style attribute */
+    will-change: opacity, filter;
   }
 
-  /* RGB split text effect */
+  /* RGB split text effect - visual only, no movement */
   @keyframes syndicate-rgb-split {
     0%, 85%, 100% {
-      text-shadow: none;
+      text-shadow: 0 0 12px var(--syn-glow, rgba(0, 255, 242, 0.5)), 0 0 4px var(--syn-glow, rgba(0, 255, 242, 0.3));
     }
     86% {
-      text-shadow: -2px 0 #ff0040, 2px 0 #00fff2;
+      text-shadow: -2px 0 #ff0040, 2px 0 #00fff2, 0 0 12px var(--syn-glow, rgba(0, 255, 242, 0.5));
     }
     88% {
-      text-shadow: 2px 0 #ff0040, -2px 0 #00fff2;
+      text-shadow: 2px 0 #ff0040, -2px 0 #00fff2, 0 0 12px var(--syn-glow, rgba(0, 255, 242, 0.5));
     }
     90% {
-      text-shadow: -1px 0 #ff0040, 1px 0 #00fff2;
+      text-shadow: -1px 0 #ff0040, 1px 0 #00fff2, 0 0 12px var(--syn-glow, rgba(0, 255, 242, 0.5));
     }
     92% {
-      text-shadow: none;
+      text-shadow: 0 0 12px var(--syn-glow, rgba(0, 255, 242, 0.5)), 0 0 4px var(--syn-glow, rgba(0, 255, 242, 0.3));
     }
   }
 
-  /* Image glitch effect - uses hue-rotate instead of text-shadow */
+  /* Image glitch effect - hue-rotate only, no translation */
   @keyframes syndicate-img-glitch-anim {
     0%, 85%, 100% {
-      transform: translate(0, 0);
       filter: none;
     }
     86% {
-      transform: translate(-2px, 1px);
       filter: hue-rotate(30deg) saturate(1.3);
     }
     88% {
-      transform: translate(2px, -1px);
       filter: hue-rotate(-30deg) saturate(1.3);
     }
     90% {
-      transform: translate(-1px, -2px);
       filter: hue-rotate(15deg) saturate(1.2);
     }
     92% {
-      transform: translate(0, 0);
       filter: none;
     }
   }
 
-  /* Apply idle glitch to card container */
-  .syndicate-idle-glitch {
-    animation: syndicate-idle-glitch-anim 4s infinite;
-    animation-delay: var(--glitch-delay, 0s);
-  }
-
-  /* Apply RGB split to text */
+  /* Apply RGB split to text - runs continuously */
   .syndicate-text-glitch {
     animation: syndicate-rgb-split 4s infinite;
     animation-delay: var(--glitch-delay, 0s);
@@ -845,11 +818,6 @@
   .syndicate-img-glitch {
     animation: syndicate-img-glitch-anim 4s infinite;
     animation-delay: var(--glitch-delay, 0s);
-  }
-
-  /* Visible glow for idle words - stronger for readability */
-  .syndicate-glow-visible {
-    text-shadow: 0 0 12px var(--syn-glow, rgba(0, 255, 242, 0.5)), 0 0 4px var(--syn-glow, rgba(0, 255, 242, 0.3));
   }
 
   /* Subtle hue variations - cyberpunk palette */
@@ -899,51 +867,7 @@
     border-color: var(--syn-border);
   }
 
-  /* Mobile-safe glitch - reduced movement to prevent off-screen */
-  @media (max-width: 768px) {
-    @keyframes syndicate-idle-glitch-anim {
-      0%, 85%, 100% {
-        transform: translate(-50%, -50%) translate(0, 0);
-      }
-      86% {
-        transform: translate(-50%, -50%) translate(-1px, 0.5px);
-      }
-      88% {
-        transform: translate(-50%, -50%) translate(1px, -0.5px);
-      }
-      90% {
-        transform: translate(-50%, -50%) translate(-0.5px, -1px);
-      }
-      92% {
-        transform: translate(-50%, -50%) translate(0, 0);
-      }
-    }
-
-    @keyframes syndicate-img-glitch-anim {
-      0%, 85%, 100% {
-        transform: translate(0, 0);
-        filter: none;
-      }
-      86% {
-        transform: translate(-1px, 0.5px);
-        filter: hue-rotate(15deg) saturate(1.2);
-      }
-      88% {
-        transform: translate(1px, -0.5px);
-        filter: hue-rotate(-15deg) saturate(1.2);
-      }
-      90% {
-        transform: translate(-0.5px, -1px);
-        filter: hue-rotate(10deg) saturate(1.1);
-      }
-      92% {
-        transform: translate(0, 0);
-        filter: none;
-      }
-    }
-  }
-
-  /* Decrypt animation (when passing) */
+  /* Decrypt animation (when passing) - maintains centering */
   .syndicate-decrypt {
     animation: syndicate-decrypt-anim 0.8s ease-out forwards;
   }
@@ -952,34 +876,50 @@
     0% {
       opacity: 1;
       filter: none;
+      transform: translate(-50%, -50%);
     }
     50% {
       opacity: 1;
       filter: brightness(2) blur(2px);
-      text-shadow: 0 0 20px #39ff14;
+      transform: translate(-50%, -50%) scale(1.1);
     }
     100% {
       opacity: 0;
       filter: brightness(3) blur(5px);
+      transform: translate(-50%, -50%) scale(1.2);
     }
   }
 
-  /* Glitch animation (when failing) - uses random CSS custom properties */
+  /* Glitch animation (when failing) - flickers opacity only, then repositions via JS */
   .syndicate-glitch {
     animation: syndicate-fail-glitch 0.6s ease-out forwards;
   }
 
   @keyframes syndicate-fail-glitch {
-    0%, 100% {
+    0% {
       opacity: 1;
+      transform: translate(-50%, -50%);
+      filter: none;
     }
-    10%, 30%, 50%, 70%, 90% {
+    10%, 30%, 50%, 70% {
       opacity: 0;
-      transform: translate(-50%, -50%) translate(var(--glitch-x, 5px), var(--glitch-y, -5px));
+      transform: translate(-50%, -50%);
+      filter: hue-rotate(90deg) saturate(2);
     }
     20%, 40%, 60%, 80% {
       opacity: 1;
-      transform: translate(-50%, -50%) translate(calc(var(--glitch-x, 5px) * -1), calc(var(--glitch-y, -5px) * -1));
+      transform: translate(-50%, -50%);
+      filter: hue-rotate(-90deg) saturate(2);
+    }
+    90% {
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      filter: none;
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+      filter: none;
     }
   }
 

@@ -1,8 +1,8 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-const storedTheme = browser ? localStorage.getItem('vocapp_theme') : 'syndicate';
-export const theme = writable(storedTheme || 'syndicate');
+const storedTheme = browser ? localStorage.getItem('vocapp_theme') : 'ember';
+export const theme = writable(storedTheme || 'ember');
 
 // Help mode - when enabled, hovering shows explanatory tooltips
 export const helpMode = writable(false);
