@@ -5,7 +5,6 @@
   import { calculateNextReview, type Card } from '$lib/srs';
   import { goto } from '$app/navigation';
   import { t, theme } from '$lib/theme';
-  import { helpMode } from '$lib/tooltip';
   import { speak as ttsSpeak } from '$lib/tts';
   import { exportDeckToCSV } from '$lib/export';
   import { user } from '$lib/auth';

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { helpMode } from '$lib/tooltip';
   import { theme } from '$lib/theme';
 
   export let text = '';
@@ -15,7 +14,7 @@
 >
   <slot />
 
-  {#if $helpMode && hovered}
+  {#if hovered}
     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 z-50 pointer-events-none
       {$theme === 'ember' ? 'bg-[#1a1a1a] border border-orange-500/50 text-orange-100' :
        $theme === 'zen' ? 'bg-white border border-gray-200 text-gray-800 shadow-xl' :

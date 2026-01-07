@@ -2,7 +2,6 @@
   import { onMount, onDestroy } from 'svelte';
   import '../app.css';
   import { theme, t } from '$lib/theme';
-  import { helpMode } from '$lib/tooltip';
   import { initAuth, cleanupAuth, user, userPreferences, authInitialized, signInWithGoogle, signOut } from '$lib/auth';
   import Onboarding from '../components/Onboarding.svelte';
 
@@ -66,14 +65,6 @@
     </a>
 
     <div class="flex items-center gap-2 md:gap-3" style="justify-content: flex-end;">
-      <!-- HELP MODE TOGGLE - 44px touch target on mobile -->
-      <button
-        onclick={() => helpMode.update(v => !v)}
-        class="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center border text-sm md:text-xs font-mono rounded-full transition-all cursor-pointer
-        {$helpMode ? 'bg-accent text-bg border-accent' : 'border-dim text-dim hover:border-accent hover:text-accent'}">
-        ?
-      </button>
-
       <!-- THEME TOGGLE - 3 letter abbreviation, 44px touch target on mobile -->
       <button
         onclick={toggleTheme}
