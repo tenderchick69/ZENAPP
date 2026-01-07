@@ -22,7 +22,7 @@ const DICTIONARY = {
     subtitle: 'Software Upgrade',
 
     // Home
-    yourDecks: 'YOUR IMPLANTS',
+    yourDecks: 'Your Decks',
     btn_import: 'DATA INGESTION',
     btn_ai: 'AI NEURAL SYNTHESIS',
     no_decks: 'NO IMPLANTS DETECTED',
@@ -178,7 +178,7 @@ const DICTIONARY = {
     subtitle: 'Keep the fire burning.',
 
     // Home
-    yourDecks: 'Your Gardens',
+    yourDecks: 'Your Decks',
     btn_import: 'Sow Seeds',
     btn_ai: 'Spark Life',
     no_decks: 'The hearth is cold.',
@@ -253,10 +253,10 @@ const DICTIONARY = {
     // Global
     title_1: 'FROST',
     title_2: 'GLASS',
-    subtitle: 'Write your breath.',
+    subtitle: 'Find clarity.',
 
     // Home
-    yourDecks: 'Your Crystals',
+    yourDecks: 'Your Decks',
     btn_import: 'Condensation',
     btn_ai: 'Breathe Words',
     no_decks: 'The glass is clear.',

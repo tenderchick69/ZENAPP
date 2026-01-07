@@ -517,136 +517,139 @@
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
-    <div class="w-full border border-dim bg-panel p-6 md:p-14 shadow-lg relative overflow-hidden transition-colors h-auto md:h-[780px] flex flex-col justify-center rounded-3xl">
+    <div class="w-full border border-dim bg-panel p-6 md:p-14 shadow-lg relative overflow-hidden transition-colors min-h-[85vh] md:min-h-[780px] flex flex-col justify-between rounded-3xl">
       {#if $theme === 'syndicate'}
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
 
-      <!-- Header - Title Only -->
-      <div class="mb-8 md:mb-14 text-center">
-        <h1 class="text-3xl md:text-7xl font-heading text-main tracking-tight">
-          {deckName || 'Loading...'}
-        </h1>
-      </div>
+      <!-- Top Section -->
+      <div>
+        <!-- Header - Title Only -->
+        <div class="mb-8 md:mb-10 text-center">
+          <h1 class="text-3xl md:text-6xl font-heading text-main tracking-tight">
+            {deckName || 'Loading...'}
+          </h1>
+        </div>
 
-      <!-- Stats Grid - Clickable Numbers (Square Boxes) -->
-      <div class="flex justify-center gap-3 md:gap-8 mb-8 md:mb-14 w-full max-w-2xl mx-auto">
-        <!-- Due/Critical - clickable -->
-        <Tooltip text="Study cards that are due for review">
-          <button
-            onclick={() => startSession('standard')}
-            disabled={stats.due === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim w-[75px] h-[75px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
-                   hover:border-danger hover:bg-danger/10 hover:-translate-y-1
-                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-2xl md:text-6xl font-heading text-danger leading-none transition-transform group-hover:scale-110">{stats.due}</div>
-            <div class="text-[9px] md:text-xs tracking-[0.05em] md:tracking-[0.15em] uppercase text-danger/80 mt-1 md:mt-3 font-medium">{$t.stat_due}</div>
-          </button>
-        </Tooltip>
-
-        <!-- All/Learning - clickable -->
-        <Tooltip text="Review all learning cards">
-          <button
-            onclick={() => startSession('all')}
-            disabled={stats.total - stats.mastered === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim w-[75px] h-[75px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
-                   hover:border-success hover:bg-success/10 hover:-translate-y-1
-                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-2xl md:text-6xl font-heading text-success leading-none transition-transform group-hover:scale-110">{stats.total - stats.mastered}</div>
-            <div class="text-[9px] md:text-xs tracking-[0.05em] md:tracking-[0.05em] uppercase text-success/80 mt-1 md:mt-3 font-medium">{$t.stat_learn}</div>
-          </button>
-        </Tooltip>
-
-        <!-- Mastered - clickable -->
-        <Tooltip text="Practice mastered cards">
-          <button
-            onclick={() => startSession('souls')}
-            disabled={stats.mastered === 0}
-            class="stat-box group bg-bg/50 border-2 border-dim w-[75px] h-[75px] md:w-[140px] md:h-[140px] text-center rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer
-                   hover:border-accent hover:bg-accent/10 hover:-translate-y-1
-                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-bg/50 disabled:hover:border-dim">
-            <div class="text-2xl md:text-6xl font-heading text-accent leading-none transition-transform group-hover:scale-110">{stats.mastered}</div>
-            <div class="text-[9px] md:text-xs tracking-[0.05em] md:tracking-[0.15em] uppercase text-accent/80 mt-1 md:mt-3 font-medium">{$t.stat_master}</div>
-          </button>
-        </Tooltip>
-      </div>
-
-      <!-- Wildfire Row -->
-      <div class="flex flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-12">
-        <Tooltip text="Number of cards for the Wildfire session.">
-          <input
-            type="number"
-            bind:value={cramAmount}
-            class="w-14 md:w-16 h-10 md:h-12 text-center bg-transparent border border-white/20 rounded-lg focus:outline-none focus:ring-0 focus:border-accent font-ember text-lg md:text-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-        </Tooltip>
-        <Tooltip text="Study a random set of cards, even if not due.">
-          <button
-            onclick={() => startSession('overclock')}
-            class="rounded-xl h-10 md:h-12 px-4 md:px-6 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-ember text-sm md:text-base">
-            {$t.mode_cram}
-          </button>
-        </Tooltip>
-      </div>
-
-      <!-- Footer - Theme-appropriate styling -->
-      <div class="flex justify-center gap-4 md:gap-8 mb-6 md:mb-8">
-         <button type="button" onclick={() => view = 'inspect'} class="text-xs md:text-sm font-body opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest
-           {$theme === 'zen' ? 'tracking-[0.2em]' : ''}">
-           {$theme === 'zen' ? $t.btn_inspect : `[ ${$t.btn_inspect} ]`}
-         </button>
-         <a href="/" class="text-xs md:text-sm font-body opacity-50 hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider md:tracking-widest
-           {$theme === 'zen' ? 'tracking-[0.2em]' : ''}">
-           {$theme === 'zen' ? $t.btn_exit : `[ ${$t.btn_exit} ]`}
-         </a>
-      </div>
-
-      <!-- Deck Management - Secondary Actions -->
-      <div class="pt-4 md:pt-6 border-t border-dim/20">
-        <div class="flex items-center justify-center gap-2 md:gap-3">
-          <!-- Download Button -->
-          <Tooltip text="Download Deck">
+        <!-- STUDY Button - Primary/Biggest -->
+        <div class="mb-6 md:mb-8">
+          <Tooltip text="Study cards that are due for review">
             <button
-              onclick={handleExportDeck}
-              disabled={isExporting}
-              class="text-dim/60 hover:text-accent transition-colors p-2 cursor-pointer disabled:opacity-50"
-              title="Download deck">
-              {#if isExporting}
-                <span class="animate-spin text-sm">⏳</span>
-              {:else}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
+              onclick={() => startSession('standard')}
+              disabled={stats.due === 0}
+              class="w-full group bg-danger/10 border-2 border-danger rounded-2xl p-6 md:p-8 text-center transition-all cursor-pointer
+                     hover:bg-danger/20 hover:border-danger hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(var(--color-danger-rgb),0.3)]
+                     disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-danger/10 disabled:hover:shadow-none">
+              <div class="text-5xl md:text-7xl font-heading text-danger leading-none mb-2 transition-transform group-hover:scale-105">{stats.due}</div>
+              <div class="text-lg md:text-2xl font-heading text-danger uppercase tracking-widest mb-2">STUDY</div>
+              <div class="text-xs md:text-sm text-danger/70 font-body">Cards due for review today</div>
+            </button>
+          </Tooltip>
+        </div>
+
+        <!-- ALL Button - Secondary/Medium -->
+        <div class="mb-6 md:mb-8">
+          <Tooltip text="Review all learning cards regardless of due date">
+            <button
+              onclick={() => startSession('all')}
+              disabled={stats.total - stats.mastered === 0}
+              class="w-full group bg-success/10 border-2 border-success rounded-2xl p-4 md:p-6 text-center transition-all cursor-pointer
+                     hover:bg-success/20 hover:border-success hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--color-success-rgb),0.3)]
+                     disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-success/10 disabled:hover:shadow-none">
+              <div class="text-3xl md:text-5xl font-heading text-success leading-none mb-2 transition-transform group-hover:scale-105">{stats.total - stats.mastered}</div>
+              <div class="text-base md:text-xl font-heading text-success uppercase tracking-widest mb-1">ALL</div>
+              <div class="text-xs text-success/70 font-body">Review all cards in deck</div>
+            </button>
+          </Tooltip>
+        </div>
+
+        <!-- Custom Row -->
+        <div class="flex flex-row items-center justify-center gap-3 md:gap-4 mb-6 md:mb-8">
+          <Tooltip text="Number of random cards to study">
+            <input
+              type="number"
+              bind:value={cramAmount}
+              class="w-16 md:w-20 h-12 md:h-14 text-center bg-transparent border border-accent/50 rounded-xl focus:outline-none focus:ring-0 focus:border-accent font-heading text-lg md:text-xl text-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+          </Tooltip>
+          <Tooltip text="Study a random set of cards">
+            <button
+              onclick={() => startSession('overclock')}
+              class="rounded-xl h-12 md:h-14 px-6 md:px-8 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-heading text-sm md:text-base uppercase tracking-wider">
+              Custom
+            </button>
+          </Tooltip>
+        </div>
+      </div>
+
+      <!-- Bottom Section -->
+      <div>
+        <!-- View Card List Link -->
+        <div class="text-center mb-4 md:mb-6">
+          <button
+            type="button"
+            onclick={() => view = 'inspect'}
+            class="text-sm md:text-base font-body text-accent/80 hover:text-accent underline underline-offset-4 transition-colors cursor-pointer">
+            View Card List ({stats.total} cards)
+          </button>
+        </div>
+
+        <!-- Exit Button -->
+        <div class="text-center mb-6 md:mb-8">
+          <a
+            href="/"
+            class="inline-block px-8 md:px-12 py-3 md:py-4 border border-dim text-dim hover:border-main hover:text-main transition-all cursor-pointer font-body text-sm md:text-base uppercase tracking-widest rounded-xl">
+            {$t.btn_exit}
+          </a>
+        </div>
+
+        <!-- Deck Management - Secondary Actions -->
+        <div class="pt-4 md:pt-6 border-t border-dim/20">
+          <div class="flex items-center justify-center gap-3 md:gap-4">
+            <!-- Rename Button -->
+            <Tooltip text="Rename Deck">
+              <button
+                onclick={openRenameModal}
+                class="text-dim/60 hover:text-accent transition-colors p-2 cursor-pointer"
+                title="Rename deck">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
-              {/if}
-            </button>
-          </Tooltip>
+              </button>
+            </Tooltip>
 
-          <!-- Rename Button -->
-          <Tooltip text="Rename Deck">
-            <button
-              onclick={openRenameModal}
-              class="text-dim/60 hover:text-accent transition-colors p-2 cursor-pointer"
-              title="Rename deck">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-          </Tooltip>
+            <!-- Download Button -->
+            <Tooltip text="Download Deck">
+              <button
+                onclick={handleExportDeck}
+                disabled={isExporting}
+                class="text-dim/60 hover:text-accent transition-colors p-2 cursor-pointer disabled:opacity-50"
+                title="Download deck">
+                {#if isExporting}
+                  <span class="animate-spin text-sm">⏳</span>
+                {:else}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                {/if}
+              </button>
+            </Tooltip>
 
-          <!-- Delete Button -->
-          <Tooltip text="Delete Deck">
-            <button
-              onclick={deleteDeck}
-              class="text-dim/60 hover:text-danger transition-colors p-2 cursor-pointer"
-              title="Delete deck">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
-          </Tooltip>
+            <!-- Delete Button -->
+            <Tooltip text="Delete Deck">
+              <button
+                onclick={deleteDeck}
+                class="text-dim/60 hover:text-danger transition-colors p-2 cursor-pointer"
+                title="Delete deck">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </div>
