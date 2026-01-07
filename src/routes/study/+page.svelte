@@ -517,90 +517,85 @@
 
   <!-- LOBBY -->
   {#if view === 'lobby'}
-    <div class="w-full border border-dim bg-panel p-6 md:p-14 shadow-lg relative overflow-hidden transition-colors min-h-[85vh] md:min-h-[780px] flex flex-col justify-between rounded-3xl">
+    <div class="w-full border border-dim bg-panel p-4 md:p-10 shadow-lg relative overflow-hidden transition-colors flex flex-col items-center rounded-3xl">
       {#if $theme === 'syndicate'}
         <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,255,242,0.02)_50%)] bg-[length:100%_4px] pointer-events-none"></div>
       {/if}
 
-      <!-- Top Section -->
-      <div>
-        <!-- Header - Title Only -->
-        <div class="mb-8 md:mb-10 text-center">
-          <h1 class="text-3xl md:text-6xl font-heading text-main tracking-tight">
-            {deckName || 'Loading...'}
-          </h1>
-        </div>
-
-        <!-- STUDY Button - Primary -->
-        <div class="mb-4 md:mb-6 max-w-md mx-auto">
-          <Tooltip text="Study cards that are due for review">
-            <button
-              onclick={() => startSession('standard')}
-              disabled={stats.due === 0}
-              class="w-full group bg-danger/10 border-2 border-danger rounded-2xl p-4 md:p-6 text-center transition-all cursor-pointer
-                     hover:bg-danger/20 hover:border-danger hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(var(--color-danger-rgb),0.3)]
-                     disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-danger/10 disabled:hover:shadow-none">
-              <div class="text-4xl md:text-6xl font-heading text-danger leading-none mb-2 transition-transform group-hover:scale-105">{stats.due}</div>
-              <div class="text-base md:text-xl font-heading text-danger uppercase tracking-widest mb-1">STUDY</div>
-              <div class="text-xs text-danger/70 font-body">Cards due for review</div>
-            </button>
-          </Tooltip>
-        </div>
-
-        <!-- ALL Button - Secondary -->
-        <div class="mb-4 md:mb-6 max-w-sm mx-auto">
-          <Tooltip text="Train all learning cards regardless of due date">
-            <button
-              onclick={() => startSession('all')}
-              disabled={stats.total - stats.mastered === 0}
-              class="w-full group bg-success/10 border-2 border-success rounded-2xl p-3 md:p-5 text-center transition-all cursor-pointer
-                     hover:bg-success/20 hover:border-success hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--color-success-rgb),0.3)]
-                     disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-success/10 disabled:hover:shadow-none">
-              <div class="text-3xl md:text-4xl font-heading text-success leading-none mb-1 transition-transform group-hover:scale-105">{stats.total - stats.mastered}</div>
-              <div class="text-sm md:text-lg font-heading text-success uppercase tracking-widest mb-1">ALL</div>
-              <div class="text-xs text-success/70 font-body">Train all cards</div>
-            </button>
-          </Tooltip>
-        </div>
-
-        <!-- Custom Row -->
-        <div class="flex flex-row items-center justify-center gap-3 md:gap-4 mb-4 md:mb-6">
-          <Tooltip text="Number of random cards to study">
-            <input
-              type="number"
-              bind:value={cramAmount}
-              class="w-14 md:w-16 h-10 md:h-12 text-center bg-transparent border border-accent/50 rounded-lg focus:outline-none focus:ring-0 focus:border-accent font-heading text-base md:text-lg text-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-          </Tooltip>
-          <Tooltip text="Study a random set of cards">
-            <button
-              onclick={() => startSession('overclock')}
-              class="rounded-lg h-10 md:h-12 px-5 md:px-6 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-heading text-xs md:text-sm uppercase tracking-wider">
-              Custom
-            </button>
-          </Tooltip>
-        </div>
+      <!-- Header - Title Only -->
+      <div class="mb-6 md:mb-8 text-center w-full">
+        <h1 class="text-2xl md:text-5xl font-heading text-main tracking-tight">
+          {deckName || 'Loading...'}
+        </h1>
       </div>
 
-      <!-- Bottom Section -->
-      <div>
-        <!-- View Card List Link -->
-        <div class="text-center mb-4 md:mb-5">
+      <!-- STUDY Button - Primary -->
+      <div class="mb-3 md:mb-4 w-full max-w-xs md:max-w-sm">
+        <Tooltip text="Study cards that are due for review">
           <button
-            type="button"
-            onclick={() => view = 'inspect'}
-            class="text-base md:text-lg font-body text-accent hover:text-main underline underline-offset-4 decoration-accent/50 hover:decoration-main transition-colors cursor-pointer">
-            View Card List
+            onclick={() => startSession('standard')}
+            disabled={stats.due === 0}
+            class="w-full group bg-danger/10 border-2 border-danger rounded-2xl p-3 md:p-5 text-center transition-all cursor-pointer
+                   hover:bg-danger/20 hover:border-danger hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(var(--color-danger-rgb),0.3)]
+                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-danger/10 disabled:hover:shadow-none">
+            <div class="text-4xl md:text-5xl font-heading text-danger leading-none mb-1 transition-transform group-hover:scale-105">{stats.due}</div>
+            <div class="text-sm md:text-lg font-heading text-danger uppercase tracking-widest mb-1">STUDY</div>
+            <div class="text-[10px] md:text-xs text-danger/70 font-body">Cards due for review</div>
           </button>
-        </div>
+        </Tooltip>
+      </div>
 
-        <!-- Exit Button -->
-        <div class="text-center mb-4 md:mb-6">
-          <a
-            href="/"
-            class="inline-block px-6 md:px-8 py-2 md:py-3 border border-accent/50 text-accent/80 hover:border-accent hover:text-accent transition-all cursor-pointer font-body text-xs md:text-sm uppercase tracking-widest rounded-lg">
-            {$t.btn_exit}
-          </a>
-        </div>
+      <!-- ALL Button - Secondary -->
+      <div class="mb-3 md:mb-4 w-full max-w-[280px] md:max-w-xs">
+        <Tooltip text="Train all learning cards regardless of due date">
+          <button
+            onclick={() => startSession('all')}
+            disabled={stats.total - stats.mastered === 0}
+            class="w-full group bg-success/10 border-2 border-success rounded-2xl p-2 md:p-4 text-center transition-all cursor-pointer
+                   hover:bg-success/20 hover:border-success hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--color-success-rgb),0.3)]
+                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-success/10 disabled:hover:shadow-none">
+            <div class="text-2xl md:text-4xl font-heading text-success leading-none mb-1 transition-transform group-hover:scale-105">{stats.total - stats.mastered}</div>
+            <div class="text-xs md:text-base font-heading text-success uppercase tracking-widest">ALL</div>
+            <div class="text-[10px] md:text-xs text-success/70 font-body">Train all cards</div>
+          </button>
+        </Tooltip>
+      </div>
+
+      <!-- Custom Row -->
+      <div class="flex flex-row items-center justify-center gap-2 md:gap-3 mb-4 md:mb-5">
+        <Tooltip text="Number of random cards to study">
+          <input
+            type="number"
+            bind:value={cramAmount}
+            class="w-12 md:w-14 h-9 md:h-10 text-center bg-transparent border border-accent/50 rounded-lg focus:outline-none focus:ring-0 focus:border-accent font-heading text-sm md:text-base text-accent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+        </Tooltip>
+        <Tooltip text="Study a random set of cards">
+          <button
+            onclick={() => startSession('overclock')}
+            class="rounded-lg h-9 md:h-10 px-4 md:px-5 border border-accent text-accent hover:bg-accent hover:text-bg transition-all cursor-pointer font-heading text-xs uppercase tracking-wider">
+            Custom
+          </button>
+        </Tooltip>
+      </div>
+
+      <!-- View Card List Link -->
+      <div class="text-center mb-3 md:mb-4">
+        <button
+          type="button"
+          onclick={() => view = 'inspect'}
+          class="text-sm md:text-base font-body text-accent hover:text-main underline underline-offset-4 decoration-accent/50 hover:decoration-main transition-colors cursor-pointer">
+          View Card List
+        </button>
+      </div>
+
+      <!-- Exit Button -->
+      <div class="text-center mb-4 md:mb-5">
+        <a
+          href="/"
+          class="inline-block px-5 md:px-6 py-2 border border-accent/50 text-accent/80 hover:border-accent hover:text-accent transition-all cursor-pointer font-body text-xs uppercase tracking-widest rounded-lg">
+          {#if $theme === 'zen'}Exit{:else if $theme === 'ember'}Leave{:else}{$t.btn_exit}{/if}
+        </a>
+      </div>
 
         <!-- Deck Management - Secondary Actions -->
         <div class="pt-4 md:pt-6 border-t border-dim/20">

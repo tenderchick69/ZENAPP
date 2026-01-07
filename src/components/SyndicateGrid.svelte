@@ -139,20 +139,19 @@
     const positions: { x: number; y: number }[] = [];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Safe positioning bounds (percentage of screen)
-    const minX = isMobile ? 15 : 10;
-    const maxX = isMobile ? 85 : 90;
-    const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 82 : 85;
+    // Tighter bounds to prevent text from being cut off at edges
+    const minX = isMobile ? 18 : 12;
+    const maxX = isMobile ? 82 : 88;
+    const minY = isMobile ? 15 : 12;
+    const maxY = isMobile ? 78 : 82;
 
     // Center of available area
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
-    // Spacing between word centers (percentage) - MUST be large enough to prevent overlap
-    // Syndicate has no boxes, just text ~15% wide on mobile
-    const spacingX = isMobile ? 18 : 15;
-    const spacingY = isMobile ? 12 : 10;
+    // Larger spacing between word centers to prevent overlap
+    const spacingX = isMobile ? 22 : 18;
+    const spacingY = isMobile ? 14 : 12;
 
     const allPositions = [...existingPositions];
 
@@ -259,15 +258,15 @@
   ) {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Same bounds as generateNonOverlappingPositions
-    const minX = isMobile ? 15 : 10;
-    const maxX = isMobile ? 85 : 90;
-    const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 82 : 85;
+    // Same tighter bounds as generateNonOverlappingPositions
+    const minX = isMobile ? 18 : 12;
+    const maxX = isMobile ? 82 : 88;
+    const minY = isMobile ? 15 : 12;
+    const maxY = isMobile ? 78 : 82;
 
-    // Same spacing as generateNonOverlappingPositions
-    const spacingX = isMobile ? 18 : 15;
-    const spacingY = isMobile ? 12 : 10;
+    // Same larger spacing as generateNonOverlappingPositions
+    const spacingX = isMobile ? 22 : 18;
+    const spacingY = isMobile ? 14 : 12;
 
     // Try random positions with collision detection
     for (let attempt = 0; attempt < 200; attempt++) {
@@ -353,17 +352,17 @@
   function loop() {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Bounds for containment
-    const minX = isMobile ? 15 : 10;
-    const maxX = isMobile ? 85 : 90;
-    const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 82 : 85;
+    // Tighter bounds to prevent text from being cut off at edges
+    const minX = isMobile ? 18 : 12;
+    const maxX = isMobile ? 82 : 88;
+    const minY = isMobile ? 15 : 12;
+    const maxY = isMobile ? 78 : 82;
 
-    // Minimum distance between words (percentage) - same as generateNonOverlappingPositions
-    const minDistX = isMobile ? 18 : 15;
-    const minDistY = isMobile ? 12 : 10;
+    // Larger minimum distance between words to prevent overlap
+    const minDistX = isMobile ? 22 : 18;
+    const minDistY = isMobile ? 14 : 12;
 
-    // Apply repulsion physics to words (like EmberGarden)
+    // Apply strong repulsion physics to words
     words = words.map(w => {
       if (w.mastered || w.decrypting || w.glitching) return w;
 
@@ -384,16 +383,22 @@
 
         // Check if within collision zone
         if (distX < minDistX && distY < minDistY) {
-          // Calculate repulsion force (stronger when closer)
+          // Calculate repulsion force - STRONG to quickly separate overlapping words
           const overlapX = minDistX - distX;
           const overlapY = minDistY - distY;
 
-          // Push away proportionally
+          // Push away with strong force (0.2 instead of 0.05)
           if (distX > 0.1) {
-            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.05;
+            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.2;
+          } else {
+            // If exactly overlapping horizontally, push randomly
+            repelX += (Math.random() - 0.5) * 2;
           }
           if (distY > 0.1) {
-            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.05;
+            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.2;
+          } else {
+            // If exactly overlapping vertically, push randomly
+            repelY += (Math.random() - 0.5) * 2;
           }
         }
       });
@@ -402,9 +407,11 @@
       newX += repelX;
       newY += repelY;
 
-      // Keep within bounds
-      newX = Math.max(minX, Math.min(maxX, newX));
-      newY = Math.max(minY, Math.min(maxY, newY));
+      // Keep within bounds with soft bounce back
+      if (newX < minX) newX = minX + 0.5;
+      if (newX > maxX) newX = maxX - 0.5;
+      if (newY < minY) newY = minY + 0.5;
+      if (newY > maxY) newY = maxY - 0.5;
 
       return {
         ...w,
