@@ -140,18 +140,18 @@
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     // Tighter bounds to prevent text from being cut off at edges
-    const minX = isMobile ? 18 : 12;
-    const maxX = isMobile ? 82 : 88;
-    const minY = isMobile ? 15 : 12;
-    const maxY = isMobile ? 78 : 82;
+    const minX = isMobile ? 20 : 14;
+    const maxX = isMobile ? 80 : 86;
+    const minY = isMobile ? 16 : 14;
+    const maxY = isMobile ? 76 : 80;
 
     // Center of available area
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
     // Larger spacing between word centers to prevent overlap
-    const spacingX = isMobile ? 22 : 18;
-    const spacingY = isMobile ? 14 : 12;
+    const spacingX = isMobile ? 24 : 20;
+    const spacingY = isMobile ? 16 : 14;
 
     const allPositions = [...existingPositions];
 
@@ -258,15 +258,15 @@
   ) {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Same tighter bounds as generateNonOverlappingPositions
-    const minX = isMobile ? 18 : 12;
-    const maxX = isMobile ? 82 : 88;
-    const minY = isMobile ? 15 : 12;
-    const maxY = isMobile ? 78 : 82;
+    // Same tighter bounds as loop() and generateNonOverlappingPositions
+    const minX = isMobile ? 20 : 14;
+    const maxX = isMobile ? 80 : 86;
+    const minY = isMobile ? 16 : 14;
+    const maxY = isMobile ? 76 : 80;
 
-    // Same larger spacing as generateNonOverlappingPositions
-    const spacingX = isMobile ? 22 : 18;
-    const spacingY = isMobile ? 14 : 12;
+    // Same larger spacing
+    const spacingX = isMobile ? 24 : 20;
+    const spacingY = isMobile ? 16 : 14;
 
     // Try random positions with collision detection
     for (let attempt = 0; attempt < 200; attempt++) {
@@ -353,14 +353,14 @@
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     // Tighter bounds to prevent text from being cut off at edges
-    const minX = isMobile ? 18 : 12;
-    const maxX = isMobile ? 82 : 88;
-    const minY = isMobile ? 15 : 12;
-    const maxY = isMobile ? 78 : 82;
+    const minX = isMobile ? 20 : 14;
+    const maxX = isMobile ? 80 : 86;
+    const minY = isMobile ? 16 : 14;
+    const maxY = isMobile ? 76 : 80;
 
     // Larger minimum distance between words to prevent overlap
-    const minDistX = isMobile ? 22 : 18;
-    const minDistY = isMobile ? 14 : 12;
+    const minDistX = isMobile ? 24 : 20;
+    const minDistY = isMobile ? 16 : 14;
 
     // Apply strong repulsion physics to words
     words = words.map(w => {
@@ -383,22 +383,22 @@
 
         // Check if within collision zone
         if (distX < minDistX && distY < minDistY) {
-          // Calculate repulsion force - STRONG to quickly separate overlapping words
+          // Calculate repulsion force - STRONGER to quickly separate overlapping words
           const overlapX = minDistX - distX;
           const overlapY = minDistY - distY;
 
-          // Push away with strong force (0.2 instead of 0.05)
+          // Push away with stronger force (0.3)
           if (distX > 0.1) {
-            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.2;
+            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.3;
           } else {
-            // If exactly overlapping horizontally, push randomly
-            repelX += (Math.random() - 0.5) * 2;
+            // If exactly overlapping horizontally, push randomly stronger
+            repelX += (Math.random() - 0.5) * 3;
           }
           if (distY > 0.1) {
-            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.2;
+            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.3;
           } else {
-            // If exactly overlapping vertically, push randomly
-            repelY += (Math.random() - 0.5) * 2;
+            // If exactly overlapping vertically, push randomly stronger
+            repelY += (Math.random() - 0.5) * 3;
           }
         }
       });
@@ -408,10 +408,10 @@
       newY += repelY;
 
       // Keep within bounds with soft bounce back
-      if (newX < minX) newX = minX + 0.5;
-      if (newX > maxX) newX = maxX - 0.5;
-      if (newY < minY) newY = minY + 0.5;
-      if (newY > maxY) newY = maxY - 0.5;
+      if (newX < minX) newX = minX + 1;
+      if (newX > maxX) newX = maxX - 1;
+      if (newY < minY) newY = minY + 1;
+      if (newY > maxY) newY = maxY - 1;
 
       return {
         ...w,

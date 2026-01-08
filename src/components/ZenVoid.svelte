@@ -201,18 +201,18 @@
     const positions: { x: number; y: number }[] = [];
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Safe positioning bounds (Zen cards have boxes, ~25% wide on mobile)
-    const minX = isMobile ? 18 : 12;
-    const maxX = isMobile ? 82 : 88;
-    const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 82 : 85;
+    // Tighter bounds to prevent edge cut-off (Zen cards have boxes)
+    const minX = isMobile ? 20 : 14;
+    const maxX = isMobile ? 80 : 86;
+    const minY = isMobile ? 14 : 12;
+    const maxY = isMobile ? 80 : 84;
 
     // Center of available area
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
-    // Spacing between word centers - Zen cards have boxes (~25% wide)
-    const spacingX = isMobile ? 22 : 18;
+    // Larger spacing between word centers - Zen cards have boxes
+    const spacingX = isMobile ? 24 : 20;
     const spacingY = isMobile ? 14 : 12;
 
     const allPositions = [...existingPositions];
@@ -308,12 +308,14 @@
   ) {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    const minX = isMobile ? 18 : 12;
-    const maxX = isMobile ? 82 : 88;
-    const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 82 : 85;
+    // Same tighter bounds as loop() and generateNonOverlappingPositions
+    const minX = isMobile ? 20 : 14;
+    const maxX = isMobile ? 80 : 86;
+    const minY = isMobile ? 14 : 12;
+    const maxY = isMobile ? 80 : 84;
 
-    const spacingX = isMobile ? 22 : 18;
+    // Same larger spacing
+    const spacingX = isMobile ? 24 : 20;
     const spacingY = isMobile ? 14 : 12;
 
     // Try random positions with collision detection
@@ -360,15 +362,15 @@
   function loop() {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // Bounds for containment
-    const minX = isMobile ? 18 : 12;
-    const maxX = isMobile ? 82 : 88;
-    const minY = isMobile ? 12 : 10;
-    const maxY = isMobile ? 82 : 85;
+    // Tighter bounds to prevent edge cut-off (Zen cards have boxes)
+    const minX = isMobile ? 20 : 14;
+    const maxX = isMobile ? 80 : 86;
+    const minY = isMobile ? 14 : 12;
+    const maxY = isMobile ? 80 : 84;
 
-    // Minimum distance between words (percentage)
-    const minDistX = isMobile ? 20 : 16;
-    const minDistY = isMobile ? 12 : 10;
+    // Minimum distance between words (percentage) - slightly larger for Zen boxes
+    const minDistX = isMobile ? 24 : 20;
+    const minDistY = isMobile ? 14 : 12;
 
     // Float words gently with repulsion
     words = words.map(w => {
@@ -396,12 +398,18 @@
           const overlapX = minDistX - distX;
           const overlapY = minDistY - distY;
 
-          // Push away proportionally
+          // Push away with stronger force (0.1 instead of 0.02)
           if (distX > 0.1) {
-            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.02;
+            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.1;
+          } else {
+            // If exactly overlapping horizontally, push randomly
+            repelX += (Math.random() - 0.5) * 1.5;
           }
           if (distY > 0.1) {
-            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.02;
+            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.1;
+          } else {
+            // If exactly overlapping vertically, push randomly
+            repelY += (Math.random() - 0.5) * 1.5;
           }
         }
       });
@@ -410,9 +418,11 @@
       newX += repelX;
       newY += repelY;
 
-      // Keep within bounds
-      newX = Math.max(minX, Math.min(maxX, newX));
-      newY = Math.max(minY, Math.min(maxY, newY));
+      // Keep within bounds with soft margin
+      if (newX < minX) newX = minX + 0.3;
+      if (newX > maxX) newX = maxX - 0.3;
+      if (newY < minY) newY = minY + 0.3;
+      if (newY > maxY) newY = maxY - 0.3;
 
       return {
         ...w,
