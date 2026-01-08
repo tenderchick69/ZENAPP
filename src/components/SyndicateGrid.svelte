@@ -149,9 +149,9 @@
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
-    // Larger spacing between word centers to prevent overlap
-    const spacingX = isMobile ? 24 : 20;
-    const spacingY = isMobile ? 16 : 14;
+    // Spacing between word centers - enough to avoid overlap
+    const spacingX = isMobile ? 22 : 18;
+    const spacingY = isMobile ? 14 : 12;
 
     const allPositions = [...existingPositions];
 
@@ -264,9 +264,9 @@
     const minY = isMobile ? 16 : 14;
     const maxY = isMobile ? 76 : 80;
 
-    // Same larger spacing
-    const spacingX = isMobile ? 24 : 20;
-    const spacingY = isMobile ? 16 : 14;
+    // Same spacing
+    const spacingX = isMobile ? 22 : 18;
+    const spacingY = isMobile ? 14 : 12;
 
     // Try random positions with collision detection
     for (let attempt = 0; attempt < 200; attempt++) {
@@ -358,18 +358,18 @@
     const minY = isMobile ? 16 : 14;
     const maxY = isMobile ? 76 : 80;
 
-    // Larger minimum distance between words to prevent overlap
-    const minDistX = isMobile ? 24 : 20;
-    const minDistY = isMobile ? 16 : 14;
+    // Minimum distance between words to trigger gentle separation
+    const minDistX = isMobile ? 22 : 18;
+    const minDistY = isMobile ? 14 : 12;
 
-    // Apply strong repulsion physics to words
+    // Apply gentle repulsion physics to words - subtle push, not aggressive
     words = words.map(w => {
       if (w.mastered || w.decrypting || w.glitching) return w;
 
       let newX = w.x;
       let newY = w.y;
 
-      // Apply repulsion from other words
+      // Apply gentle repulsion from other words
       let repelX = 0;
       let repelY = 0;
 
@@ -383,35 +383,35 @@
 
         // Check if within collision zone
         if (distX < minDistX && distY < minDistY) {
-          // Calculate repulsion force - STRONGER to quickly separate overlapping words
+          // Calculate overlap amount
           const overlapX = minDistX - distX;
           const overlapY = minDistY - distY;
 
-          // Push away with stronger force (0.3)
-          if (distX > 0.1) {
-            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.3;
+          // Gentle push - just enough to slowly separate (0.08)
+          if (distX > 0.5) {
+            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.08;
           } else {
-            // If exactly overlapping horizontally, push randomly stronger
-            repelX += (Math.random() - 0.5) * 3;
+            // If nearly overlapping horizontally, small random nudge
+            repelX += (Math.random() - 0.5) * 0.8;
           }
-          if (distY > 0.1) {
-            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.3;
+          if (distY > 0.5) {
+            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.08;
           } else {
-            // If exactly overlapping vertically, push randomly stronger
-            repelY += (Math.random() - 0.5) * 3;
+            // If nearly overlapping vertically, small random nudge
+            repelY += (Math.random() - 0.5) * 0.8;
           }
         }
       });
 
-      // Apply repulsion
-      newX += repelX;
-      newY += repelY;
+      // Apply repulsion with damping (multiply by 0.7 to reduce jitter)
+      newX += repelX * 0.7;
+      newY += repelY * 0.7;
 
-      // Keep within bounds with soft bounce back
-      if (newX < minX) newX = minX + 1;
-      if (newX > maxX) newX = maxX - 1;
-      if (newY < minY) newY = minY + 1;
-      if (newY > maxY) newY = maxY - 1;
+      // Keep within bounds
+      if (newX < minX) newX = minX + 0.5;
+      if (newX > maxX) newX = maxX - 0.5;
+      if (newY < minY) newY = minY + 0.5;
+      if (newY > maxY) newY = maxY - 0.5;
 
       return {
         ...w,
