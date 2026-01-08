@@ -646,7 +646,6 @@
             </Tooltip>
           </div>
         </div>
-      </div>
     </div>
 
   <!-- INSPECT VIEW - Mobile Optimized Full Screen Modal -->
@@ -677,7 +676,7 @@
                      src={getCardImageUrl(card)}
                      alt=""
                      class="w-full h-full object-cover"
-                     onerror={(e) => e.currentTarget.style.display = 'none'}
+                     onerror={(e) => (e.currentTarget as HTMLImageElement).style.display = 'none'}
                    />
                  {:else}
                    <div class="w-full h-full flex items-center justify-center text-dim/50 text-lg">📷</div>
