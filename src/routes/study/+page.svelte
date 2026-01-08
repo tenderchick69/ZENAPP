@@ -530,33 +530,39 @@
       </div>
 
       <!-- ALL Button - Top, Secondary -->
+      <!-- Frost: muted/opaque navy styling | Others: success green -->
       <div class="mb-3 md:mb-4 max-w-[320px] md:max-w-xs mx-auto">
         <Tooltip text="Train all learning cards regardless of due date">
           <button
             onclick={() => startSession('all')}
             disabled={stats.total - stats.mastered === 0}
-            class="w-full group bg-success/10 border-2 border-success rounded-2xl p-3 md:p-4 text-center transition-all cursor-pointer
-                   hover:bg-success/20 hover:border-success hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--color-success-rgb),0.3)]
-                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-success/10 disabled:hover:shadow-none">
-            <div class="text-3xl md:text-4xl font-heading text-success leading-none mb-1 transition-transform group-hover:scale-105">{stats.total - stats.mastered}</div>
-            <div class="text-sm md:text-base font-heading text-success uppercase tracking-widest">ALL</div>
-            <div class="text-[10px] md:text-xs text-success/70 font-body">Train all cards</div>
+            class="w-full group rounded-2xl p-3 md:p-4 text-center transition-all cursor-pointer
+                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none
+                   {$theme === 'frost'
+                     ? 'bg-[#3a5a7a]/20 border-2 border-[#3a5a7a]/60 hover:bg-[#3a5a7a]/30 hover:border-[#3a5a7a] hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(58,90,122,0.3)] disabled:hover:bg-[#3a5a7a]/20'
+                     : 'bg-success/10 border-2 border-success hover:bg-success/20 hover:border-success hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(var(--color-success-rgb),0.3)] disabled:hover:bg-success/10'}">
+            <div class="text-3xl md:text-4xl font-heading leading-none mb-1 transition-transform group-hover:scale-105 {$theme === 'frost' ? 'text-[#5a8ab0]' : 'text-success'}">{stats.total - stats.mastered}</div>
+            <div class="text-sm md:text-base font-heading uppercase tracking-widest {$theme === 'frost' ? 'text-[#5a8ab0]' : 'text-success'}">ALL</div>
+            <div class="text-[10px] md:text-xs font-body {$theme === 'frost' ? 'text-[#5a8ab0]/70' : 'text-success/70'}">Train all cards</div>
           </button>
         </Tooltip>
       </div>
 
       <!-- STUDY Button - Center, Primary (bigger) -->
+      <!-- Frost: super bright blue | Others: danger red -->
       <div class="mb-3 md:mb-4 max-w-[360px] md:max-w-sm mx-auto">
         <Tooltip text="Study cards that are due for review">
           <button
             onclick={() => startSession('standard')}
             disabled={stats.due === 0}
-            class="w-full group bg-danger/10 border-2 border-danger rounded-2xl p-4 md:p-5 text-center transition-all cursor-pointer
-                   hover:bg-danger/20 hover:border-danger hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(var(--color-danger-rgb),0.3)]
-                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-danger/10 disabled:hover:shadow-none">
-            <div class="text-5xl md:text-5xl font-heading text-danger leading-none mb-1 transition-transform group-hover:scale-105">{stats.due}</div>
-            <div class="text-base md:text-lg font-heading text-danger uppercase tracking-widest mb-1">STUDY</div>
-            <div class="text-[11px] md:text-xs text-danger/70 font-body">Cards due for review</div>
+            class="w-full group rounded-2xl p-4 md:p-5 text-center transition-all cursor-pointer
+                   disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none
+                   {$theme === 'frost'
+                     ? 'bg-[#64d8ff]/15 border-2 border-[#64d8ff] hover:bg-[#64d8ff]/25 hover:border-[#7de5ff] hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(100,216,255,0.4)] disabled:hover:bg-[#64d8ff]/15'
+                     : 'bg-danger/10 border-2 border-danger hover:bg-danger/20 hover:border-danger hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(var(--color-danger-rgb),0.3)] disabled:hover:bg-danger/10'}">
+            <div class="text-5xl md:text-5xl font-heading leading-none mb-1 transition-transform group-hover:scale-105 {$theme === 'frost' ? 'text-[#64d8ff]' : 'text-danger'}">{stats.due}</div>
+            <div class="text-base md:text-lg font-heading uppercase tracking-widest mb-1 {$theme === 'frost' ? 'text-[#64d8ff]' : 'text-danger'}">STUDY</div>
+            <div class="text-[11px] md:text-xs font-body {$theme === 'frost' ? 'text-[#64d8ff]/70' : 'text-danger/70'}">Cards due for review</div>
           </button>
         </Tooltip>
       </div>

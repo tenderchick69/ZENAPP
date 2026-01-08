@@ -387,25 +387,24 @@
           const overlapX = minDistX - distX;
           const overlapY = minDistY - distY;
 
-          // Gentle push - just enough to slowly separate (0.08)
-          if (distX > 0.5) {
-            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.08;
-          } else {
-            // If nearly overlapping horizontally, small random nudge
-            repelX += (Math.random() - 0.5) * 0.8;
-          }
-          if (distY > 0.5) {
-            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.08;
-          } else {
-            // If nearly overlapping vertically, small random nudge
-            repelY += (Math.random() - 0.5) * 0.8;
+          // Only apply force if overlap is significant (>2% to avoid micro-jitter)
+          if (overlapX > 2 || overlapY > 2) {
+            // Gentle push - scaled down for small overlaps
+            const forceScale = Math.min(overlapX, overlapY) > 5 ? 0.06 : 0.03;
+
+            if (distX > 0.5) {
+              repelX += (dx > 0 ? 1 : -1) * overlapX * forceScale;
+            }
+            if (distY > 0.5) {
+              repelY += (dy > 0 ? 1 : -1) * overlapY * forceScale;
+            }
           }
         }
       });
 
-      // Apply repulsion with damping (multiply by 0.7 to reduce jitter)
-      newX += repelX * 0.7;
-      newY += repelY * 0.7;
+      // Apply repulsion with strong damping to prevent oscillation
+      newX += repelX * 0.5;
+      newY += repelY * 0.5;
 
       // Keep within bounds
       if (newX < minX) newX = minX + 0.5;
