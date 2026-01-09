@@ -93,6 +93,7 @@
   let animationFrame: number;
   let sessionComplete = false;
   let scanlineOffset = 0;
+  let physicsFrameCount = 0; // Track frames since start - freeze physics after settling
 
   $: masteredCount = words.filter(w => w.mastered).length;
 
@@ -388,14 +389,23 @@
     const minDistX = isMobile ? 22 : 18;
     const minDistY = isMobile ? 14 : 12;
 
-    // Physics constants
-    const friction = 0.85; // Velocity damping (0-1, lower = more friction)
-    const settledThreshold = 0.05; // Velocity below this = settled
-    const settledFrames = 30; // After this many frames of low velocity, stop physics
+    // Physics constants - tuned to settle without jitter
+    const friction = 0.80; // Good friction to dampen oscillation
+    const settledThreshold = 0.12; // Settle when velocity is low
+    const settledFrames = 20; // Frames of low velocity before freezing individual word
+    const maxPhysicsFrames = 900; // Safety stop after ~15 seconds - words should settle naturally way before this
+
+    // Increment global physics counter
+    physicsFrameCount++;
 
     // Apply velocity-based physics with settling
     words = words.map(w => {
       if (w.mastered || w.decrypting || w.glitching) return w;
+
+      // HARD FREEZE: After max frames, no more physics - accept current positions
+      if (physicsFrameCount > maxPhysicsFrames) {
+        return { ...w, vx: 0, vy: 0, settled: settledFrames + 1 };
+      }
 
       // If word has been settled for a while, skip physics entirely
       if (w.settled > settledFrames) {
@@ -422,27 +432,23 @@
           const overlapX = minDistX - distX;
           const overlapY = minDistY - distY;
 
-          // Only apply force if overlap is significant
-          if (overlapX > 1.5 || overlapY > 1.5) {
-            // Smooth force that tapers off as overlap decreases
-            const overlapRatio = Math.min(overlapX, overlapY) / Math.max(minDistX, minDistY);
-            const forceStrength = 0.08 * overlapRatio;
+          // Only apply force if overlap is significant (ignore tiny overlaps that cause jitter)
+          if (overlapX > 3 || overlapY > 3) {
+            // Gentle force that tapers off - avoids oscillation
+            const forceStrength = 0.04;
 
-            // If words are in nearly the same column, push harder horizontally
-            if (distX < 3) {
-              // Nearly same column - need horizontal spread
-              const spreadDir = dx >= 0 ? 1 : -1;
-              forceX += spreadDir * overlapX * 0.15;
-            } else {
+            // Simple directional push - no special column/row handling (that caused jitter)
+            if (distX > 0.5) {
               forceX += (dx > 0 ? 1 : -1) * overlapX * forceStrength;
+            } else {
+              // Nearly same X - randomize direction slightly to break deadlock
+              forceX += (Math.random() > 0.5 ? 1 : -1) * overlapX * forceStrength;
             }
 
-            // If words are in nearly the same row, push harder vertically
-            if (distY < 3) {
-              const spreadDir = dy >= 0 ? 1 : -1;
-              forceY += spreadDir * overlapY * 0.12;
-            } else {
+            if (distY > 0.5) {
               forceY += (dy > 0 ? 1 : -1) * overlapY * forceStrength;
+            } else {
+              forceY += (Math.random() > 0.5 ? 1 : -1) * overlapY * forceStrength;
             }
           }
         }
@@ -452,7 +458,7 @@
       vx += forceX;
       vy += forceY;
 
-      // Apply friction
+      // Apply strong friction
       vx *= friction;
       vy *= friction;
 
@@ -461,10 +467,10 @@
       let newY = w.y + vy;
 
       // Bounce off bounds (soft bounce)
-      if (newX < minX) { newX = minX; vx = Math.abs(vx) * 0.3; }
-      if (newX > maxX) { newX = maxX; vx = -Math.abs(vx) * 0.3; }
-      if (newY < minY) { newY = minY; vy = Math.abs(vy) * 0.3; }
-      if (newY > maxY) { newY = maxY; vy = -Math.abs(vy) * 0.3; }
+      if (newX < minX) { newX = minX; vx = Math.abs(vx) * 0.2; }
+      if (newX > maxX) { newX = maxX; vx = -Math.abs(vx) * 0.2; }
+      if (newY < minY) { newY = minY; vy = Math.abs(vy) * 0.2; }
+      if (newY > maxY) { newY = maxY; vy = -Math.abs(vy) * 0.2; }
 
       // Track settling - if velocity is tiny, increment settled counter
       const speed = Math.sqrt(vx * vx + vy * vy);
@@ -651,15 +657,32 @@
       setTimeout(() => {
         const others = words.filter(w => w.id !== targetId).map(w => ({ x: w.x, y: w.y, headword: w.headword }));
         const newPos = findSafeSpot(others, headword, oldX, oldY);
-        words = words.map(w => w.id === targetId ? {
-          ...w,
-          glitching: false,
-          x: newPos.x,
-          y: newPos.y,
-          vx: 0,
-          vy: 0,
-          settled: 0 // Reset so physics can adjust position if needed
-        } : w);
+
+        // Reset global physics timer so words can settle again
+        physicsFrameCount = 0;
+
+        // Reset all words' settled state so they can adjust to new position
+        words = words.map(w => {
+          if (w.id === targetId) {
+            return {
+              ...w,
+              glitching: false,
+              x: newPos.x,
+              y: newPos.y,
+              vx: 0,
+              vy: 0,
+              settled: 0
+            };
+          }
+          // Wake up nearby words so they can move away if needed
+          if (!w.mastered) {
+            const dist = Math.sqrt(Math.pow(w.x - newPos.x, 2) + Math.pow(w.y - newPos.y, 2));
+            if (dist < 25) {
+              return { ...w, settled: 0 };
+            }
+          }
+          return w;
+        });
       }, 600);
     }
 
