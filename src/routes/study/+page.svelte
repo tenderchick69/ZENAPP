@@ -880,11 +880,11 @@
              </button>
           {:else}
              <div class="grid grid-cols-2 gap-4">
-               <button onclick={() => handleGrade('fail')} class="py-4 border border-danger text-danger hover:bg-danger hover:text-bg font-heading font-bold transition-all">
-                 {$t.btn_fail}
+               <button onclick={() => handleGrade('fail')} class="py-4 border border-danger text-danger hover:bg-danger hover:text-bg font-heading font-bold transition-all group">
+                 <span class="text-3xl group-hover:scale-110 transition-transform inline-block">✗</span>
                </button>
-               <button onclick={() => handleGrade('pass')} class="py-4 border border-success text-success hover:bg-success hover:text-bg font-heading font-bold transition-all">
-                 {$t.btn_pass}
+               <button onclick={() => handleGrade('pass')} class="py-4 border border-success text-success hover:bg-success hover:text-bg font-heading font-bold transition-all group">
+                 <span class="text-3xl group-hover:scale-110 transition-transform inline-block">✓</span>
                </button>
              </div>
              {#if sessionMode !== 'standard'}

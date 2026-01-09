@@ -811,14 +811,14 @@
         <div class="flex-shrink-0 bg-gradient-to-t from-black via-black/95 to-transparent px-6 pt-4 pb-6" style="padding-bottom: max(1.5rem, env(safe-area-inset-bottom));">
           <div class="flex gap-4 justify-center">
             <button
-              onclick={() => handleDecision('pass')}
-              class="flex-1 max-w-[150px] py-3 bg-[#111] border border-[#333] text-[#666] hover:text-[#999] hover:border-[#444] rounded transition-all tracking-[0.2em] uppercase text-sm cursor-pointer">
-              I knew it
+              onclick={() => handleDecision('fail')}
+              class="flex-1 max-w-[150px] py-3 bg-[#111] border border-[#222] text-[#444] hover:text-[#666] hover:border-[#333] rounded transition-all cursor-pointer group">
+              <span class="text-2xl opacity-60 group-hover:opacity-90 transition-opacity">✗</span>
             </button>
             <button
-              onclick={() => handleDecision('fail')}
-              class="flex-1 max-w-[150px] py-3 bg-[#111] border border-[#222] text-[#444] hover:text-[#666] hover:border-[#333] rounded transition-all tracking-[0.2em] uppercase text-sm cursor-pointer">
-              Show again
+              onclick={() => handleDecision('pass')}
+              class="flex-1 max-w-[150px] py-3 bg-[#111] border border-[#333] text-[#666] hover:text-[#999] hover:border-[#444] rounded transition-all cursor-pointer group">
+              <span class="text-2xl opacity-70 group-hover:opacity-100 transition-opacity">✓</span>
             </button>
           </div>
         </div>

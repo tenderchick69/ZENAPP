@@ -892,14 +892,14 @@
             <!-- Action Buttons inside card -->
             <div class="mt-6 pt-4 border-t border-[#00fff2]/20 flex gap-4 justify-center">
               <button
-                onclick={() => handleDecision('pass')}
-                class="flex-1 max-w-[140px] py-3 bg-[#39ff14]/10 border border-[#39ff14]/50 text-[#39ff14] hover:bg-[#39ff14]/20 hover:border-[#39ff14] transition-all tracking-widest uppercase text-sm cursor-pointer">
-                [DECRYPT]
+                onclick={() => handleDecision('fail')}
+                class="flex-1 max-w-[140px] py-3 bg-[#ff0040]/10 border border-[#ff0040]/50 text-[#ff0040] hover:bg-[#ff0040]/20 hover:border-[#ff0040] transition-all cursor-pointer group">
+                <span class="text-3xl drop-shadow-[0_0_8px_rgba(255,0,64,0.7)] group-hover:drop-shadow-[0_0_12px_rgba(255,0,64,1)] transition-all">✗</span>
               </button>
               <button
-                onclick={() => handleDecision('fail')}
-                class="flex-1 max-w-[140px] py-3 bg-[#ff0040]/10 border border-[#ff0040]/50 text-[#ff0040] hover:bg-[#ff0040]/20 hover:border-[#ff0040] transition-all tracking-widest uppercase text-sm cursor-pointer">
-                [CORRUPT]
+                onclick={() => handleDecision('pass')}
+                class="flex-1 max-w-[140px] py-3 bg-[#39ff14]/10 border border-[#39ff14]/50 text-[#39ff14] hover:bg-[#39ff14]/20 hover:border-[#39ff14] transition-all cursor-pointer group">
+                <span class="text-3xl drop-shadow-[0_0_8px_rgba(57,255,20,0.7)] group-hover:drop-shadow-[0_0_12px_rgba(57,255,20,1)] transition-all">✓</span>
               </button>
             </div>
           </div>
