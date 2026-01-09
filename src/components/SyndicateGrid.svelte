@@ -44,6 +44,9 @@
     selected_image_index?: number;
     x: number;
     y: number;
+    vx: number; // Velocity X for smooth physics
+    vy: number; // Velocity Y for smooth physics
+    settled: number; // Frames since last significant movement (stops jitter)
     mastered: boolean;
     decrypting: boolean;
     glitching: boolean;
@@ -112,6 +115,9 @@
       ...card,
       x: positions[i].x,
       y: positions[i].y,
+      vx: 0,
+      vy: 0,
+      settled: 0,
       mastered: card.mastered || false,
       decrypting: false,
       glitching: false
@@ -169,52 +175,72 @@
       return x >= minX && x <= maxX && y >= minY && y <= maxY;
     }
 
-    // Place each word sequentially
+    // Calculate grid dimensions for even distribution
+    const availableWidth = maxX - minX;
+    const availableHeight = maxY - minY;
+    const cols = Math.ceil(availableWidth / spacingX);
+    const rows = Math.ceil(availableHeight / spacingY);
+
+    // Pre-generate a shuffled grid of possible positions for even spread
+    const gridPositions: { x: number; y: number }[] = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const baseX = minX + (col + 0.5) * (availableWidth / cols);
+        const baseY = minY + (row + 0.5) * (availableHeight / rows);
+        gridPositions.push({ x: baseX, y: baseY });
+      }
+    }
+    // Shuffle for organic placement
+    for (let j = gridPositions.length - 1; j > 0; j--) {
+      const k = Math.floor(Math.random() * (j + 1));
+      [gridPositions[j], gridPositions[k]] = [gridPositions[k], gridPositions[j]];
+    }
+
+    // Place each word
     for (let i = 0; i < count; i++) {
       let placed = false;
       let x = centerX;
       let y = centerY;
 
-      // First word goes at center (with small jitter)
-      if (i === 0) {
-        x = centerX + (Math.random() - 0.5) * 5;
-        y = centerY + (Math.random() - 0.5) * 5;
-        if (!hasCollision(x, y) && inBounds(x, y)) {
+      // Try pre-shuffled grid positions first (ensures even distribution)
+      for (const gridPos of gridPositions) {
+        // Add jitter for organic feel
+        const jitterX = (Math.random() - 0.5) * spacingX * 0.4;
+        const jitterY = (Math.random() - 0.5) * spacingY * 0.4;
+        const testX = gridPos.x + jitterX;
+        const testY = gridPos.y + jitterY;
+
+        if (inBounds(testX, testY) && !hasCollision(testX, testY)) {
+          x = testX;
+          y = testY;
           placed = true;
+          break;
         }
       }
 
-      // Subsequent words: search outward in expanding rectangles
+      // Fallback: expanding search from center
       if (!placed) {
-        // Search in expanding layers from center
-        for (let layer = 1; layer <= 20 && !placed; layer++) {
-          // Try positions in this layer (rectangular spiral)
-          const layerOffsetX = layer * spacingX * 0.7;
-          const layerOffsetY = layer * spacingY * 0.7;
+        for (let layer = 1; layer <= 15 && !placed; layer++) {
+          const layerOffsetX = layer * spacingX * 0.6;
+          const layerOffsetY = layer * spacingY * 0.6;
 
-          // Generate candidate positions for this layer
           const candidates: { x: number; y: number }[] = [];
-
-          // Top and bottom edges of rectangle
           for (let dx = -layer; dx <= layer; dx++) {
-            candidates.push({ x: centerX + dx * spacingX * 0.7, y: centerY - layerOffsetY });
-            candidates.push({ x: centerX + dx * spacingX * 0.7, y: centerY + layerOffsetY });
+            candidates.push({ x: centerX + dx * spacingX * 0.6, y: centerY - layerOffsetY });
+            candidates.push({ x: centerX + dx * spacingX * 0.6, y: centerY + layerOffsetY });
           }
-          // Left and right edges (excluding corners already added)
           for (let dy = -layer + 1; dy < layer; dy++) {
-            candidates.push({ x: centerX - layerOffsetX, y: centerY + dy * spacingY * 0.7 });
-            candidates.push({ x: centerX + layerOffsetX, y: centerY + dy * spacingY * 0.7 });
+            candidates.push({ x: centerX - layerOffsetX, y: centerY + dy * spacingY * 0.6 });
+            candidates.push({ x: centerX + layerOffsetX, y: centerY + dy * spacingY * 0.6 });
           }
 
-          // Shuffle candidates for organic feel
+          // Shuffle
           for (let j = candidates.length - 1; j > 0; j--) {
             const k = Math.floor(Math.random() * (j + 1));
             [candidates[j], candidates[k]] = [candidates[k], candidates[j]];
           }
 
-          // Try each candidate
           for (const candidate of candidates) {
-            // Add small jitter
             const jitterX = (Math.random() - 0.5) * spacingX * 0.3;
             const jitterY = (Math.random() - 0.5) * spacingY * 0.3;
             const testX = candidate.x + jitterX;
@@ -230,7 +256,7 @@
         }
       }
 
-      // Emergency fallback: random position with collision check
+      // Emergency fallback: random position
       if (!placed) {
         for (let attempt = 0; attempt < 100; attempt++) {
           x = minX + Math.random() * (maxX - minX);
@@ -358,64 +384,99 @@
     const minY = isMobile ? 16 : 14;
     const maxY = isMobile ? 76 : 80;
 
-    // Minimum distance between words to trigger gentle separation
+    // Minimum distance between words
     const minDistX = isMobile ? 22 : 18;
     const minDistY = isMobile ? 14 : 12;
 
-    // Apply gentle repulsion physics to words - subtle push, not aggressive
+    // Physics constants
+    const friction = 0.85; // Velocity damping (0-1, lower = more friction)
+    const settledThreshold = 0.05; // Velocity below this = settled
+    const settledFrames = 30; // After this many frames of low velocity, stop physics
+
+    // Apply velocity-based physics with settling
     words = words.map(w => {
       if (w.mastered || w.decrypting || w.glitching) return w;
 
-      let newX = w.x;
-      let newY = w.y;
+      // If word has been settled for a while, skip physics entirely
+      if (w.settled > settledFrames) {
+        return w;
+      }
 
-      // Apply gentle repulsion from other words
-      let repelX = 0;
-      let repelY = 0;
+      let vx = w.vx;
+      let vy = w.vy;
+
+      // Calculate repulsion forces
+      let forceX = 0;
+      let forceY = 0;
 
       words.forEach(other => {
         if (other.id === w.id || other.mastered) return;
 
-        const dx = newX - other.x;
-        const dy = newY - other.y;
+        const dx = w.x - other.x;
+        const dy = w.y - other.y;
         const distX = Math.abs(dx);
         const distY = Math.abs(dy);
 
         // Check if within collision zone
         if (distX < minDistX && distY < minDistY) {
-          // Calculate overlap amount
           const overlapX = minDistX - distX;
           const overlapY = minDistY - distY;
 
-          // Only apply force if overlap is significant (>2% to avoid micro-jitter)
-          if (overlapX > 2 || overlapY > 2) {
-            // Gentle push - scaled down for small overlaps
-            const forceScale = Math.min(overlapX, overlapY) > 5 ? 0.06 : 0.03;
+          // Only apply force if overlap is significant
+          if (overlapX > 1.5 || overlapY > 1.5) {
+            // Smooth force that tapers off as overlap decreases
+            const overlapRatio = Math.min(overlapX, overlapY) / Math.max(minDistX, minDistY);
+            const forceStrength = 0.08 * overlapRatio;
 
-            if (distX > 0.5) {
-              repelX += (dx > 0 ? 1 : -1) * overlapX * forceScale;
+            // If words are in nearly the same column, push harder horizontally
+            if (distX < 3) {
+              // Nearly same column - need horizontal spread
+              const spreadDir = dx >= 0 ? 1 : -1;
+              forceX += spreadDir * overlapX * 0.15;
+            } else {
+              forceX += (dx > 0 ? 1 : -1) * overlapX * forceStrength;
             }
-            if (distY > 0.5) {
-              repelY += (dy > 0 ? 1 : -1) * overlapY * forceScale;
+
+            // If words are in nearly the same row, push harder vertically
+            if (distY < 3) {
+              const spreadDir = dy >= 0 ? 1 : -1;
+              forceY += spreadDir * overlapY * 0.12;
+            } else {
+              forceY += (dy > 0 ? 1 : -1) * overlapY * forceStrength;
             }
           }
         }
       });
 
-      // Apply repulsion with strong damping to prevent oscillation
-      newX += repelX * 0.5;
-      newY += repelY * 0.5;
+      // Apply forces to velocity
+      vx += forceX;
+      vy += forceY;
 
-      // Keep within bounds
-      if (newX < minX) newX = minX + 0.5;
-      if (newX > maxX) newX = maxX - 0.5;
-      if (newY < minY) newY = minY + 0.5;
-      if (newY > maxY) newY = maxY - 0.5;
+      // Apply friction
+      vx *= friction;
+      vy *= friction;
+
+      // Calculate new position
+      let newX = w.x + vx;
+      let newY = w.y + vy;
+
+      // Bounce off bounds (soft bounce)
+      if (newX < minX) { newX = minX; vx = Math.abs(vx) * 0.3; }
+      if (newX > maxX) { newX = maxX; vx = -Math.abs(vx) * 0.3; }
+      if (newY < minY) { newY = minY; vy = Math.abs(vy) * 0.3; }
+      if (newY > maxY) { newY = maxY; vy = -Math.abs(vy) * 0.3; }
+
+      // Track settling - if velocity is tiny, increment settled counter
+      const speed = Math.sqrt(vx * vx + vy * vy);
+      const newSettled = speed < settledThreshold ? w.settled + 1 : 0;
 
       return {
         ...w,
         x: newX,
-        y: newY
+        y: newY,
+        vx,
+        vy,
+        settled: newSettled
       };
     });
 
@@ -553,7 +614,21 @@
       // Mark as decrypting, then mastered
       words = words.map(w => w.id === targetId ? { ...w, decrypting: true } : w);
       setTimeout(() => {
-        words = words.map(w => w.id === targetId ? { ...w, mastered: true, decrypting: false } : w);
+        const masteredWord = words.find(w => w.id === targetId);
+        // Wake up nearby words so they can spread into freed space
+        words = words.map(w => {
+          if (w.id === targetId) {
+            return { ...w, mastered: true, decrypting: false };
+          }
+          // Reset settled counter for words near the mastered one
+          if (masteredWord && !w.mastered) {
+            const dist = Math.sqrt(Math.pow(w.x - masteredWord.x, 2) + Math.pow(w.y - masteredWord.y, 2));
+            if (dist < 30) { // Wake up words within 30% distance
+              return { ...w, settled: 0 };
+            }
+          }
+          return w;
+        });
       }, 800);
     } else {
       playSound('corrupt');
@@ -580,7 +655,10 @@
           ...w,
           glitching: false,
           x: newPos.x,
-          y: newPos.y
+          y: newPos.y,
+          vx: 0,
+          vy: 0,
+          settled: 0 // Reset so physics can adjust position if needed
         } : w);
       }, 600);
     }
