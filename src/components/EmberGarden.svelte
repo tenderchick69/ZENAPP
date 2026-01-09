@@ -34,6 +34,7 @@
   let audioCtx: AudioContext;
   let animationFrame: number;
   let sessionComplete = false;
+  let physicsFrameCount = 0; // Track frames for physics timeout
 
   $: masteredCount = words.filter(w => w.mastered).length;
   // Visual warmth: Logarithmic scaling for gradual red increase
@@ -288,44 +289,51 @@
     const minDistX = isMobile ? 20 : 16;
     const minDistY = isMobile ? 12 : 10;
 
+    // Physics timeout - stop repulsion after 5 seconds to prevent jitter
+    const maxPhysicsFrames = 300;
+    physicsFrameCount++;
+    const physicsActive = physicsFrameCount <= maxPhysicsFrames;
+
     words = words.map(w => {
       if (w.mastered) return w;
 
-      // Start with natural drift
+      // Start with natural drift (always continues)
       let newX = w.x + Math.sin(w.drift) * 0.02;
       let newY = w.y + Math.cos(w.drift) * 0.01;
 
-      // Apply repulsion from other words
-      let repelX = 0;
-      let repelY = 0;
+      // Apply repulsion from other words (only while physics active)
+      if (physicsActive) {
+        let repelX = 0;
+        let repelY = 0;
 
-      words.forEach(other => {
-        if (other.id === w.id || other.mastered) return;
+        words.forEach(other => {
+          if (other.id === w.id || other.mastered) return;
 
-        const dx = newX - other.x;
-        const dy = newY - other.y;
-        const distX = Math.abs(dx);
-        const distY = Math.abs(dy);
+          const dx = newX - other.x;
+          const dy = newY - other.y;
+          const distX = Math.abs(dx);
+          const distY = Math.abs(dy);
 
-        // Check if within collision zone
-        if (distX < minDistX && distY < minDistY) {
-          // Calculate repulsion force (stronger when closer)
-          const overlapX = minDistX - distX;
-          const overlapY = minDistY - distY;
+          // Check if within collision zone
+          if (distX < minDistX && distY < minDistY) {
+            // Calculate repulsion force (stronger when closer)
+            const overlapX = minDistX - distX;
+            const overlapY = minDistY - distY;
 
-          // Push away proportionally
-          if (distX > 0.1) {
-            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.03;
+            // Push away proportionally
+            if (distX > 0.1) {
+              repelX += (dx > 0 ? 1 : -1) * overlapX * 0.03;
+            }
+            if (distY > 0.1) {
+              repelY += (dy > 0 ? 1 : -1) * overlapY * 0.03;
+            }
           }
-          if (distY > 0.1) {
-            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.03;
-          }
-        }
-      });
+        });
 
-      // Apply repulsion
-      newX += repelX;
-      newY += repelY;
+        // Apply repulsion
+        newX += repelX;
+        newY += repelY;
+      }
 
       // Keep within bounds
       newX = Math.max(minX, Math.min(maxX, newX));

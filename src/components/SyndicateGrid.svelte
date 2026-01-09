@@ -393,7 +393,7 @@
     const friction = 0.80; // Good friction to dampen oscillation
     const settledThreshold = 0.12; // Settle when velocity is low
     const settledFrames = 20; // Frames of low velocity before freezing individual word
-    const maxPhysicsFrames = 900; // Safety stop after ~15 seconds - words should settle naturally way before this
+    const maxPhysicsFrames = 300; // Hard stop after 5 seconds - prevents endless jitter
 
     // Increment global physics counter
     physicsFrameCount++;
@@ -854,7 +854,7 @@
         <button class="absolute top-2 right-2 z-20 text-[#00fff2]/50 cursor-pointer hover:text-[#00fff2] bg-[#0a0a0a] border border-[#00fff2]/30 rounded-full w-10 h-10 flex items-center justify-center text-sm" onclick={() => revealedWord = null}>[X]</button>
 
         <!-- Scrollable Content Area -->
-        <div class="overflow-y-auto overscroll-contain rounded" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overflow-x-hidden overscroll-contain rounded" style="-webkit-overflow-scrolling: touch;">
           <div class="bg-[#0a0a0a] border border-[#00fff2]/50 p-6 md:p-10 pt-12 text-center">
             <!-- German Gloss -->
             {#if revealedWord.gloss_de}

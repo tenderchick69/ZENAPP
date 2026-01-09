@@ -75,6 +75,7 @@
   let breathSpots: BreathSpot[] = $state([]);
   let snowflakes: Snowflake[] = $state([]);
   let sessionComplete = $state(false);
+  let physicsFrameCount = $state(0); // Track frames for physics timeout
 
   // Audio
   let audioCtx: AudioContext;
@@ -207,6 +208,16 @@
     // Minimum distance between words (percentage)
     const minDistX = isMobile ? 20 : 16;
     const minDistY = isMobile ? 12 : 10;
+
+    // Physics timeout - stop repulsion after 5 seconds to prevent jitter
+    const maxPhysicsFrames = 300;
+    physicsFrameCount++;
+
+    // Skip physics entirely after timeout
+    if (physicsFrameCount > maxPhysicsFrames) {
+      animationFrame = requestAnimationFrame(loop);
+      return;
+    }
 
     // Apply repulsion physics (no drift, just collision resolution)
     words = words.map(w => {

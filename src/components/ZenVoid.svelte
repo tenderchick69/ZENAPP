@@ -70,6 +70,7 @@
   let animationFrame: number;
   let sessionComplete = false;
   let breathPhase = 0;
+  let physicsFrameCount = 0; // Track frames for physics timeout
 
   // Wave ripple state
   let cardRefs: HTMLElement[] = [];
@@ -372,51 +373,58 @@
     const minDistX = isMobile ? 24 : 20;
     const minDistY = isMobile ? 14 : 12;
 
+    // Physics timeout - stop repulsion after 5 seconds to prevent jitter
+    const maxPhysicsFrames = 300;
+    physicsFrameCount++;
+    const physicsActive = physicsFrameCount <= maxPhysicsFrames;
+
     // Float words gently with repulsion
     words = words.map(w => {
       if (w.mastered || w.dissolving) return w;
 
-      // Natural vertical float
+      // Natural vertical float (always continues)
       let newX = w.x;
       let newY = w.y + Math.sin(w.drift) * 0.008;
 
-      // Apply repulsion from other words
-      let repelX = 0;
-      let repelY = 0;
+      // Apply repulsion from other words (only while physics active)
+      if (physicsActive) {
+        let repelX = 0;
+        let repelY = 0;
 
-      words.forEach(other => {
-        if (other.id === w.id || other.mastered || other.dissolving) return;
+        words.forEach(other => {
+          if (other.id === w.id || other.mastered || other.dissolving) return;
 
-        const dx = newX - other.x;
-        const dy = newY - other.y;
-        const distX = Math.abs(dx);
-        const distY = Math.abs(dy);
+          const dx = newX - other.x;
+          const dy = newY - other.y;
+          const distX = Math.abs(dx);
+          const distY = Math.abs(dy);
 
-        // Check if within collision zone
-        if (distX < minDistX && distY < minDistY) {
-          // Calculate repulsion force
-          const overlapX = minDistX - distX;
-          const overlapY = minDistY - distY;
+          // Check if within collision zone
+          if (distX < minDistX && distY < minDistY) {
+            // Calculate repulsion force
+            const overlapX = minDistX - distX;
+            const overlapY = minDistY - distY;
 
-          // Push away with stronger force (0.1 instead of 0.02)
-          if (distX > 0.1) {
-            repelX += (dx > 0 ? 1 : -1) * overlapX * 0.1;
-          } else {
-            // If exactly overlapping horizontally, push randomly
-            repelX += (Math.random() - 0.5) * 1.5;
+            // Push away with stronger force (0.1 instead of 0.02)
+            if (distX > 0.1) {
+              repelX += (dx > 0 ? 1 : -1) * overlapX * 0.1;
+            } else {
+              // If exactly overlapping horizontally, push randomly
+              repelX += (Math.random() - 0.5) * 1.5;
+            }
+            if (distY > 0.1) {
+              repelY += (dy > 0 ? 1 : -1) * overlapY * 0.1;
+            } else {
+              // If exactly overlapping vertically, push randomly
+              repelY += (Math.random() - 0.5) * 1.5;
+            }
           }
-          if (distY > 0.1) {
-            repelY += (dy > 0 ? 1 : -1) * overlapY * 0.1;
-          } else {
-            // If exactly overlapping vertically, push randomly
-            repelY += (Math.random() - 0.5) * 1.5;
-          }
-        }
-      });
+        });
 
-      // Apply repulsion
-      newX += repelX;
-      newY += repelY;
+        // Apply repulsion
+        newX += repelX;
+        newY += repelY;
+      }
 
       // Keep within bounds with soft margin
       if (newX < minX) newX = minX + 0.3;
@@ -656,7 +664,7 @@
             src={getCardImageUrl(w)}
             alt={w.headword}
             class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg border border-[#333] shadow-lg
-                   {i === currentIndex && !w.dissolving ? 'ring-2 ring-[#444] shadow-[0_0_20px_rgba(100,100,100,0.3)]' : 'opacity-60 hover:opacity-90'}"
+                   {i === currentIndex && !w.dissolving ? 'ring-2 ring-[#444] shadow-[0_0_20px_rgba(100,100,100,0.3)]' : 'opacity-80 hover:opacity-100'}"
             onerror={() => { words = words.map(word => word.id === w.id ? { ...word, imageFailed: true } : word); }}
           />
         {:else}
@@ -735,27 +743,27 @@
         <button class="absolute top-2 right-2 z-20 text-[#333] cursor-pointer hover:text-[#666] bg-[#111] border border-[#222] rounded-full w-10 h-10 flex items-center justify-center text-xl" onclick={() => revealedWord = null}>×</button>
 
         <!-- Scrollable Content Area -->
-        <div class="overflow-y-auto overscroll-contain rounded-lg" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overflow-x-hidden overscroll-contain rounded-lg" style="-webkit-overflow-scrolling: touch;">
           <div class="bg-[#080808] border border-[#222] p-6 md:p-10 pt-12 rounded-lg text-center">
             <!-- German Gloss -->
             {#if revealedWord.gloss_de}
-              <div class="text-[#444] text-base mb-2 tracking-wide text-center">{revealedWord.gloss_de}</div>
+              <div class="text-[#666] text-base mb-2 tracking-wide text-center">{revealedWord.gloss_de}</div>
             {/if}
 
             <!-- Headword (Click to hear - hover shows speaker) -->
             <button
               onclick={() => revealedWord && speak(revealedWord.headword)}
-              class="text-4xl md:text-5xl lg:text-6xl zen-living-gradient font-light tracking-wider cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3">
+              class="text-3xl md:text-4xl lg:text-5xl zen-living-gradient font-light tracking-wider cursor-pointer hover:scale-105 transition-transform bg-transparent border-none tts-speakable mb-3 max-w-full break-words">
               {revealedWord.headword}
             </button>
 
             <!-- IPA -->
             {#if revealedWord.ipa}
-              <p class="text-[#333] text-sm mb-6 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
+              <p class="text-[#555] text-sm mb-6 font-sans tracking-widest text-center">/{revealedWord.ipa}/</p>
             {/if}
 
             <!-- Definition -->
-            <p class="text-lg md:text-xl lg:text-2xl text-[#555] mb-6 leading-relaxed font-light">
+            <p class="text-lg md:text-xl lg:text-2xl text-[#777] mb-6 leading-relaxed font-light">
               {revealedWord.definition}
             </p>
 
@@ -773,30 +781,30 @@
 
             <!-- Rich Data Block -->
             {#if revealedWord.mnemonic || revealedWord.etymology || revealedWord.example}
-              <div class="border-t border-[#1a1a1a] pt-6 text-center space-y-5">
+              <div class="border-t border-[#222] pt-6 text-center space-y-5">
 
                 {#if revealedWord.mnemonic}
-                  <div class="bg-[#111] p-4 rounded border border-[#1a1a1a]">
-                    <span class="text-[10px] uppercase text-[#444] tracking-[0.2em] block mb-2">Mnemonic</span>
-                    <p class="text-base text-[#666] leading-relaxed">{revealedWord.mnemonic}</p>
+                  <div class="bg-[#111] p-4 rounded border border-[#222]">
+                    <span class="text-[10px] uppercase text-[#666] tracking-[0.2em] block mb-2">Mnemonic</span>
+                    <p class="text-base text-[#888] leading-relaxed">{revealedWord.mnemonic}</p>
                   </div>
                 {/if}
 
                 {#if revealedWord.etymology}
                   <div class="pt-2">
-                    <span class="text-[10px] uppercase text-[#333] tracking-[0.2em] block mb-1">Etymology</span>
-                    <p class="text-base text-[#444] italic">{revealedWord.etymology}</p>
+                    <span class="text-[10px] uppercase text-[#555] tracking-[0.2em] block mb-1">Etymology</span>
+                    <p class="text-base text-[#777] italic">{revealedWord.etymology}</p>
                   </div>
                 {/if}
 
                 {#if revealedWord.example}
                   <div class="pt-4">
-                    <span class="text-[10px] uppercase text-[#333] tracking-[0.2em]">Usage</span>
-                    <div class="text-lg text-[#555] italic mt-2">
+                    <span class="text-[10px] uppercase text-[#555] tracking-[0.2em]">Usage</span>
+                    <div class="text-lg text-[#888] italic mt-2">
                       "{revealedWord.example}"
                     </div>
                     {#if revealedWord.example_gloss}
-                      <div class="text-base text-[#666] mt-1">
+                      <div class="text-base text-[#777] mt-1">
                         "{revealedWord.example_gloss}"
                       </div>
                     {/if}
