@@ -76,11 +76,10 @@
     }
   });
 
-  // Provider options - Kie.ai (Z-Image & Flux) + OpenAI
+  // Provider options - Kie.ai (Z-Image & Flux)
   const providers = [
     { id: 'kie', name: 'Z-Image Turbo', desc: '$0.004, fast' },
-    { id: 'kie-flux', name: 'Flux 2 Flex', desc: '~$0.02, high quality' },
-    { id: 'openai', name: 'GPT Image', desc: '~$0.02, best quality' }
+    { id: 'kie-flux', name: 'Flux 2 Flex', desc: '~$0.02, high quality' }
   ];
 
   // Aspect ratio always 1:1 for consistent display everywhere
@@ -141,7 +140,10 @@
   onMount(() => {
     const savedProvider = localStorage.getItem('vocapp_imagegen_provider');
     const savedStyle = localStorage.getItem('vocapp_imagegen_style');
-    if (savedProvider) selectedProvider = savedProvider;
+    // Only use saved provider if it's still a valid option
+    if (savedProvider && providers.some(p => p.id === savedProvider)) {
+      selectedProvider = savedProvider;
+    }
     if (savedStyle) selectedStyle = savedStyle;
   });
 
