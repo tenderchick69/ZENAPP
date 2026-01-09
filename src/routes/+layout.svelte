@@ -85,7 +85,13 @@
       <!-- AUTH: User Menu or Sign In -->
       {#if $user}
         <div class="user-menu">
-          <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" />
+          {#if $user.user_metadata?.avatar_url}
+            <img src={$user.user_metadata.avatar_url} alt="avatar" class="avatar" />
+          {:else}
+            <div class="avatar avatar-fallback">
+              {($user.email || $user.user_metadata?.name || '?').charAt(0).toUpperCase()}
+            </div>
+          {/if}
           <button onclick={signOut} class="sign-out-btn" title="Sign Out">
             ⏻
           </button>
@@ -121,6 +127,16 @@
     border-radius: 50%;
     border: 2px solid var(--color-accent);
     flex-shrink: 0;
+  }
+
+  .avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-weight: 600;
+    font-size: 14px;
   }
 
   @media (min-width: 768px) {

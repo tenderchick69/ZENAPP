@@ -3,6 +3,7 @@
   import { supabase } from '$lib/supabase';
   import { goto } from '$app/navigation';
   import { t } from '$lib/theme';
+  import { user } from '$lib/auth';
 
   let dragging = false;
   let uploading = false;
@@ -33,7 +34,13 @@
       addLog('CONNECTING...');
       const deckName = filename.replace('.csv', '');
 
-      const { data: deck, error: deckError } = await supabase.from('decks').insert({ name: deckName }).select().single();
+      // Get current user for deck ownership
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+      const { data: deck, error: deckError } = await supabase.from('decks').insert({
+        name: deckName,
+        user_id: currentUser?.id
+      }).select().single();
       if (deckError) throw deckError;
       addLog(`DECK CREATED: [${deck.id}]`);
 
@@ -53,7 +60,11 @@
       }));
 
       const { error: cardError } = await supabase.from('cards').insert(cards);
-      if (cardError) throw cardError;
+      if (cardError) {
+        // Rollback: delete the empty deck if card insertion fails
+        await supabase.from('decks').delete().eq('id', deck.id);
+        throw cardError;
+      }
 
       addLog('SUCCESS. REDIRECTING...');
       setTimeout(() => goto('/'), 1500);
