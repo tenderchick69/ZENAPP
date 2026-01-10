@@ -2,8 +2,7 @@
   import { onMount } from 'svelte';
   import { beforeNavigate } from '$app/navigation';
   import { theme, t } from '$lib/theme';
-  import { user, userPreferences, signInWithGoogle } from '$lib/auth';
-  import { supabase } from '$lib/supabase';
+  import { user, signInWithGoogle } from '$lib/auth';
   import AIChat from '../../components/AIChat.svelte';
   import QuickGenerate from '../../components/QuickGenerate.svelte';
   import DeckPreview from '../../components/DeckPreview.svelte';
@@ -22,14 +21,7 @@
   let error: string | null = null;
   let isImporting = false;
 
-  // Admin code gate
-  let adminCode = '';
-  let adminError = '';
-  let isVerifying = false;
-
-  // Check approval status
-  $: isApproved = $userPreferences?.is_approved === true;
-  $: showAdminGate = $user && !isApproved;
+  // Admin gate removed for open beta - all logged-in users can generate
 
   // Loading messages
   let loadingMessageIndex = 0;
@@ -98,47 +90,6 @@
       }
     }
   });
-
-  async function verifyAdminCode() {
-    if (!adminCode.trim()) {
-      adminError = 'Please enter the code';
-      return;
-    }
-
-    isVerifying = true;
-    adminError = '';
-
-    try {
-      const response = await fetch('/api/verify-admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: adminCode })
-      });
-
-      const { valid } = await response.json();
-
-      if (valid && $user) {
-        // Mark user as approved in database
-        await supabase
-          .from('user_preferences')
-          .upsert({
-            id: $user.id,
-            is_approved: true
-          });
-
-        // Update local state
-        userPreferences.update(p => p ? { ...p, is_approved: true } : p);
-        adminCode = '';
-      } else {
-        adminError = 'Invalid code';
-        adminCode = '';
-      }
-    } catch (e) {
-      adminError = 'Verification failed';
-    } finally {
-      isVerifying = false;
-    }
-  }
 
   onMount(() => {
     // Check for unsaved deck from previous session
@@ -257,38 +208,8 @@
       </div>
     </div>
 
-  {:else if showAdminGate}
-    <!-- Logged in but not approved - show admin code -->
-    <div class="password-gate">
-      <div class="password-box">
-        <h2 class="gate-title">Unlock AI Generator</h2>
-        <p class="gate-message">
-          Enter the admin code to unlock AI deck generation. You only need to do this once.
-        </p>
-        <input
-          type="password"
-          bind:value={adminCode}
-          onkeydown={(e) => e.key === 'Enter' && verifyAdminCode()}
-          placeholder="Enter admin code"
-          class="password-input"
-          disabled={isVerifying}
-          autofocus
-        />
-        {#if adminError}
-          <p class="password-error">{adminError}</p>
-        {/if}
-        <button
-          onclick={verifyAdminCode}
-          class="unlock-btn"
-          disabled={isVerifying}>
-          {isVerifying ? 'Verifying...' : 'Unlock Generator'}
-        </button>
-        <p class="gate-note">Contact admin for the code</p>
-      </div>
-    </div>
-
   {:else}
-    <!-- Approved user - show full generator -->
+    <!-- Logged in user - show full generator -->
     {#if state === 'input'}
       <div class="mode-toggle">
         <Tooltip text="Chat with AI to describe exactly what you want">
