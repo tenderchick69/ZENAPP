@@ -21,6 +21,20 @@ interface Card {
  * @param deckName - The name of the deck (used for filename)
  */
 export async function exportDeckToCSV(deckId: number, deckName: string): Promise<void> {
+  // Fetch the deck to get the language
+  const { data: deck, error: deckError } = await supabase
+    .from('decks')
+    .select('language')
+    .eq('id', deckId)
+    .single();
+
+  if (deckError) {
+    console.error('Export error (deck):', deckError);
+    throw new Error('Failed to fetch deck info');
+  }
+
+  const language = deck?.language || 'Unknown';
+
   // Fetch all cards for this deck
   const { data: cards, error } = await supabase
     .from('cards')
@@ -37,10 +51,12 @@ export async function exportDeckToCSV(deckId: number, deckName: string): Promise
     throw new Error('No cards to export');
   }
 
-  // CSV header
+  // CSV headers with renamed columns
+  // word = headword, translation = definition, language = from deck
   const headers = [
-    'headword',
-    'definition',
+    'word',
+    'translation',
+    'language',
     'pos',
     'ipa',
     'example',
@@ -51,19 +67,32 @@ export async function exportDeckToCSV(deckId: number, deckName: string): Promise
     'tags'
   ];
 
+  // Helper to escape CSV values
+  function escapeCSV(value: string): string {
+    const escaped = String(value).replace(/"/g, '""');
+    if (escaped.includes(',') || escaped.includes('"') || escaped.includes('\n')) {
+      return `"${escaped}"`;
+    }
+    return escaped;
+  }
+
   // Build CSV content
   const csvRows = [headers.join(',')];
 
   for (const card of cards) {
-    const row = headers.map(header => {
-      const value = card[header as keyof Card] || '';
-      // Escape quotes and wrap in quotes if contains comma, quote, or newline
-      const escaped = String(value).replace(/"/g, '""');
-      if (escaped.includes(',') || escaped.includes('"') || escaped.includes('\n')) {
-        return `"${escaped}"`;
-      }
-      return escaped;
-    });
+    const row = [
+      escapeCSV(card.headword || ''),      // word
+      escapeCSV(card.definition || ''),    // translation
+      escapeCSV(language),                  // language (from deck)
+      escapeCSV(card.pos || ''),
+      escapeCSV(card.ipa || ''),
+      escapeCSV(card.example || ''),
+      escapeCSV(card.example_gloss || ''),
+      escapeCSV(card.synonyms || ''),
+      escapeCSV(card.etymology || ''),
+      escapeCSV(card.mnemonic || ''),
+      escapeCSV(card.tags || '')
+    ];
     csvRows.push(row.join(','));
   }
 

@@ -8,6 +8,7 @@
   export let cards: CardData[];
   export let deckName: string;
   export let deckId: number | null = null;  // Set if deck was auto-saved
+  export let language: string = 'Unknown';  // Target language for this deck
   export let onRegenerate: () => void;
   export let onRename: (name: string) => void;
   export let onImportStart: (() => void) | undefined = undefined;
@@ -41,11 +42,12 @@
         throw new Error('You must be logged in to create decks');
       }
 
-      // Create deck
+      // Create deck (ensure language is never null)
       const deckResult = await supabase
         .from('decks')
         .insert({
           name: deckName,
+          language: language || 'Unknown',
           user_id: currentUser.id
         })
         .select()

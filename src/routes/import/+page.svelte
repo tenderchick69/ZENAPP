@@ -37,8 +37,13 @@
       // Get current user for deck ownership
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
+      // Try to detect language from first row if present (ensure never null)
+      const firstRow = rows[0] as Record<string, string>;
+      const language = (firstRow?.language || 'Unknown').toString();
+
       const { data: deck, error: deckError } = await supabase.from('decks').insert({
         name: deckName,
+        language: language || 'Unknown',
         user_id: currentUser?.id
       }).select().single();
       if (deckError) throw deckError;

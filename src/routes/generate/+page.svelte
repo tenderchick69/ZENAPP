@@ -18,6 +18,7 @@
   let generatedCards: CardData[] = [];
   let deckName = '';
   let deckId: number | null = null;  // Set when deck is auto-saved
+  let deckLanguage = 'Unknown';  // Track the target language for this deck
   let error: string | null = null;
   let isImporting = false;
 
@@ -105,6 +106,7 @@
             if (confirm(`You have an unsaved deck from earlier (${data.deckName}). Restore it?`)) {
               generatedCards = data.cards;
               deckName = data.deckName;
+              deckLanguage = data.language || 'Unknown';
               state = 'preview';
             } else {
               sessionStorage.removeItem('unsavedDeck');
@@ -128,6 +130,7 @@
     state = 'loading';
     error = null;
     deckId = null;
+    deckLanguage = params.targetLanguage || 'Unknown';
     startLoadingAnimation();
 
     try {
@@ -156,6 +159,7 @@
         sessionStorage.setItem('unsavedDeck', JSON.stringify({
           cards: generatedCards,
           deckName: deckName,
+          language: deckLanguage,
           timestamp: Date.now()
         }));
       } else if (deckId && typeof sessionStorage !== 'undefined') {
@@ -254,6 +258,7 @@
         cards={generatedCards}
         {deckName}
         {deckId}
+        language={deckLanguage}
         onRegenerate={handleRegenerate}
         onRename={handleRename}
         onImportStart={handleImportStart}

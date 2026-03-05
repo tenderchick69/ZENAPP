@@ -61,6 +61,7 @@ export const POST: RequestHandler = async ({ request }) => {
           .from('decks')
           .insert({
             name: result.deckName,
+            language: params.targetLanguage || 'Unknown',
             user_id: params.userId
           })
           .select()
