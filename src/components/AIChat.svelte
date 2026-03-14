@@ -56,7 +56,7 @@
     // Simple pattern matching to extract info
     const lower = userMessage.toLowerCase();
 
-    // Extract target language if mentioned
+    // Extract target language if mentioned (all 12 supported languages)
     if (!conversationContext.targetLanguage) {
       if (lower.includes('korean')) conversationContext.targetLanguage = 'Korean';
       else if (lower.includes('japanese')) conversationContext.targetLanguage = 'Japanese';
@@ -64,6 +64,12 @@
       else if (lower.includes('french')) conversationContext.targetLanguage = 'French';
       else if (lower.includes('german')) conversationContext.targetLanguage = 'German';
       else if (lower.includes('mandarin') || lower.includes('chinese')) conversationContext.targetLanguage = 'Mandarin';
+      else if (lower.includes('english')) conversationContext.targetLanguage = 'English';
+      else if (lower.includes('italian')) conversationContext.targetLanguage = 'Italian';
+      else if (lower.includes('portuguese')) conversationContext.targetLanguage = 'Portuguese';
+      else if (lower.includes('russian')) conversationContext.targetLanguage = 'Russian';
+      else if (lower.includes('filipino') || lower.includes('tagalog')) conversationContext.targetLanguage = 'Filipino (Tagalog)';
+      else if (lower.includes('cebuano') || lower.includes('bisaya')) conversationContext.targetLanguage = 'Cebuano (Bisaya)';
     }
 
     // Extract level hints
@@ -95,7 +101,7 @@
 
     onGenerate({
       nativeLanguage,
-      targetLanguage: conversationContext.targetLanguage || 'Korean',
+      targetLanguage: conversationContext.targetLanguage || 'Unknown',
       category: conversationContext.category || 'random',
       level: conversationContext.level,
       cardCount: conversationContext.cardCount,
