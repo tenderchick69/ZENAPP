@@ -25,7 +25,7 @@
     targetLanguage: '',
     category: '',
     level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
-    cardCount: 10,
+    cardCount: 20,
   };
 
   async function sendMessage() {
