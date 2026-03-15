@@ -1,5 +1,7 @@
 <script lang="ts">
   import { theme } from '$lib/theme';
+  import { userPreferences } from '$lib/auth';
+  import { SUPPORTED_LANGUAGES } from '$lib/languages';
   import type { GenerationParams } from '$lib/prompts';
 
   export let onGenerate: (params: GenerationParams) => void;
@@ -17,12 +19,12 @@
   ];
   let input = '';
   let nativeLanguage: 'English' | 'German' = 'English';
+  let targetLanguage = $userPreferences?.target_language || 'English';
   let questionCount = 0;
   let isReady = false;
 
   // Conversation context extracted from messages
   let conversationContext = {
-    targetLanguage: '',
     category: '',
     level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     cardCount: 20,
@@ -56,22 +58,6 @@
     // Simple pattern matching to extract info
     const lower = userMessage.toLowerCase();
 
-    // Extract target language if mentioned (all 12 supported languages)
-    if (!conversationContext.targetLanguage) {
-      if (lower.includes('korean')) conversationContext.targetLanguage = 'Korean';
-      else if (lower.includes('japanese')) conversationContext.targetLanguage = 'Japanese';
-      else if (lower.includes('spanish')) conversationContext.targetLanguage = 'Spanish';
-      else if (lower.includes('french')) conversationContext.targetLanguage = 'French';
-      else if (lower.includes('german')) conversationContext.targetLanguage = 'German';
-      else if (lower.includes('mandarin') || lower.includes('chinese')) conversationContext.targetLanguage = 'Mandarin';
-      else if (lower.includes('english')) conversationContext.targetLanguage = 'English';
-      else if (lower.includes('italian')) conversationContext.targetLanguage = 'Italian';
-      else if (lower.includes('portuguese')) conversationContext.targetLanguage = 'Portuguese';
-      else if (lower.includes('russian')) conversationContext.targetLanguage = 'Russian';
-      else if (lower.includes('filipino') || lower.includes('tagalog')) conversationContext.targetLanguage = 'Filipino (Tagalog)';
-      else if (lower.includes('cebuano') || lower.includes('bisaya')) conversationContext.targetLanguage = 'Cebuano (Bisaya)';
-    }
-
     // Extract level hints
     if (lower.includes('beginner') || lower.includes('basic')) conversationContext.level = 'beginner';
     else if (lower.includes('intermediate')) conversationContext.level = 'intermediate';
@@ -101,7 +87,7 @@
 
     onGenerate({
       nativeLanguage,
-      targetLanguage: conversationContext.targetLanguage || 'Unknown',
+      targetLanguage,
       category: conversationContext.category || 'random',
       level: conversationContext.level,
       cardCount: conversationContext.cardCount,
@@ -111,12 +97,22 @@
 </script>
 
 <div class="ai-chat" data-theme={$theme}>
-  <div class="native-language-select">
-    <label for="native-select">Your language:</label>
-    <select id="native-select" bind:value={nativeLanguage}>
-      <option value="English">🇬🇧 English</option>
-      <option value="German">🇩🇪 German</option>
-    </select>
+  <div class="language-selects">
+    <div class="language-select">
+      <label for="native-select">Your language:</label>
+      <select id="native-select" bind:value={nativeLanguage}>
+        <option value="English">🇬🇧 English</option>
+        <option value="German">🇩🇪 German</option>
+      </select>
+    </div>
+    <div class="language-select">
+      <label for="target-select">Language to learn:</label>
+      <select id="target-select" bind:value={targetLanguage}>
+        {#each SUPPORTED_LANGUAGES as lang}
+          <option value={lang}>{lang}</option>
+        {/each}
+      </select>
+    </div>
   </div>
 
   <div class="messages">
@@ -154,24 +150,30 @@
     margin: 0 auto;
   }
 
-  .native-language-select {
+  .language-selects {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     margin-bottom: 1rem;
+  }
+
+  .language-select {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 0.75rem;
     background: var(--color-panel);
     border-radius: 8px;
   }
 
-  .native-language-select label {
+  .language-select label {
     color: var(--color-accent);
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
-  .native-language-select select {
+  .language-select select {
     padding: 0.5rem;
     border: 1px solid var(--color-accent);
     background: var(--color-bg);
@@ -381,6 +383,10 @@
   }
 
   @media (max-width: 640px) {
+    .language-selects {
+      flex-direction: column;
+    }
+
     .message .bubble {
       max-width: 90%;
       font-size: 0.9rem;
