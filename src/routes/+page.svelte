@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { supabase } from '$lib/supabase';
+  import { afterNavigate } from '$app/navigation';
   import { t, theme } from '$lib/theme';
   import { browser } from '$app/environment';
 
@@ -105,7 +105,7 @@
     }
   }
 
-  onMount(() => {
+  afterNavigate(() => {
     loadDecks();
     loadMasteryCount();
   });
